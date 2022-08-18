@@ -3,6 +3,20 @@ from setuptools import setup
 
 import os
 
+def find_sh_files(directory):
+
+    paths = []
+
+    for (path, directories, filenames) in os.walk(directory):
+
+        for filename in filenames:
+
+            paths.append(os.path.join('..', path, filename))
+
+    return paths
+
+extra_files = find_sh_files('HiMaXBipy/sh_files')
+
 setup(
 
     name="HiMaXBipy",
@@ -16,8 +30,11 @@ setup(
     author='David M. Kaltenbrunner',
     author_email='kald@mpe.mpg.de',
 
+    package_data={'': sh_files, },
+    include_package_data=True,
+
     requires=[
         'numpy',
-        'matplotlib',
+        'matplotlib'
     ],
 )
