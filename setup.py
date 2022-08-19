@@ -15,7 +15,7 @@ def find_sh_files(directory):
 
     return paths
 
-extra_files = find_sh_files('HiMaXBipy/sh_files/')
+sh_files = find_sh_files('HiMaXBipy/sh_files/')
 
 setup(
 
