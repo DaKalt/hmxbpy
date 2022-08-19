@@ -40,4 +40,9 @@ class HiMaXBi:
         for (path, directories, filenames) in os.walk(self.__sh_dir__):
             for filename in filenames:
                 shutil.copy(self.__sh_dir__ + filename, self.working_dir)
-        
+
+
+#import sys, fileinput
+#for line in fileinput.input('test_replacing.sh', inplace=True):
+#    line = line.replace('$ersetzen', '$klappt')
+#    sys.stdout.write(line)
