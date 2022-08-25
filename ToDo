@@ -1,0 +1,5 @@
+Include:
+  - Cutout creation (with healpy or ligo.skymaps for correct projection)
+  - Cut away dataless parts from LC (especially full LC; probably matplotlib has a command?)
+  - make additional models possible (import .xcm file?)
+  - variability analysis
