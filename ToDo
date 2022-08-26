@@ -1,5 +1,5 @@
 Include:
-  - Cutout creation (with healpy or ligo.skymaps for correct projection)
+  - Cutout creation (with healpy or ligo.skymaps for correct projection) --> make bands a parameter
   - Cut away dataless parts from LC (especially full LC; probably matplotlib has a command?)
   - make additional models possible (import .xcm file?)
   - variability analysis
