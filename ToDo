@@ -3,3 +3,4 @@ Include:
   - Cut away dataless parts from LC (especially full LC; probably matplotlib has a command?)
   - make additional models possible (import .xcm file?)
   - variability analysis
+  - add bxa (in addition to cstat)
