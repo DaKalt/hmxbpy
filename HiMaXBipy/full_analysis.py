@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import time
 import numpy as np
 import getpass
+import warnings
 
 class HiMaXBi:
     def __init__(self, src_name, working_dir, data_dir):
@@ -47,8 +48,12 @@ class HiMaXBi:
             os.mkdir(self.__working_dir + '/working')
         if not os.path.exists(self.__working_dir + '/results'):
             os.mkdir(self.__working_dir + '/results')
-        if not os.path.exists(self.__working_dir + '/logiles'):
+        if not os.path.exists(self.__working_dir + '/logfiles'):
             os.mkdir(self.__working_dir + '/logfiles')
+        if not os.path.exists(self.__working_dir + '/logfiles/extraction'):
+            os.mkdir(self.__working_dir + '/logfiles/extraction')
+        if not os.path.exists(self.__working_dir + '/logfiles/analysis'):
+            os.mkdir(self.__working_dir + '/logfiles/analysis')
         
         self.__sh_dir__ = get_path_of_data_dir()
         
@@ -56,13 +61,15 @@ class HiMaXBi:
             for filename in filenames:
                 shutil.copy(self.__sh_dir__ + filename, self.__working_dir + '/working')
                 
-        self.__region = ''
+        self.__skytile = ''
         self.__filenames = ''
-        self.__esass = '/home/erosita/sw/eSASSusers_201009/bin/esass-init.sh'
+        self.__esass = '/home/erosita/sw/eSASSusers_211214/bin/esass-init.sh'
         self.__LC_prebinning = '1.0'
         self.__LC_extracted = False
         self.__mjdref = 51543.875
         self.__ero_starttimes = [58828, 59011, 59198, 59381, 59567]
+        self.__energy_bins = [[0.2, 8.0]]
+        self.__grouping = '1'
     
     def __replace_in_ssh(self, path, replacements):
         '''
@@ -70,7 +77,7 @@ class HiMaXBi:
         ----------
         replacements : array-like shape (n, 2)
             array of n keywords to replace in ssh file; 0th entry in each pair states the original keyword, 1st entry states the new keyword
-        path : string
+        path : str
             path of ssh file in which to replace entries
 
         Returns
@@ -83,11 +90,32 @@ class HiMaXBi:
                 line = line.replace(pair[0], pair[1])
                 sys.stdout.write(line)
     
+    def set_Ebins(self, bins):
+        '''
+        Parameters
+        ----------
+        bins : array-like (n,2), optional
+            Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [[0.2, 8.0]]
+        '''
+        if type(bins) != list and type(bins) != np.ndarray:
+            raise Exception('bins must be array-like')
+        else:
+            for line in bins:
+                if len(line) != 2:
+                    raise Exception('Each line in bins needs 2 entries.')
+                if (type(line[0]) != float and type(line[0]) != int) or (type(line[1]) != float and type(line[1]) != int):
+                    raise Exception('The entries of each line of bins need to be the minimum and maximum energies given in keV of the energy bins to analyse given as float or int.')
+                elif line[0] < 0.2 or line[0] > 8.0 or line[1] < 0.2 or line[1] > 8.0 or line[0] >= line[1]:
+                    raise Exception('The energies must be given in keV and must follow 0.2 <= E_min < E_max <= 8.0.')
+        self.__energy_bins = np.float64(np.array(bins)).tolist()
+        self.__LC_extracted = False
+
+    
     def set_mjd_ref(self, mjdref):
         '''
         Parameters
         ----------
-        mjdref : float or string
+        mjdref : float or str
             Reference value to transform eROSITA times to MJD.
         Returns
         -------
@@ -124,7 +152,7 @@ class HiMaXBi:
         '''
         Parameters
         ----------
-        skytile : string
+        skytile : str
             Name of the skytile in which the source lies.
 
         Returns
@@ -162,7 +190,7 @@ class HiMaXBi:
         '''
         Parameters
         ----------
-        filelist : string
+        filelist : str
             List of names of eventfiles to use separated by spaces and without foldernames.
 
         Raises
@@ -195,24 +223,44 @@ class HiMaXBi:
         '''
         Parameters
         ----------
-        binning : string or float
+        binning : str or float
             Set the initial binning of the lightcurve in seconds.
-
-        Returns
-        -------
-        None.
 
         '''
         if not (type(binning) == str or type(binning) == float):
             raise Exception('binning must be a string or float.')
+        try:
+            float(binning)
+        except ValueError:
+            raise Exception('binning must be a number.')
         self.__binning = str(binning)
         self.__LC_extracted = False
     
+    def set_grouping(self, grouping):
+        '''
+        Parameters
+        ----------
+        grouping : str or int
+            Set the grouping of extracted spectra. If c-statistic is used grouping=1 is recommended, for chi2 statistic grouping=20 is recommended.
+
+        '''
+        if not (type(grouping) == str or type(grouping) == int):
+            raise Exception('binning must be a string or float.')
+        try:
+            int(grouping)
+        except ValueError:
+            raise Exception('grouping must be an integer.')
+        if int(grouping) < 1:
+            raise Exception('grouping must be an integer >= 1.')
+        if float(grouping) != int(grouping):
+            warnings.warn('grouping is treated as an integer. Float values will be rounded down to the next integer.')
+        self.__grouping = str(int(grouping))
+        
     def extract_lc(self, logname = 'lc_extract_autosave.log'):
         '''
         Parameters
         ----------
-        logname : string
+        logname : str
             name of logfile to safe output of sh script to.
             
         Returns
@@ -222,27 +270,30 @@ class HiMaXBi:
         '''
         if type(logname) != str:
             raise Exception('logname must be a string.')
-        if self.__region == '' or self.__filelist == '':
+        if self.__skytile == '' or self.__filelist == '':
             raise Exception('Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
-        replacements = [['@source_name', self.__src_name],
-                        ['@main_name', self.__working_dir],
-                        ['@result_dir', self.__working_dir + '/working'],
-                        ['@region_code', self.__skytile],
-                        ['@sources_list', self.__filelist],
-                        ['@right_ascension', self.__RA],
-                        ['@declination', self.__Dec],
-                        ['@esass_location', self.__esass],
-                        ['@binning', self.__binning]]
-        sh_file = self.__working_dir + '/working/extract_lc.sh'
-        self.__replace_in_ssh(sh_file, replacements)
-        process = subprocess.Popen([sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait() # Wait for process to complete.
-
-        # iterate on the stdout line by line
-        if not logname == '':
-            with open(self.__working_dir + '/logfiles/' + logname, 'w') as logfile:
-                for line in process.stdout.readlines():
-                    logfile.writelines(line)
+        for bin_e in self.__energy_bins:
+            replacements = [['@source_name', self.__src_name],
+                            ['@main_name', self.__working_dir],
+                            ['@result_dir', self.__working_dir + '/working'],
+                            ['@region_code', self.__skytile],
+                            ['@sources_list', self.__filelist],
+                            ['@right_ascension', self.__RA],
+                            ['@declination', self.__Dec],
+                            ['@esass_location', self.__esass],
+                            ['@binning', self.__binning],
+                            ['@emin', bin_e[0]],
+                            ['@emax', bin_e[1]]]
+            sh_file = self.__working_dir + '/working/extract_lc.sh'
+            self.__replace_in_ssh(sh_file, replacements)
+            process = subprocess.Popen([sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait() # Wait for process to complete.
+    
+            # iterate on the stdout line by line
+            if not logname == '':
+                with open(f'{self.__working_dir}/logfiles/extraction/{logname}_{bin_e[0]}keV_{bin_e[1]}keV', 'w') as logfile:
+                    for line in process.stdout.readlines():
+                        logfile.writelines(line)
         self.__LC_extracted = True
         self.__find_gap_centres(60 * 60 * 24 * 30) #one month gap minimum to sort out possible short gaps due to problems during observation
         self.__eRASS_vs_epoch()
@@ -266,8 +317,10 @@ class HiMaXBi:
             for entry in self.__gap_centres:
                 if entry > min(times_list[i]) and entry < max(times_list[i]):
                     self.__create_epochs = True
+        self.__time_max = max(max(times_list)) + 1
+        self.__time_min = min(min(times_list)) - 1
     
-    def plot_lc_full(self, fracexp = '0.15', mincounts = '10', mode = 'ul', show_eRASS = True, logname = 'lc_full_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0):
+    def plot_lc_full(self, fracexp = '0.15', mincounts = '10', mode = 'ul', show_eRASS = True, logname = 'lc_full_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, E_bins = [[0.2, 8.0]]):
         '''
         Parameters
         ----------
@@ -307,6 +360,8 @@ class HiMaXBi:
             Sets the approximate number of tickmarks along the y axis. The default is 5.0.
         ticknumber_x : float or int, optional
             Sets the approximate number of tickmarks along the x axis. The default is 8.0.
+        E_bins : array-like (n,2), optional
+            Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [[0.2, 8.0]]
 
         Returns
         -------
@@ -378,9 +433,11 @@ class HiMaXBi:
                 elif line[2] >= -1:
                     raise Exception('The third entry in each line of vlines needs to be a negative integer < -2.')
         
+        if np.array(E_bins).tolist() != self.__energy_bins:
+            self.set_Ebins(bins = E_bins)
         if not self.__LC_extracted:
             self.extract_lc()
-        logfile = open(self.__working_dir + '/logfiles/' + logname, 'w')
+        logfile = open(self.__working_dir + '/logfiles/analysis/' + logname, 'w')
         localtime = time.asctime(time.localtime(time.time()))
         
         logfile.writelines(localtime + '\n')
@@ -393,88 +450,89 @@ class HiMaXBi:
         else:
             TM_list = [0]
         
-        for TM in TM_list:
-            if fileid == '':
-                pfile = f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_fullLC'
-                outfile = f'{self.__working_dir}/results/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_fullLC'
-            else:
-                pfile = f'{self.__working_dir}/working/{fileid}'
-                outfile = f'{self.__working_dir}/results/{fileid}'
-            replacements = [['@infile', f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s{TM}20_LightCurve_00001.fits'],
-                            ['@pfile', f'{pfile}.fits'],
-                            ['@selection', f'FRACEXP>{fracexp}']]
-            sh_file = self.__working_dir + '/working/fselect_lc.sh'
-            self.__replace_in_ssh(sh_file, replacements)
-            
-            fig1 = plt.figure(figsize=(figsize[0],figsize[1]))
-            ax = fig1.add_subplot(111)
-            
-            logfile.writelines(f'Now working on {pfile}.fits')
-            hdulist = fits.open(f'{pfile}.fits')
-            
-            if time_axis == 'mjd':
-                xflag = 2
-            elif time_axis == 's':
-                xflag = 1
-            
-            if colors == []:
-                colors = ['lightblue', 'black']
-            
-            if mode == 'ul':
-                pxmin, pxmax, pymin, pymax = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
-            elif mode == 'mincounts':
-                pxmin, pxmax, pymin, pymax = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
-            elif mode == 'mincounts_ul':
-                pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, colors = colors[0])
-                pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[1])
-                pxmin, pxmax, pymin, pymax = get_boundaries([[pxmin1, pxmax1, pymin1, pymax1], [pxmin2, pxmax2, pymin2, pymax2]])
-            
-            format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y)
-            
-            # plot time in s from beginning (xflag=1) or in MJD
-            if time_axis == 's':
-               ax.set_xlabel(r'Time (s)')#, fontsize=12)
-            elif time_axis == 'mjd':
-               ax.set_xlabel(r'MJD (days)')#, fontsize=12)
-        
-            ax.set_ylabel(r'Count rate (cts/s)')#, fontsize=12)
-            
-            if print_name:
-            # user name and time
-                ax.text(1.015, 0.0, user +' - '+ localtime, rotation=90, fontsize=8, 
-                         verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
-            # eROSITA label
-                ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10, 
-                         verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
-                ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10, 
-                         verticalalignment='bottom', horizontalalignment='right', transform=ax.transAxes)
-            # label plot:
-                ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
-                         verticalalignment='bottom', horizontalalignment='center', transform=ax.transAxes)
-            
-            for i in range(len(vlines)):
-                ax.vlines(vlines[i][0], -5, 5, colors = vlines[i][1], linestyle = 'dotted', zorder=vlines[i][2])
-            if show_eRASS:
+        for bin_e in self.__energy_bins:
+            for TM in TM_list:
+                if fileid == '':
+                    pfile = f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
+                    outfile = f'{self.__working_dir}/results/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
+                else:
+                    pfile = f'{self.__working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                    outfile = f'{self.__working_dir}/results/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                replacements = [['@infile', f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                                ['@pfile', f'{pfile}.fits'],
+                                ['@selection', f'FRACEXP>{fracexp}']]
+                sh_file = self.__working_dir + '/working/fselect_lc.sh'
+                self.__replace_in_ssh(sh_file, replacements)
+                
+                fig1 = plt.figure(figsize=(figsize[0],figsize[1]))
+                ax = fig1.add_subplot(111)
+                
+                logfile.writelines(f'Now working on {pfile}.fits')
+                hdulist = fits.open(f'{pfile}.fits')
+                
                 if time_axis == 'mjd':
-                    ax.vlines(self.__ero_starttimes, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-2)
+                    xflag = 2
                 elif time_axis == 's':
-                    ax.vlines((np.array(self.__ero_starttimes) - self.__mjdref) * 3600 * 24, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-4)
-   
-            fig1.tight_layout()
-   
-            pltfile = outfile + ".pdf"
-            plt.savefig(pltfile)
-            logfile.writelines(f'{pltfile} created')
-            pltfile = outfile + ".eps"
-            plt.savefig(pltfile)
-            logfile.writelines(f'{pltfile} created')
-            pltfile = outfile + ".png"
-            plt.savefig(pltfile)
-            logfile.writelines(f'{pltfile} created')
+                    xflag = 1
+                
+                if colors == []:
+                    colors = ['lightblue', 'black']
+                
+                if mode == 'ul':
+                    pxmin, pxmax, pymin, pymax = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
+                elif mode == 'mincounts':
+                    pxmin, pxmax, pymin, pymax = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
+                elif mode == 'mincounts_ul':
+                    pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, colors = colors[0])
+                    pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[1])
+                    pxmin, pxmax, pymin, pymax = get_boundaries([[pxmin1, pxmax1, pymin1, pymax1], [pxmin2, pxmax2, pymin2, pymax2]])
+                
+                format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y)
+                
+                # plot time in s from beginning (xflag=1) or in MJD
+                if time_axis == 's':
+                   ax.set_xlabel(r'Time (s)')#, fontsize=12)
+                elif time_axis == 'mjd':
+                   ax.set_xlabel(r'MJD (days)')#, fontsize=12)
+            
+                ax.set_ylabel(r'Count rate (cts/s)')#, fontsize=12)
+                
+                if print_name:
+                # user name and time
+                    ax.text(1.015, 0.0, user +' - '+ localtime, rotation=90, fontsize=8, 
+                             verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
+                # eROSITA label
+                    ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10, 
+                             verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
+                    ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10, 
+                             verticalalignment='bottom', horizontalalignment='right', transform=ax.transAxes)
+                # label plot:
+                    ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
+                             verticalalignment='bottom', horizontalalignment='center', transform=ax.transAxes)
+                
+                for i in range(len(vlines)):
+                    ax.vlines(vlines[i][0], -5, 5, colors = vlines[i][1], linestyle = 'dotted', zorder=vlines[i][2])
+                if show_eRASS:
+                    if time_axis == 'mjd':
+                        ax.vlines(self.__ero_starttimes, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-2)
+                    elif time_axis == 's':
+                        ax.vlines((np.array(self.__ero_starttimes) - self.__mjdref) * 3600 * 24, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-4)
+       
+                fig1.tight_layout()
+       
+                pltfile = outfile + ".pdf"
+                plt.savefig(pltfile)
+                logfile.writelines(f'{pltfile} created')
+                pltfile = outfile + ".eps"
+                plt.savefig(pltfile)
+                logfile.writelines(f'{pltfile} created')
+                pltfile = outfile + ".png"
+                plt.savefig(pltfile)
+                logfile.writelines(f'{pltfile} created')
             
         logfile.close()
 
-    def plot_lc_parts(self, fracexp = '0.15', mincounts = '10', mode = 'mincounts_ul', show_eRASS = True, logname = 'lc_parts_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, eRASSi = []):
+    def plot_lc_parts(self, fracexp = '0.15', mincounts = '10', mode = 'mincounts_ul', show_eRASS = True, logname = 'lc_parts_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, eRASSi = [], E_bins = [[0.2, 8.0]]):
         '''
         Parameters
         ----------
@@ -516,6 +574,9 @@ class HiMaXBi:
             Sets the approximate number of tickmarks along the x axis. The default is 8.0.
         eRASSi : array-like of ints
             List of from which eRASS eventfiles were used. The default is [].
+        E_bins : array-like (n,2), optional
+            Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [[0.2, 8.0]]
+        #XXX add timebins 
 
         Returns
         -------
@@ -595,12 +656,14 @@ class HiMaXBi:
         if np.array(eRASSi) != np.sort(eRASSi):
             raise Exception('eRASSi must be sorted ascending.')
         if eRASSi != []:
-            print('Use of eRASSi is currently not supported.')
+            warnings.warn('Use of eRASSi is currently not supported.')
         
+        if np.array(E_bins).tolist() != self.__energy_bins:
+            self.set_Ebins(bins = E_bins)
         if not self.__LC_extracted:
             self.extract_lc()
         
-        logfile = open(self.__working_dir + '/logfiles/' + logname, 'w')
+        logfile = open(self.__working_dir + '/logfiles/analysis/' + logname, 'w')
         
         for i in range(1, len(self.__gap_centres) + 2):
             if self.__create_epochs:
@@ -620,92 +683,121 @@ class HiMaXBi:
             else:
                 TM_list = [0]
             
-            for TM in TM_list:
-                if fileid == '':
-                    pfile = f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_LC_{naming}'
-                    outfile = f'{self.__working_dir}/results/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_LC_{naming}'
-                else:
-                    pfile = f'{self.__working_dir}/working/{fileid}'
-                    outfile = f'{self.__working_dir}/results/{fileid}'
-                if i == 1:
-                    selection = f'FRACEXP>{fracexp} && TIME < {self.__gap_centres[0]}'
-                elif i == len(self.__gap_centres) + 1:
-                    selection = f'FRACEXP>{fracexp} && TIME > {self.__gap_centres[-1]}'
-                else:
-                    selection = f'FRACEXP>{fracexp} && TIME < {self.__gap_centres[i-1]} && TIME > {self.__gap_centres[i-2]}'
-                replacements = [['@infile', f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s{TM}20_LightCurve_00001.fits'],
-                                ['@pfile', f'{pfile}.fits'],
-                                ['@selection', selection]]
-                sh_file = self.__working_dir + '/working/fselect_lc.sh'
-                self.__replace_in_ssh(sh_file, replacements)
-                
-                fig1 = plt.figure(figsize=(figsize[0],figsize[1]))
-                ax = fig1.add_subplot(111)
-                
-                logfile.writelines(f'Now working on {pfile}.fits')
-                hdulist = fits.open(f'{pfile}.fits')
-                
-                if time_axis == 'mjd':
-                    xflag = 2
-                elif time_axis == 's':
-                    xflag = 1
-                
-                if colors == []:
-                    colors = ['lightblue', 'black']
-                
-                if mode == 'ul':
-                    pxmin, pxmax, pymin, pymax = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
-                elif mode == 'mincounts':
-                    pxmin, pxmax, pymin, pymax = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
-                elif mode == 'mincounts_ul':
-                    pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, colors = colors[0])
-                    pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[1])
-                    pxmin, pxmax, pymin, pymax = get_boundaries([[pxmin1, pxmax1, pymin1, pymax1], [pxmin2, pxmax2, pymin2, pymax2]])
-                
-                format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y)
-                
-                # plot time in s from beginning (xflag=1) or in MJD
-                if time_axis == 's':
-                   ax.set_xlabel(r'Time (s)')#, fontsize=12)
-                elif time_axis == 'mjd':
-                   ax.set_xlabel(r'MJD (days)')#, fontsize=12)
-            
-                ax.set_ylabel(r'Count rate (cts/s)')#, fontsize=12)
-                
-                if print_name:
-                # user name and time
-                    ax.text(1.015, 0.0, user +' - '+ localtime, rotation=90, fontsize=8, 
-                             verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
-                # eROSITA label
-                    ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10, 
-                             verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
-                    ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10, 
-                             verticalalignment='bottom', horizontalalignment='right', transform=ax.transAxes)
-                # label plot:
-                    ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
-                             verticalalignment='bottom', horizontalalignment='center', transform=ax.transAxes)
-                
-                for i in range(len(vlines)):
-                    ax.vlines(vlines[i][0], -5, 5, colors = vlines[i][1], linestyle = 'dotted', zorder=vlines[i][2])
-                if show_eRASS:
+            for bin_e in self.__energy_bins:
+                for TM in TM_list:
+                    if fileid == '':
+                        pfile = f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
+                        outfile = f'{self.__working_dir}/results/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
+                    else:
+                        pfile = f'{self.__working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                        outfile = f'{self.__working_dir}/results/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                    if i == 1:
+                        selection = f'FRACEXP>{fracexp} && TIME < {self.__gap_centres[0]}'
+                    elif i == len(self.__gap_centres) + 1:
+                        selection = f'FRACEXP>{fracexp} && TIME > {self.__gap_centres[-1]}'
+                    else:
+                        selection = f'FRACEXP>{fracexp} && TIME < {self.__gap_centres[i-1]} && TIME > {self.__gap_centres[i-2]}'
+                    replacements = [['@infile', f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                                    ['@pfile', f'{pfile}.fits'],
+                                    ['@selection', selection]]
+                    sh_file = self.__working_dir + '/working/fselect_lc.sh'
+                    self.__replace_in_ssh(sh_file, replacements)
+                    
+                    fig1 = plt.figure(figsize=(figsize[0],figsize[1]))
+                    ax = fig1.add_subplot(111)
+                    
+                    logfile.writelines(f'Now working on {pfile}.fits')
+                    hdulist = fits.open(f'{pfile}.fits')
+                    
                     if time_axis == 'mjd':
-                        ax.vlines(self.__ero_starttimes, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-2)
+                        xflag = 2
                     elif time_axis == 's':
-                        ax.vlines((np.array(self.__ero_starttimes) - self.__mjdref) * 3600 * 24, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-4)
-       
-                fig1.tight_layout()
-       
-                pltfile = outfile + ".pdf"
-                plt.savefig(pltfile)
-                logfile.writelines(f'{pltfile} created')
-                pltfile = outfile + ".eps"
-                plt.savefig(pltfile)
-                logfile.writelines(f'{pltfile} created')
-                pltfile = outfile + ".png"
-                plt.savefig(pltfile)
-                logfile.writelines(f'{pltfile} created')
+                        xflag = 1
+                    
+                    if colors == []:
+                        colors = ['lightblue', 'black']
+                    
+                    if mode == 'ul':
+                        pxmin, pxmax, pymin, pymax = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
+                    elif mode == 'mincounts':
+                        pxmin, pxmax, pymin, pymax = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
+                    elif mode == 'mincounts_ul':
+                        pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, colors = colors[0])
+                        pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[1])
+                        pxmin, pxmax, pymin, pymax = get_boundaries([[pxmin1, pxmax1, pymin1, pymax1], [pxmin2, pxmax2, pymin2, pymax2]])
+                    
+                    format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y)
+                    
+                    # plot time in s from beginning (xflag=1) or in MJD
+                    if time_axis == 's':
+                       ax.set_xlabel(r'Time (s)')#, fontsize=12)
+                    elif time_axis == 'mjd':
+                       ax.set_xlabel(r'MJD (days)')#, fontsize=12)
+                
+                    ax.set_ylabel(r'Count rate (cts/s)')#, fontsize=12)
+                    
+                    if print_name:
+                    # user name and time
+                        ax.text(1.015, 0.0, user +' - '+ localtime, rotation=90, fontsize=8, 
+                                 verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
+                    # eROSITA label
+                        ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10, 
+                                 verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
+                        ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10, 
+                                 verticalalignment='bottom', horizontalalignment='right', transform=ax.transAxes)
+                    # label plot:
+                        ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
+                                 verticalalignment='bottom', horizontalalignment='center', transform=ax.transAxes)
+                    
+                    for i in range(len(vlines)):
+                        ax.vlines(vlines[i][0], -5, 5, colors = vlines[i][1], linestyle = 'dotted', zorder=vlines[i][2])
+                    if show_eRASS:
+                        if time_axis == 'mjd':
+                            ax.vlines(self.__ero_starttimes, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-2)
+                        elif time_axis == 's':
+                            ax.vlines((np.array(self.__ero_starttimes) - self.__mjdref) * 3600 * 24, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-4)
+           
+                    fig1.tight_layout()
+           
+                    pltfile = outfile + ".pdf"
+                    plt.savefig(pltfile)
+                    logfile.writelines(f'{pltfile} created')
+                    pltfile = outfile + ".eps"
+                    plt.savefig(pltfile)
+                    logfile.writelines(f'{pltfile} created')
+                    pltfile = outfile + ".png"
+                    plt.savefig(pltfile)
+                    logfile.writelines(f'{pltfile} created')
             
         logfile.close()
+    
+    def __extract_spectrum(self, logfile, mode, filelist):
+        replacements = [['@source_name', self.__src_name],
+                        ['@main_name', self.__working_dir],
+                        ['@result_dir', self.__working_dir + '/working'],
+                        ['@region_code', self.__skytile],
+                        ['@sources_list', filelist],
+                        ['@right_ascension', self.__RA],
+                        ['@declination', self.__Dec],
+                        ['@esass_location', self.__esass],
+                        ['@group', self.__grouping],
+                        ['@mode', mode]]
+        sh_file = self.__working_dir + '/working/extract_spectrum.sh'
+        self.__replace_in_ssh(sh_file, replacements)
+        process = subprocess.Popen([sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait() # Wait for process to complete.
+
+        # iterate on the stdout line by line
+        for line in process.stdout.readlines():
+            logfile.writelines(line)
+
+    
+    def plot_spectra(self, mode = 'all', log_prefix = 'spectrum', log_suffix = 'autosafe.log'):
+        if self.__skytile == '' or self.__filelist == '':
+            raise Exception('Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
+        if not self.__LC_extracted:
+            self.extract_lc()
+        return
     
     def run_standard(self):
         '''
@@ -717,3 +809,39 @@ class HiMaXBi:
         self.plot_lc_full()
         self.plot_lc_parts()
         #XXX
+        
+        
+        # if not self.__create_epochs:
+        #     for i in range(len(self.__gap_centres) + 1):
+        #         if i == 0:
+        #             lower = self.__time_max
+        #             upper = self.__gap_centres[i]
+        #         elif i == len(self.__gap_centres):
+        #             lower = self.__gap_centres[i]
+        #             upper = self.__time_max
+        #         else:
+        #             lower = self.__gap_centres[i]
+        #             upper = self.__gap_centres[i+1]
+        #         temp_files = []
+        #         for file in self.__filelist.split(sep = ' '):
+        #             with fits.open(file) as hdulist:
+        #                 times = hdulist[1].data.field('TIME')
+        #             if (times < upper).all() and (times > lower).all():
+        #                 temp_files.append(file)
+        #         eRASSi = []
+        #         for path in temp_files:
+        #             temp = path[len(self.__data_dir)-1:]
+        #             eRASSi.append(temp[temp.find('em'):temp.find('em') + 5])
+        #         eRASSi.sort()
+        #         mode = ''
+        #         for j, entry in enumerate(eRASSi):
+        #             if j == 0:
+        #                 mode += entry
+        #             else:
+        #                 mode += f'_{entry}'
+        #         temp_filelist = ''
+        #         for j, entry in enumerate(temp_files):
+        #             if j == 0:
+        #                 temp_filelist += entry
+        #             else:
+        #                 temp_filelist += f' {entry}'
