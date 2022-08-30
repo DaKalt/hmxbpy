@@ -1,5 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 30 04:23:18 2022
+
+@author: kald
+"""
+
 from HiMaXBipy.io.package_data import get_path_of_data_dir
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis
+from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 import os
 import shutil
 import sys, fileinput
@@ -10,6 +19,7 @@ import time
 import numpy as np
 import getpass
 import warnings
+from xspec import *
 
 class HiMaXBi:
     def __init__(self, src_name, working_dir, data_dir):
@@ -70,6 +80,8 @@ class HiMaXBi:
         self.__ero_starttimes = [58828, 59011, 59198, 59381, 59567]
         self.__energy_bins = [[0.2, 8.0]]
         self.__grouping = '1'
+        self.__ownership = 'x'
+        self.__distance = 50.
     
     def __replace_in_ssh(self, path, replacements):
         '''
@@ -109,6 +121,24 @@ class HiMaXBi:
                     raise Exception('The energies must be given in keV and must follow 0.2 <= E_min < E_max <= 8.0.')
         self.__energy_bins = np.float64(np.array(bins)).tolist()
         self.__LC_extracted = False
+    
+    def set_distance(self, distance):
+        '''
+        Parameters
+        ----------
+        distance : float or str
+            Distance to observed object in kpc to calculate Flux.
+        Returns
+        -------
+        Sets distance to source in kpc.
+
+        '''
+        if type(distance) != float and type(distance) != str:
+            raise Exception('distance must be a float or string.')
+        try:
+            self.__distance = float(distance)
+        except TypeError:
+            raise Exception('distance must be convertible to float.')
 
     
     def set_mjd_ref(self, mjdref):
@@ -205,6 +235,14 @@ class HiMaXBi:
         '''
         if type(filelist) != str:
             raise Exception('filelist must be string.')
+        filelist = filelist.strip()
+        if filelist[1] == 'b':
+            self.__ownership = 'b'
+        elif filelist[1] == 'm':
+            self.__ownership = 'm'
+        else:
+            self.__ownership = 'x'
+            warnings.warn('Unknown ownership.')
         temp1 = filelist
         temp3 = ''
         while temp1.find(' ') != -1:
@@ -219,7 +257,7 @@ class HiMaXBi:
         self.__filelist = temp3
         self.__LC_extracted = False
     
-    def set_LC_binning(self, binning):
+    def set_LC_binning(self, lc_binning):
         '''
         Parameters
         ----------
@@ -227,13 +265,15 @@ class HiMaXBi:
             Set the initial binning of the lightcurve in seconds.
 
         '''
-        if not (type(binning) == str or type(binning) == float):
-            raise Exception('binning must be a string or float.')
+        if not (type(lc_binning) == str or type(lc_binning) == float):
+            raise Exception('lc_binning must be a string or float.')
         try:
-            float(binning)
+            float(lc_binning)
         except ValueError:
-            raise Exception('binning must be a number.')
-        self.__binning = str(binning)
+            raise Exception('lc_binning must be a number.')
+        if float(lc_binning) <= 0:
+            raise Exception('lc_binning must be >0.')
+        self.__LC_prebinning = str(lc_binning)
         self.__LC_extracted = False
     
     def set_grouping(self, grouping):
@@ -281,7 +321,7 @@ class HiMaXBi:
                             ['@right_ascension', self.__RA],
                             ['@declination', self.__Dec],
                             ['@esass_location', self.__esass],
-                            ['@binning', self.__binning],
+                            ['@binning', self.__LC_prebinning],
                             ['@emin', bin_e[0]],
                             ['@emax', bin_e[1]]]
             sh_file = self.__working_dir + '/working/extract_lc.sh'
@@ -295,32 +335,50 @@ class HiMaXBi:
                     for line in process.stdout.readlines():
                         logfile.writelines(line)
         self.__LC_extracted = True
-        self.__find_gap_centres(60 * 60 * 24 * 30) #one month gap minimum to sort out possible short gaps due to problems during observation
+        self.__find_obs_periods(60 * 60 * 24 * 30) #one month gap minimum to sort out possible short gaps due to problems during observation
         self.__eRASS_vs_epoch()
     
-    def __find_gap_centres(self, gapsize):
+    def __find_obs_periods(self, gapsize):
         with fits.open(f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s020_LightCurve_00001.fits') as hdulist:
             time = hdulist[1].data.field('TIME').tolist().sort()
-        self.__gap_centres = []
+        self.__obs_periods = []
         for i in range(len(time) - 1):
+            if i == 0:
+                temp = [time[i] - 2 * self.__LC_prebinning] #to definitely not lose any events
+            if i == len(time) - 2:
+                temp.append(time[i+1] + 2 * self.__LC_prebinning)#to definitely not lose any events
+                self.__obs_periods.append(temp)
             if time[i + 1] - time[i] > gapsize:
-                self.__gap_centres.append((time[i + 1] - time[i]) / 2.)
+                temp.append(time[i] + 2 * self.__LC_prebinning)
+                self.__obs_periods.append(temp)
+                temp = [time[i+1] - 2 * self.__LC_prebinning]
+        self.__obs_periods = np.array(self.__obs_periods) / 3600. / 24. + self.__mjdref
     
     def __eRASS_vs_epoch(self):
-        eRASSi = self.__filelist.split(sep = ' ')
         self.__create_epochs = False
-        times_list = []
-        for entry in eRASSi:
-            with fits.open(entry) as hdulist:
-                times_list.append(hdulist[1].data.field('TIME').tolist())
-        for i in range(len(eRASSi)):
-            for entry in self.__gap_centres:
-                if entry > min(times_list[i]) and entry < max(times_list[i]):
+        self.__period_names = []
+        for i, period in enumerate(self.__obs_periods):
+            for date in self.__ero_starttimes:
+                if period[0] < date and period[1] > date:
                     self.__create_epochs = True
-        self.__time_max = max(max(times_list)) + 1
-        self.__time_min = min(min(times_list)) - 1
+        if self.__create_epochs:
+            for i in range(1, len(self.__obs_periods) + 1):
+                self.__period_names.append(f'epoch{i}')
+        else:
+            for period in self.__obs_periods:
+                for j in range(len(self.__ero_starttimes)):
+                    if j == 0:
+                        if period[1] < self.__ero_starttimes[j]:
+                            self.__period_names.append(f'e{self.__ownership}00')
+                    if j == len(self.__ero_starttimes) - 1:
+                        if period[0] > self.__ero_starttimes[j]:
+                            self.__period_names.append(f'e{self.__ownership}0{j + 1}')
+                        continue
+                    if period[0] > self.__ero_starttimes[j] and period[1] < self.ero_starttimes[j + 1]:
+                        self.__period_names.append(f'e{self.__ownership}0{j + 1}')
+            
     
-    def plot_lc_full(self, fracexp = '0.15', mincounts = '10', mode = 'ul', show_eRASS = True, logname = 'lc_full_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, E_bins = [[0.2, 8.0]]):
+    def plot_lc_full(self, fracexp = '0.15', mincounts = '10', mode = 'ul', show_eRASS = True, logname = 'lc_full_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, E_bins = [], lc_binning = -1):
         '''
         Parameters
         ----------
@@ -362,6 +420,8 @@ class HiMaXBi:
             Sets the approximate number of tickmarks along the x axis. The default is 8.0.
         E_bins : array-like (n,2), optional
             Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [[0.2, 8.0]]
+        lc_binning : str or float, optional
+            Sets initial lc binsize in seconds. The default is -1 (meaning the current value is not changeds)
 
         Returns
         -------
@@ -433,7 +493,9 @@ class HiMaXBi:
                 elif line[2] >= -1:
                     raise Exception('The third entry in each line of vlines needs to be a negative integer < -2.')
         
-        if np.array(E_bins).tolist() != self.__energy_bins:
+        if lc_binning != -1:
+            self.LC_prebinning(lc_binning = lc_binning)
+        if np.array(E_bins).tolist() != []:
             self.set_Ebins(bins = E_bins)
         if not self.__LC_extracted:
             self.extract_lc()
@@ -532,7 +594,7 @@ class HiMaXBi:
             
         logfile.close()
 
-    def plot_lc_parts(self, fracexp = '0.15', mincounts = '10', mode = 'mincounts_ul', show_eRASS = True, logname = 'lc_parts_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, eRASSi = [], E_bins = [[0.2, 8.0]]):
+    def plot_lc_parts(self, fracexp = '0.15', mincounts = '10', mode = 'mincounts_ul', show_eRASS = True, logname = 'lc_parts_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, eRASSi = [], E_bins = [], lc_binning = -1):
         '''
         Parameters
         ----------
@@ -575,14 +637,17 @@ class HiMaXBi:
         eRASSi : array-like of ints
             List of from which eRASS eventfiles were used. The default is [].
         E_bins : array-like (n,2), optional
-            Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [[0.2, 8.0]]
-        #XXX add timebins 
+            Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [] (meaning the current value is not changed)
+        lc_binning : str or float, optional
+            Sets initial lc binsize in seconds. The default is -1 (meaning the current value is not changeds)
 
         Returns
         -------
         Creates LC of eRASSi/epochs.
 
         '''
+        if not (type(lc_binning) == str or type(lc_binning) == float):
+            raise Exception('lc_binning must be a string or float.')
         if type(logname) != str:
             raise Exception('logname must be a string.')
         if type(mincounts) != str and type(mincounts) != float and type(mincounts) != int:
@@ -658,18 +723,17 @@ class HiMaXBi:
         if eRASSi != []:
             warnings.warn('Use of eRASSi is currently not supported.')
         
-        if np.array(E_bins).tolist() != self.__energy_bins:
+        if lc_binning != -1:
+            self.LC_prebinning(lc_binning = lc_binning)
+        if np.array(E_bins).tolist() != []:
             self.set_Ebins(bins = E_bins)
         if not self.__LC_extracted:
             self.extract_lc()
         
         logfile = open(self.__working_dir + '/logfiles/analysis/' + logname, 'w')
         
-        for i in range(1, len(self.__gap_centres) + 2):
-            if self.__create_epochs:
-                naming = f'epoch{i}'
-            else:
-                naming = f'em0{i}'
+        for i, period in enumerate(self.__obs_periods):
+            naming = self.__period_names[i]
             
             localtime = time.asctime(time.localtime(time.time()))
             
@@ -691,12 +755,7 @@ class HiMaXBi:
                     else:
                         pfile = f'{self.__working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
                         outfile = f'{self.__working_dir}/results/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
-                    if i == 1:
-                        selection = f'FRACEXP>{fracexp} && TIME < {self.__gap_centres[0]}'
-                    elif i == len(self.__gap_centres) + 1:
-                        selection = f'FRACEXP>{fracexp} && TIME > {self.__gap_centres[-1]}'
-                    else:
-                        selection = f'FRACEXP>{fracexp} && TIME < {self.__gap_centres[i-1]} && TIME > {self.__gap_centres[i-2]}'
+                    selection = f'FRACEXP>{fracexp} && TIME < {period[1]} && TIME > {period[0]}'
                     replacements = [['@infile', f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
                                     ['@pfile', f'{pfile}.fits'],
                                     ['@selection', selection]]
@@ -792,11 +851,51 @@ class HiMaXBi:
             logfile.writelines(line)
 
     
-    def plot_spectra(self, mode = 'all', log_prefix = 'spectrum', log_suffix = 'autosafe.log'):
+    def plot_spectra(self, mode = 'all', log_prefix = 'spectrum', log_suffix = 'autosafe.log', Z = -1, distance = -1, skip_varabs = False, absorbtion = 6 * 10 ** -2, rebin = True, rescale_params = [], model_file = ''):
         if self.__skytile == '' or self.__filelist == '':
             raise Exception('Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
         if not self.__LC_extracted:
             self.extract_lc()
+        return
+    
+    def plot_spectra_simultaneous(self, table_name, rebin, mode):
+        file_list = ''
+        for i, entry in enumerate(self.__filenames.split(sep = ' ')):
+            self.__extract_spectrum(f'spectra_{mode}_extraction.log', mode, entry)
+            if i == 0:
+                file_list += f'{self.__working_dir}/working/{self.__src_name}_{self.__region}_eROSITA_PATall_TMon020_SourceSpec_00001_g{self.__grouping}.fits'
+            else:
+                file_list += f'{i+1}:{i+1} {self.__working_dir}/working/{self.__src_name}_{self.__region}_eROSITA_PATall_TMon020_SourceSpec_00001_g{self.__grouping}.fits'
+        bands = {}
+        for t, pair in enumerate(self.__energy_bins):
+            bands[f'table_{t}'] = open(f'{table_name}_simultaneous_{pair[0]}keV_{pair[1]}keV.tex')
+            
+            bands[f'table_{t}'].write('\\begin{{tabular}}{{cccccc}}\n')
+            bands[f'table_{t}'].write('\\hline\\hline\n')
+            bands[f'table_{t}'].write('Data & Part & Power-law & N$_{{\\rm H, varab}}$ & \\mbox{{F$_{{\\rm x}}$}} & \\mbox{{L$_{{\\rm x}}$}} \\\\ \n')
+            bands[f'table_{t}'].write('-- & -- & index & $\\times 10^{{20}}$ cm$^{{-2}}$ & $\\times$erg cm$^{{-2}}$s$^{{-1}}$ & $\\times$erg s$^{{-1}}$ \\\\ \n')
+            bands[f'table_{t}'].write('\\hline\n')
+            bands[f'table_{t}'].write('& & & & & \\\\ \n')
+            
+            AllData(file_list)
+            AllData.ignore('bad')
+            AllData.ignore('*:**-0.2 8.0-**')
+
+            epoch = 'epoch1:5 simultaneous'
+
+            exec(open(os.getenv("HOME") + f"/galaxy/eROSITA/david_test/xspec_model_{region}.py").read())
+
+            for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
+                os.rename(f'{product_dir}xspec_part{part}.log', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.log')
+                os.rename(f'{product_dir}xspec_part{part}.ps', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.ps')
+                os.rename(f'{product_dir}xspec_part{part}.qdp', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.qdp')
+                os.rename(f'{product_dir}xspec_part{part}.pco', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.pco')
+            
+    
+    def plot_spectra_merged():
+        return
+    
+    def plot_spectra_individual():
         return
     
     def run_standard(self):
