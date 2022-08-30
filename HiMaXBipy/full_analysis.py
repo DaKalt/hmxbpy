@@ -851,14 +851,199 @@ class HiMaXBi:
             logfile.writelines(line)
 
     
-    def plot_spectra(self, mode = 'all', log_prefix = 'spectrum', log_suffix = 'autosafe.log', Z = -1, distance = -1, skip_varabs = False, absorbtion = 6 * 10 ** -2, rebin = True, rescale_params = [], model_file = ''):
+    def plot_spectra(self, mode = 'all', log_prefix = 'spectrum', log_suffix = 'autosafe.log', Z = -1, distance = -1, skip_varabs = False, absorption = 6 * 10 ** -2, rebin = True, rebin_params = [3, 10], rescale = False, rescale_F = [1e-6, 1], rescale_chi = [-5, 5], model_file = '', save_settings = False, grouping = -1, fit_statistic = 'cstat', colors = [], markers = [], title = '', varabs_starting_pars = [], plot_command = ["ldata", "delchi"], return_array = False, conf_contours = False):
+        '''
+        Parameters
+        ----------
+        mode : str, optional
+            Sets how data should be arranged for analysis. 'simultaneous' fits all eRASS spectra simultaneously (powerlaw index and absorption parameters are tied, normalisation is free), 'merged' creates a single spectrum of all existing data, 'individual' fits each eRASS/epoch individually with no parameters tied, 'all' does each of the possibilities mentioned. The default is 'all'.
+        log_prefix : str, optional
+            Sets a prefix for logfiles. The default is 'spectrum'.
+        log_suffix : str, optional
+            Sets a suffix for logfiles (including data type extension). The default is 'autosafe.log'.
+        Z : float or str, optional
+            Sets the metalicity to use for the varabs model (e.g. '0.49' for LMC sources). The default is -1 which uses the previously set metalicity.
+        distance : float or str, optional
+            Sets the distance to the source in kpc to calculate luminosities. The default is -1 which uses the previously set value (default saved is 50).
+        skip_varabs : bool, optional
+            Skips model fitting of models using varabs (can be used for low count data to reduce computation time since the varabs fit usually does not converge then). The default is False.
+        absorption : float or str, optional
+            Sets the MW absorption modeled by Tbabs. The default is 6 * 10 ** -2.
+        rebin : bool, optional
+            Rebin energy bins during plotting (does not influence fit). The default is True.
+        rebin_params :  int array-like (2,), optional
+            Sets rebin parameters for plotting. The default is [3, 10].
+        rescale : bool, optional
+            Rescale y axis during plotting (does not influence fit). The default is False.
+        rescale_F :  float array-like (2,), optional
+            Sets rescale parameters for top plot during plotting. The default is [1e-6, 1].
+        rescale_chi :  float array-like (2,), optional
+            Sets rescale parameters for bottom plot during plotting. The default is [-5, 5].
+        model_file : str, optional
+            Loads a *.xcm setting file with model and plotting settings. When used no additional settings are done, which means the file must always include both model and plotting settings. The default is ''.
+        save_settings : bool, optional
+            If True a setting file (*.xcm) with all plot and model settings used is saved for each fit done with the corresponding names. The default is False.
+        grouping : int or str, optional
+            Sets the minimum number of events per energy bin during spectrum extraction. The default is -1 which uses the previously set value (default saved is 1).
+        fit_statistic : str, optional
+            Sets the fit-statistic used. Possible entries are 'cstat' and 'chi'. If set to 'chi' a grouping parameter <20 will be overwritten to 20. Future releases will allow 'bxa' and '3ml' as input. The default is 'cstat'.
+        colors : array-like (n,), optional
+            If set, overwrites default colors during plotting. n has to be equal to the number of datasets used (number of eRASS/epochs). The 0th component will be used for merged and individual spectra. Entries have to be integers. The default is [].
+        markers : array-like (n,), optional
+            If set, overwrites default markers during plotting. n has to be equal to the number of datasets used (number of eRASS/epochs). The 0th component will be used for merged and individual spectra. Entries have to be integers. The default is [].
+        title : str, optional
+            Set title of spectrum plots. The default is ''.
+        varabs_starting_pars : array-like (2,), optional
+            Sets starting value of powerlaw index and absorption for models including varabs. The default is [1, absorption] (absorption parameter set before or 6 * 10 ** -2 if left to default).
+        plot_command : array-like (2,), optional
+            Sets the two panels to be plot (must be available in xspec). The default is ["ldata", "delchi"]. Example alternative ["ldata", "rat"]
+        return_array : bool, optional
+            If True returns a numpy array of model and data points. Not available yet, will be included in future releases. The default is False.
+        conf_contours : bool, optional
+            If True plots confidence contours of model parameters. Not available yet, will be included in future releases. The default is False.
+
+        '''
         if self.__skytile == '' or self.__filelist == '':
             raise Exception('Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
         if not self.__LC_extracted:
             self.extract_lc()
-        return
+        if type(mode) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if mode != 'all' and mode != 'individual' and mode != 'merged' and mode != 'simultaneous':
+                raise Exception('mode must be \'individual\', \'merged\', \'simultaneous\' or \'all\'.')
+        if type(log_prefix) != str:
+            raise Exception('log_prefix must be a string.')
+        if type(log_suffix) != str:
+            raise Exception('log_suffix must be a string.')
+        if type(Z) != str and type(Z) != float:
+            raise Exception('Z must be a string or float.')
+        else:
+            try:
+                Z = float(Z)
+                if Z <= 0:
+                    raise Exception('Z must be > 0.')
+            except ValueError:
+                raise Exception('Z must be a number.')
+        if type(distance) != str and type(distance) != float:
+            raise Exception('distance must be a string or float.')
+        else:
+            try:
+                distance = float(distance)
+                if distance <= 0:
+                    raise Exception('distance must be > 0.')
+            except ValueError:
+                raise Exception('distance must be a number.')
+        if type(skip_varabs) != bool:
+            raise Exception('skip_varabs must be a bool.')
+        if type(rebin) != bool:
+            raise Exception('rebin must be a bool.')
+        if type(rescale) != bool:
+            raise Exception('rescale must be a bool.')
+        if type(save_settings) != bool:
+            raise Exception('save_settings must be a bool.')
+        if type(return_array) != bool:
+            raise Exception('return_array must be a bool.')
+        if type(conf_contours) != bool:
+            raise Exception('conf_contours must be a bool.')
+        if type(absorption) != str and type(absorption) != float:
+            raise Exception('absorption must be a string or float.')
+        else:
+            try:
+                absorption = float(absorption)
+                if absorption <= 0:
+                    raise Exception('absorption must be > 0.')
+            except ValueError:
+                raise Exception('absorption must be a number.')
+        if type(rebin_params) != list and type(rebin_params) != np.ndarray:
+            raise Exception('rebin_params must be array-like')
+        else:
+            for entry in rebin_params:
+                if type(entry) != int:
+                    raise Exception('The entries of rebin_params need to be given as int.')
+                if entry <= 0:
+                    raise Exception('The entries of rebin_params need to be >0.')
+            if len(rebin_params) != 2:
+                raise Exception('rebin_params needs exactly 2 entries.')
+        if type(rescale_F) != list and type(rescale_F) != np.ndarray:
+            raise Exception('rescale_F must be array-like')
+        else:
+            for entry in rescale_F:
+                if type(entry) != float:
+                    raise Exception('The entries of rescale_F need to be given as float.')
+                if entry <= 0:
+                    raise Exception('The entries of rescale_F need to be >0.')
+            if len(rescale_F) != 2:
+                raise Exception('rescale_F needs exactly 2 entries.')
+        if type(rescale_chi) != list and type(rescale_chi) != np.ndarray:
+            raise Exception('rescale_chi must be array-like')
+        else:
+            for entry in rescale_chi:
+                if type(entry) != float:
+                    raise Exception('The entries of rescale_chi need to be given as float.')
+                if entry <= 0:
+                    raise Exception('The entries of rescale_chi need to be >0.')
+            if len(rescale_chi) != 2:
+                raise Exception('rescale_chi needs exactly 2 entries.')
+        if type(model_file) != str:
+            raise Exception('model_file must be string.')
+        if not os.path.exists(self.__working_dir + '/' + model_file):
+            raise Exception(f'File {model_file} does not exist.')
+        if type(grouping) != str and type(grouping) != int:
+            raise Exception('grouping must be a string or int.')
+        else:
+            try:
+                temp = float(grouping)
+                grouping = int(grouping)
+                if grouping <= 0 or temp != grouping:
+                    raise Exception('grouping must be an integer > 0.')
+            except ValueError:
+                raise Exception('grouping must be a number.')
+        if type(fit_statistic) != str:
+            raise Exception('fit_statistic must be a string.')
+        else:
+            if fit_statistic != 'chi' and fit_statistic != 'cstat':
+                raise Exception('mode must be \'chi\' or \'cstat\'. (\'3ml\' and \'bxa\' not supported yet.)')
+            if fit_statistic == 'chi':
+                if grouping < 20:
+                    grouping = 20
+        if type(colors) != list and type(colors) != np.ndarray:
+            raise Exception('colors must be array-like')
+        else:
+            for entry in colors:
+                if type(entry) != int:
+                    raise Exception('The entries of colors need to be given as int.')
+            if colors != [] and len(colors) < len(self.__filelist.split(sep = ' ')):
+                raise Exception('If colors are set, they need to be set for every eRASS used.')
+        if type(markers) != list and type(markers) != np.ndarray:
+            raise Exception('markers must be array-like')
+        else:
+            for entry in markers:
+                if type(entry) != int:
+                    raise Exception('The entries of markers need to be given as int.')
+            if markers != [] and len(markers) < len(self.__filelist.split(sep = ' ')):
+                raise Exception('If markers are set, they need to be set for every eRASS used.')
+        if type(title) != str:
+            raise Exception('title must be a string.')
+        if type(varabs_starting_pars) != list and type(varabs_starting_pars) != np.ndarray:
+            raise Exception('varabs_starting_pars must be array-like')
+        else:
+            for entry in varabs_starting_pars:
+                if type(entry) != float:
+                    raise Exception('The entries of varabs_starting_pars need to be given as float.')
+                if entry <= 0:
+                    raise Exception('The entries of varabs_starting_pars need to be >0.')
+            if len(varabs_starting_pars) != 2:
+                raise Exception('varabs_starting_pars needs exactly 2 entries.')
+        if type(plot_command) != list and type(plot_command) != np.ndarray:
+            raise Exception('plot_command must be array-like')
+        else:
+            for entry in plot_command:
+                if type(entry) != float:
+                    raise Exception('The entries of plot_command need to be given as str.')
+        
     
-    def plot_spectra_simultaneous(self, table_name, rebin, mode):
+    def __plot_spectra_simultaneous(self, table_name, rebin, mode):
         file_list = ''
         for i, entry in enumerate(self.__filenames.split(sep = ' ')):
             self.__extract_spectrum(f'spectra_{mode}_extraction.log', mode, entry)
@@ -892,10 +1077,10 @@ class HiMaXBi:
                 os.rename(f'{product_dir}xspec_part{part}.pco', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.pco')
             
     
-    def plot_spectra_merged():
+    def __plot_spectra_merged():
         return
     
-    def plot_spectra_individual():
+    def __plot_spectra_individual():
         return
     
     def run_standard(self):
