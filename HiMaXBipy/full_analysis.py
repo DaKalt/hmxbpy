@@ -3,25 +3,41 @@
 """
 Created on Tue Aug 30 04:23:18 2022
 
-@author: kald
+@author: David Kaltenbrunner
 """
+import fileinput
+import getpass
+import os
+import shutil
+import subprocess
+import sys
+import time
+import warnings
+
+from astropy.io import fits
+import matplotlib.pyplot as plt
+import numpy as np
+from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
-import os
-import shutil
-import sys, fileinput
-import subprocess
-from astropy.io import fits
-import matplotlib.pyplot as plt
-import time
-import numpy as np
-import getpass
-import warnings
-from xspec import *
+
 
 class HiMaXBi:
+    _skytile = ''
+    _filenames = ''
+    _esass = '/home/erosita/sw/eSASSusers_211214/bin/esass-init.sh'
+    _LC_prebinning = '1.0'
+    _LC_extracted = False
+    _mjdref = 51543.875
+    _ero_starttimes = [58828, 59011, 59198, 59381, 59567]
+    _energy_bins = [[0.2, 8.0]]
+    _grouping = '1'
+    _ownership = 'x'
+    _distance = 50.
+    _Z = 0.49
+
     def __init__(self, src_name, working_dir, data_dir):
         '''
         Parameters
@@ -39,56 +55,43 @@ class HiMaXBi:
 
         '''
         if type(src_name) == str:
-            self.__src_name = src_name
+            self._src_name = src_name
         else:
             raise Exception('src_name needs to be of type string.')
-            
+
         if os.path.exists(working_dir) and type(working_dir) == str:
-            self.__working_dir = os.path.abspath(working_dir)
+            self._working_dir = os.path.abspath(working_dir)
         else:
             raise Exception('Not a valid path for a working directory.')
-            
+
         if os.path.exists(data_dir) and type(data_dir) == str:
-            self.__data_dir = os.path.abspath(data_dir)
+            self._data_dir = os.path.abspath(data_dir)
         else:
             raise Exception('Not a valid path for a data directory.')
         self.data_files = ''
 
-        if not os.path.exists(self.__working_dir + '/working'):
-            os.mkdir(self.__working_dir + '/working')
-        if not os.path.exists(self.__working_dir + '/results'):
-            os.mkdir(self.__working_dir + '/results')
-        if not os.path.exists(self.__working_dir + '/logfiles'):
-            os.mkdir(self.__working_dir + '/logfiles')
-        if not os.path.exists(self.__working_dir + '/logfiles/extraction'):
-            os.mkdir(self.__working_dir + '/logfiles/extraction')
-        if not os.path.exists(self.__working_dir + '/logfiles/analysis'):
-            os.mkdir(self.__working_dir + '/logfiles/analysis')
-        
-        self.__sh_dir__ = get_path_of_data_dir()
-        
-        for (path, directories, filenames) in os.walk(self.__sh_dir__):
+        for subdir in ['/working', '/results', '/logfiles']:
+            if not os.path.exists(self._working_dir + subdir):
+                os.mkdir(self._working_dir + subdir)
+        for subdir in ['/results', 'logfiles']:
+            for subsubdir in ['/lightcurves', '/spectra']:
+                if not os.path.exists(self._working_dir + subdir + subsubdir):
+                    os.mkdir(self._working_dir + subdir + subsubdir)
+
+        self._sh_dir_ = get_path_of_data_dir()
+
+        for (path, directories, filenames) in os.walk(self._sh_dir_):
             for filename in filenames:
-                shutil.copy(self.__sh_dir__ + filename, self.__working_dir + '/working')
-                
-        self.__skytile = ''
-        self.__filenames = ''
-        self.__esass = '/home/erosita/sw/eSASSusers_211214/bin/esass-init.sh'
-        self.__LC_prebinning = '1.0'
-        self.__LC_extracted = False
-        self.__mjdref = 51543.875
-        self.__ero_starttimes = [58828, 59011, 59198, 59381, 59567]
-        self.__energy_bins = [[0.2, 8.0]]
-        self.__grouping = '1'
-        self.__ownership = 'x'
-        self.__distance = 50.
-    
-    def __replace_in_ssh(self, path, replacements):
+                shutil.copy(self._sh_dir_ + filename,
+                            self._working_dir + '/working')
+
+    def _replace_in_ssh(self, path, replacements):
         '''
         Parameters
         ----------
         replacements : array-like shape (n, 2)
-            array of n keywords to replace in ssh file; 0th entry in each pair states the original keyword, 1st entry states the new keyword
+            array of n keywords to replace in ssh file; 0th entry in each pair
+            states the original keyword, 1st entry states the new keyword
         path : str
             path of ssh file in which to replace entries
 
@@ -101,13 +104,15 @@ class HiMaXBi:
             for line in fileinput.input(path, inplace=True):
                 line = line.replace(pair[0], pair[1])
                 sys.stdout.write(line)
-    
+
     def set_Ebins(self, bins):
-        '''
+        '''Set energy bins to be analysed in keV. The default is [0.2, 8.0].
+
         Parameters
         ----------
         bins : array-like (n,2), optional
-            Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [[0.2, 8.0]]
+            Sets energy bins that should be analysed. For each bin E_min and
+            E_max must be given in keV. The default is [[0.2, 8.0]]
         '''
         if type(bins) != list and type(bins) != np.ndarray:
             raise Exception('bins must be array-like')
@@ -116,88 +121,100 @@ class HiMaXBi:
                 if len(line) != 2:
                     raise Exception('Each line in bins needs 2 entries.')
                 if (type(line[0]) != float and type(line[0]) != int) or (type(line[1]) != float and type(line[1]) != int):
-                    raise Exception('The entries of each line of bins need to be the minimum and maximum energies given in keV of the energy bins to analyse given as float or int.')
+                    raise Exception(
+                        'The entries of each line of bins need to be the minimum and maximum energies given in keV of the energy bins to analyse given as float or int.')
                 elif line[0] < 0.2 or line[0] > 8.0 or line[1] < 0.2 or line[1] > 8.0 or line[0] >= line[1]:
-                    raise Exception('The energies must be given in keV and must follow 0.2 <= E_min < E_max <= 8.0.')
-        self.__energy_bins = np.float64(np.array(bins)).tolist()
-        self.__LC_extracted = False
-    
+                    raise Exception(
+                        'The energies must be given in keV and must follow 0.2 <= E_min < E_max <= 8.0.')
+        self._energy_bins = np.float64(np.array(bins)).tolist()
+        self._LC_extracted = False
+
     def set_distance(self, distance):
-        '''
+        '''Set distance to source in kpc. The default is 50.
+
         Parameters
         ----------
         distance : float or str
             Distance to observed object in kpc to calculate Flux.
-        Returns
-        -------
-        Sets distance to source in kpc.
 
         '''
         if type(distance) != float and type(distance) != str:
             raise Exception('distance must be a float or string.')
         try:
-            self.__distance = float(distance)
+            if float(distance) <= 0:
+                raise Exception('distance must be > 0.')
+            self._distance = float(distance)
         except TypeError:
             raise Exception('distance must be convertible to float.')
 
-    
-    def set_mjd_ref(self, mjdref):
+    def set_metallicity(self, Z):
+        '''Set metallicity at the source location. The default is 0.49 for LMC.
+
+        Parameters
+        ----------
+        Z : float or str
+            Distance to observed object in kpc to calculate Flux.
+
         '''
+        if type(Z) != float and type(Z) != str:
+            raise Exception('Z must be a float or string.')
+        try:
+            if float(Z) <= 0:
+                raise Exception('Z must be > 0.')
+            self._Z = float(Z)
+        except TypeError:
+            raise Exception('Z must be convertible to float.')
+
+    def set_mjd_ref(self, mjdref):
+        '''Set Reference MJD date for eROSITA times. The default is 51543.875.
+
         Parameters
         ----------
         mjdref : float or str
             Reference value to transform eROSITA times to MJD.
-        Returns
-        -------
-        Sets reference value to transform eROSITA times to MJD.
 
         '''
         if type(mjdref) != float and type(mjdref) != str:
             raise Exception('mjdref must be a float or string.')
         try:
-            self.__mjdref = float(mjdref)
+            self._mjdref = float(mjdref)
         except TypeError:
             raise Exception('mjdref must be convertible to float.')
-    
+
     def set_esass(self, esass_location):
-        '''
+        '''Set path to eSASS in use.
+
         Parameters
         ----------
         esass_location : str
             full path of esass initialisation script.
-
-        Returns
-        -------
-        Sets path of esass in use.
 
         '''
         if type(esass_location) != str:
             raise Exception('esass_location must be string.')
         if not os.path.exists(esass_location):
             raise Exception(f'File {esass_location} does not exist.')
-        self.__esass = esass_location
-        self.__LC_extracted = False
-    
+        self._esass = esass_location
+        self._LC_extracted = False
+
     def set_skytile(self, skytile):
-        '''
+        '''Sets name of the skytile (e.g. 080156) in which the source lies.
+
         Parameters
         ----------
         skytile : str
             Name of the skytile in which the source lies.
 
-        Returns
-        -------
-        Sets name of the skytile (e.g. 080156) in which the source lies.
-
         '''
         if type(skytile) == str:
-            self.__skytile = skytile
-            self.__LC_extracted = False
+            self._skytile = skytile
+            self._LC_extracted = False
         else:
             raise Exception('Not a valid skytile name (must be string).')
-    
+
     def set_radec(self, RA, Dec):
-        '''
+        '''Sets RA and Dec for the source.
+
         Parameters
         ----------
         RA : float
@@ -205,60 +222,50 @@ class HiMaXBi:
         Dec : TYPE
             Declination of the source in J2000.
 
-        Returns
-        -------
-        Sets RA and Dec for the source.
-
         '''
         if type(RA) != float or type(Dec) != float:
             raise Exception('Ra and Dec must be given as floats.')
-        self.__RA = RA
-        self.__Dec = Dec
-        self.__LC_extracted = False
-    
+        self._RA = RA
+        self._Dec = Dec
+        self._LC_extracted = False
+
     def set_filelist(self, filelist):
-        '''
+        '''Set the names of eventfiles to use for analysis.
+
         Parameters
         ----------
         filelist : str
-            List of names of eventfiles to use separated by spaces and without foldernames.
-
-        Raises
-        ------
-        Exception
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-
+            List of names of eventfiles to use separated by spaces and without
+            foldernames.
         '''
         if type(filelist) != str:
             raise Exception('filelist must be string.')
         filelist = filelist.strip()
         if filelist[1] == 'b':
-            self.__ownership = 'b'
+            self._ownership = 'b'
         elif filelist[1] == 'm':
-            self.__ownership = 'm'
+            self._ownership = 'm'
         else:
-            self.__ownership = 'x'
+            self._ownership = 'x'
             warnings.warn('Unknown ownership.')
         temp1 = filelist
         temp3 = ''
         while temp1.find(' ') != -1:
             temp2 = temp1[:temp1.find(' ')]
             temp1 = temp1[temp1.find(' '):].strip()
-            if not os.path.exists(self.__data_dir + '/' + temp2):
+            if not os.path.exists(self._data_dir + '/' + temp2):
                 raise Exception(f'File {temp2} does not exist.')
-            temp3 += self.__data_dir + '/' + temp2
-        if not os.path.exists(self.__data_dir + '/' + temp1):
+            temp3 += self._data_dir + '/' + temp2
+        if not os.path.exists(self._data_dir + '/' + temp1):
             raise Exception(f'File {temp1} does not exist.')
-        temp3 += self.__data_dir + '/' + temp1
-        self.__filelist = temp3
-        self.__LC_extracted = False
-    
+        temp3 += self._data_dir + '/' + temp1
+        self._filelist = temp3
+        self._LC_extracted = False
+
     def set_LC_binning(self, lc_binning):
-        '''
+        '''Set the initial binning of lightcurves for extraction in seconds.
+        The default is 1s.
+
         Parameters
         ----------
         binning : str or float
@@ -273,16 +280,19 @@ class HiMaXBi:
             raise Exception('lc_binning must be a number.')
         if float(lc_binning) <= 0:
             raise Exception('lc_binning must be >0.')
-        self.__LC_prebinning = str(lc_binning)
-        self.__LC_extracted = False
-    
+        self._LC_prebinning = str(lc_binning)
+        self._LC_extracted = False
+
     def set_grouping(self, grouping):
-        '''
+        '''Sets grouping of events per energy bin for spectral analysis. The
+        default is 1.
+
         Parameters
         ----------
         grouping : str or int
-            Set the grouping of extracted spectra. If c-statistic is used grouping=1 is recommended, for chi2 statistic grouping=20 is recommended.
-
+            Set the grouping of extracted spectra. If c-statistic is used
+            grouping=1 is recommended, for chi2 statistic grouping=20 is
+            recommended.
         '''
         if not (type(grouping) == str or type(grouping) == int):
             raise Exception('binning must be a string or float.')
@@ -293,16 +303,17 @@ class HiMaXBi:
         if int(grouping) < 1:
             raise Exception('grouping must be an integer >= 1.')
         if float(grouping) != int(grouping):
-            warnings.warn('grouping is treated as an integer. Float values will be rounded down to the next integer.')
-        self.__grouping = str(int(grouping))
-        
-    def extract_lc(self, logname = 'lc_extract_autosave.log'):
+            warnings.warn(
+                'grouping is treated as an integer. Float values will be rounded down to the next integer.')
+        self._grouping = str(int(grouping))
+
+    def _extract_lc(self, logname='lc_extract_autosave.log'):
         '''
         Parameters
         ----------
         logname : str
             name of logfile to safe output of sh script to.
-            
+
         Returns
         -------
         Creates sh files to extract light curve fits files and runs them.
@@ -310,102 +321,126 @@ class HiMaXBi:
         '''
         if type(logname) != str:
             raise Exception('logname must be a string.')
-        if self.__skytile == '' or self.__filelist == '':
-            raise Exception('Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
-        for bin_e in self.__energy_bins:
-            replacements = [['@source_name', self.__src_name],
-                            ['@main_name', self.__working_dir],
-                            ['@result_dir', self.__working_dir + '/working'],
-                            ['@region_code', self.__skytile],
-                            ['@sources_list', self.__filelist],
-                            ['@right_ascension', self.__RA],
-                            ['@declination', self.__Dec],
-                            ['@esass_location', self.__esass],
-                            ['@binning', self.__LC_prebinning],
+        if self._skytile == '' or self._filelist == '':
+            raise Exception(
+                'Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
+        for bin_e in self._energy_bins:
+            replacements = [['@source_name', self._src_name],
+                            ['@main_name', self._working_dir],
+                            ['@result_dir', self._working_dir + '/working'],
+                            ['@region_code', self._skytile],
+                            ['@sources_list', self._filelist],
+                            ['@right_ascension', self._RA],
+                            ['@declination', self._Dec],
+                            ['@esass_location', self._esass],
+                            ['@binning', self._LC_prebinning],
                             ['@emin', bin_e[0]],
                             ['@emax', bin_e[1]]]
-            sh_file = self.__working_dir + '/working/extract_lc.sh'
-            self.__replace_in_ssh(sh_file, replacements)
-            process = subprocess.Popen([sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            process.wait() # Wait for process to complete.
-    
+            sh_file = self._working_dir + '/working/extract_lc.sh'
+            self._replace_in_ssh(sh_file, replacements)
+            process = subprocess.Popen(
+                [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
+
             # iterate on the stdout line by line
             if not logname == '':
-                with open(f'{self.__working_dir}/logfiles/extraction/{logname}_{bin_e[0]}keV_{bin_e[1]}keV', 'w') as logfile:
+                with open(f'{self._working_dir}/logfiles/lightcurves/{logname}_{bin_e[0]}keV_{bin_e[1]}keV', 'w') as logfile:
                     for line in process.stdout.readlines():
                         logfile.writelines(line)
-        self.__LC_extracted = True
-        self.__find_obs_periods(60 * 60 * 24 * 30) #one month gap minimum to sort out possible short gaps due to problems during observation
-        self.__eRASS_vs_epoch()
-    
-    def __find_obs_periods(self, gapsize):
-        with fits.open(f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s020_LightCurve_00001.fits') as hdulist:
+        self._LC_extracted = True
+        # one month gap minimum to sort out possible short gaps due to problems during observation
+        self._find_obs_periods(60 * 60 * 24 * 30)
+        self._eRASS_vs_epoch()
+
+    def _find_obs_periods(self, gapsize):
+        with fits.open(f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s020_LightCurve_00001.fits') as hdulist:
             time = hdulist[1].data.field('TIME').tolist().sort()
-        self.__obs_periods = []
+        self._obs_periods = []
         for i in range(len(time) - 1):
             if i == 0:
-                temp = [time[i] - 2 * self.__LC_prebinning] #to definitely not lose any events
+                # to definitely not lose any events
+                temp = [time[i] - 2 * self._LC_prebinning]
             if i == len(time) - 2:
-                temp.append(time[i+1] + 2 * self.__LC_prebinning)#to definitely not lose any events
-                self.__obs_periods.append(temp)
+                # to definitely not lose any events
+                temp.append(time[i+1] + 2 * self._LC_prebinning)
+                self._obs_periods.append(temp)
             if time[i + 1] - time[i] > gapsize:
-                temp.append(time[i] + 2 * self.__LC_prebinning)
-                self.__obs_periods.append(temp)
-                temp = [time[i+1] - 2 * self.__LC_prebinning]
-        self.__obs_periods = np.array(self.__obs_periods) / 3600. / 24. + self.__mjdref
-    
-    def __eRASS_vs_epoch(self):
-        self.__create_epochs = False
-        self.__period_names = []
-        for i, period in enumerate(self.__obs_periods):
-            for date in self.__ero_starttimes:
+                temp.append(time[i] + 2 * self._LC_prebinning)
+                self._obs_periods.append(temp)
+                temp = [time[i+1] - 2 * self._LC_prebinning]
+        self._obs_periods = np.array(
+            self._obs_periods) / 3600. / 24. + self._mjdref
+
+    def _eRASS_vs_epoch(self):
+        self._create_epochs = False
+        self._period_names = []
+        for i, period in enumerate(self._obs_periods):
+            for date in self._ero_starttimes:
                 if period[0] < date and period[1] > date:
-                    self.__create_epochs = True
-        if self.__create_epochs:
-            for i in range(1, len(self.__obs_periods) + 1):
-                self.__period_names.append(f'epoch{i}')
+                    self._create_epochs = True
+        if self._create_epochs:
+            for i in range(1, len(self._obs_periods) + 1):
+                self._period_names.append(f'epoch{i}')
         else:
-            for period in self.__obs_periods:
-                for j in range(len(self.__ero_starttimes)):
+            for period in self._obs_periods:
+                for j in range(len(self._ero_starttimes)):
                     if j == 0:
-                        if period[1] < self.__ero_starttimes[j]:
-                            self.__period_names.append(f'e{self.__ownership}00')
-                    if j == len(self.__ero_starttimes) - 1:
-                        if period[0] > self.__ero_starttimes[j]:
-                            self.__period_names.append(f'e{self.__ownership}0{j + 1}')
+                        if period[1] < self._ero_starttimes[j]:
+                            self._period_names.append(f'e{self._ownership}00')
+                    if j == len(self._ero_starttimes) - 1:
+                        if period[0] > self._ero_starttimes[j]:
+                            self._period_names.append(
+                                f'e{self._ownership}0{j + 1}')
                         continue
-                    if period[0] > self.__ero_starttimes[j] and period[1] < self.ero_starttimes[j + 1]:
-                        self.__period_names.append(f'e{self.__ownership}0{j + 1}')
-            
-    
-    def plot_lc_full(self, fracexp = '0.15', mincounts = '10', mode = 'ul', show_eRASS = True, logname = 'lc_full_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, E_bins = [], lc_binning = -1):
-        '''
+                    if period[0] > self._ero_starttimes[j] and period[1] < self.ero_starttimes[j + 1]:
+                        self._period_names.append(
+                            f'e{self._ownership}0{j + 1}')
+
+    def plot_lc_full(self, fracexp='0.15', mincounts='10', mode='ul',
+                     show_eRASS=True, logname='lc_full_autosave.log',
+                     time_axis='mjd', print_name=False, print_datetime=False,
+                     label_style='serif', label_size=12, figsize=[8, 5.5],
+                     colors=[], fileid='', toplab='', separate_TM=False,
+                     vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, E_bins=[],
+                     lc_binning=-1):
+        '''Function to create full lightcurve.
+
         Parameters
         ----------
         fracexp : str or float, optional
-            Fractional exposure lower limit for times taken into account for LC (noise reduction). The default is '0.15'.
+            Fractional exposure lower limit for times taken into account for
+            LC (noise reduction). The default is '0.15'.
         mincounts : str, float or int, optional
-            Minimum number of counts for counts per bin to not be noted as an upper limit as well as minimum number of counts per bin for mode mincounts/mincounts_ul. The default is '10'.
+            Minimum number of counts for counts per bin to not be noted as an
+            upper limit as well as minimum number of counts per bin for mode
+            mincounts/mincounts_ul. The default is '10'.
         mode : str, optional
-            Type of LC to be produced. Either 'ul', 'mincounts' or 'mincounts_ul'. The default is 'ul'.
+            Type of LC to be produced. Either 'ul', 'mincounts' or
+            'mincounts_ul'. The default is 'ul'.
         show_eRASS : bool, optional
-            True to show start/end dates of eRASSi as vertical lines. The default is True.
+            True to show start/end dates of eRASSi as vertical lines. The
+            default is True.
         logname : str, optional
             Name of the logfile. The default is 'lc_full_autosave.log'.
         time_axis : str, optional
-            Defines the unit of time axis. Either 'mjd' or 's'. The default is 'mjd'.
+            Defines the unit of time axis. Either 'mjd' or 's'. The default is
+            'mjd'.
         print_name : bool, optional
             Print name of person who runs the skript. The default is False.
         print_datetime : bool, optional
             Print date-time when skript was run. The default is False.
         label_style : str, optional
-            Sets fontstyle of plots. Any possible style available for matplotlib.pyplot.rc. The default is 'serif'.
+            Sets fontstyle of plots. Any possible style available for
+            matplotlib.pyplot.rc. The default is 'serif'.
         label_size : float or int, optional
             Sets fontsize. The default is 12.
         figsize : array-like (2,), optional
             Sets width and height of figure. The default is [8, 5.5].
         colors : array of str (1,) or (2,), optional
-            Sets colors of plots. Any color available to matplotlib possible. For mode 'ul' and 'mincounts' the first entry is used, for mode 'mincounts_ul' the first entry sets color for 'ul' part, and the second for 'mincounts' part. The default is [].
+            Sets colors of plots. Any color available to matplotlib possible.
+            For mode 'ul' and 'mincounts' the first entry is used, for mode
+            'mincounts_ul' the first entry sets color for 'ul' part, and the
+            second for 'mincounts' part. The default is [].
         fileid : str, optional
             Name of outputfile without filespecific ending. The default is ''.
         toplab : str, optional
@@ -413,19 +448,21 @@ class HiMaXBi:
         separate_TM : bool, optional
             Create LC for each TM. The default is False.
         vlines : array of mjd-color-zorder combinations (n, 3), optional
-            Adds additional vertical lines in the plot at given MJD with given color. The zorder entries need to be distinct negative integers < -2. The default is [].
+            Adds additional vertical lines in the plot at given MJD with given
+            color. The zorder entries need to be distinct negative
+            integers < -2. The default is [].
         ticknumber_y : float or int, optional
-            Sets the approximate number of tickmarks along the y axis. The default is 5.0.
+            Sets the approximate number of tickmarks along the y axis.
+            The default is 5.0.
         ticknumber_x : float or int, optional
-            Sets the approximate number of tickmarks along the x axis. The default is 8.0.
+            Sets the approximate number of tickmarks along the x axis.
+            The default is 8.0.
         E_bins : array-like (n,2), optional
-            Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [[0.2, 8.0]]
+            Sets energy bins that should be analysed. For each bin E_min and
+            E_max must be given in keV. The default is [[0.2, 8.0]]
         lc_binning : str or float, optional
-            Sets initial lc binsize in seconds. The default is -1 (meaning the current value is not changeds)
-
-        Returns
-        -------
-        Creates full LC.
+            Sets initial lc binsize in seconds. The default is -1
+            (meaning the current value is not changeds)
 
         '''
         if type(logname) != str:
@@ -441,7 +478,8 @@ class HiMaXBi:
             raise Exception('mode must be a string.')
         else:
             if mode != 'ul' and mode != 'mincounts' and mode != 'mincounts_ul':
-                raise Exception('mode must be \'ul\', \'mincounts\' or \'mincounts_ul\'')
+                raise Exception(
+                    'mode must be \'ul\', \'mincounts\' or \'mincounts_ul\'')
         if type(fracexp) != str and type(fracexp) != float:
             raise Exception('mincounts must be a string or float.')
         else:
@@ -485,103 +523,131 @@ class HiMaXBi:
                 if len(line) != 3:
                     raise Exception('Each line in vlines needs 3 entries.')
                 if type(line[0]) != float and type(line[0]) != int:
-                    raise Exception('The first entry in each line of vlines needs to be the MJD given as float or int.')
+                    raise Exception(
+                        'The first entry in each line of vlines needs to be the MJD given as float or int.')
                 if type(line[1]) != str:
-                    raise Exception('The second entry in each line of vlines needs to be a matplotlib color given as a string.')
+                    raise Exception(
+                        'The second entry in each line of vlines needs to be a matplotlib color given as a string.')
                 if type(line[2]) != int:
-                    raise Exception('The third entry in each line of vlines needs to be a negative integer < -2.')
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a negative integer < -2.')
                 elif line[2] >= -1:
-                    raise Exception('The third entry in each line of vlines needs to be a negative integer < -2.')
-        
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a negative integer < -2.')
+
         if lc_binning != -1:
-            self.LC_prebinning(lc_binning = lc_binning)
+            self.LC_prebinning(lc_binning=lc_binning)
         if np.array(E_bins).tolist() != []:
-            self.set_Ebins(bins = E_bins)
-        if not self.__LC_extracted:
-            self.extract_lc()
-        logfile = open(self.__working_dir + '/logfiles/analysis/' + logname, 'w')
+            self.set_Ebins(bins=E_bins)
+        if not self._LC_extracted:
+            self._extract_lc()
+        logfile = open(self._working_dir +
+                       '/logfiles/lightcurves/' + logname, 'w')
         localtime = time.asctime(time.localtime(time.time()))
-        
+
         logfile.writelines(localtime + '\n')
         user = getpass.getuser()
         plt.rc('text', usetex=True)
-        plt.rc('font', family=label_style, size = label_size)
-        
+        plt.rc('font', family=label_style, size=label_size)
+
         if separate_TM:
             TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
         else:
             TM_list = [0]
-        
-        for bin_e in self.__energy_bins:
+
+        for bin_e in self._energy_bins:
             for TM in TM_list:
                 if fileid == '':
-                    pfile = f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
-                    outfile = f'{self.__working_dir}/results/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
+                    pfile = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
+                    outfile = f'{self._working_dir}/results/lightcurves/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
                 else:
-                    pfile = f'{self.__working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
-                    outfile = f'{self.__working_dir}/results/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
-                replacements = [['@infile', f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                    pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                    outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                replacements = [['@infile', f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
                                 ['@pfile', f'{pfile}.fits'],
                                 ['@selection', f'FRACEXP>{fracexp}']]
-                sh_file = self.__working_dir + '/working/fselect_lc.sh'
-                self.__replace_in_ssh(sh_file, replacements)
-                
-                fig1 = plt.figure(figsize=(figsize[0],figsize[1]))
+                sh_file = self._working_dir + '/working/fselect_lc.sh'
+                self._replace_in_ssh(sh_file, replacements)
+
+                fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                 ax = fig1.add_subplot(111)
-                
+
                 logfile.writelines(f'Now working on {pfile}.fits')
                 hdulist = fits.open(f'{pfile}.fits')
-                
+
                 if time_axis == 'mjd':
                     xflag = 2
                 elif time_axis == 's':
                     xflag = 1
-                
+
                 if colors == []:
                     colors = ['lightblue', 'black']
-                
+
                 if mode == 'ul':
-                    pxmin, pxmax, pymin, pymax = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
+                    pxmin, pxmax, pymin, pymax = plot_lc_UL(
+                        hdulist=hdulist, ax=ax, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[0])
                 elif mode == 'mincounts':
-                    pxmin, pxmax, pymin, pymax = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
+                    pxmin, pxmax, pymin, pymax = plot_lc_mincounts(
+                        hdulist=hdulist, ax=ax, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[0])
                 elif mode == 'mincounts_ul':
-                    pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, colors = colors[0])
-                    pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[1])
-                    pxmin, pxmax, pymin, pymax = get_boundaries([[pxmin1, pxmax1, pymin1, pymax1], [pxmin2, pxmax2, pymin2, pymax2]])
-                
-                format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y)
-                
+                    pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(
+                        hdulist=hdulist, ax=ax, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        colors=colors[0])
+                    pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(
+                        hdulist=hdulist, ax=ax, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[1])
+                    pxmin, pxmax, pymin, pymax = get_boundaries(
+                        [[pxmin1, pxmax1, pymin1, pymax1],
+                         [pxmin2, pxmax2, pymin2, pymax2]])
+
+                format_axis(ax, pxmin, pxmax, pymin, pymax,
+                            ticknumber_x, ticknumber_y)
+
                 # plot time in s from beginning (xflag=1) or in MJD
                 if time_axis == 's':
-                   ax.set_xlabel(r'Time (s)')#, fontsize=12)
+                    ax.set_xlabel(r'Time (s)')  # , fontsize=12)
                 elif time_axis == 'mjd':
-                   ax.set_xlabel(r'MJD (days)')#, fontsize=12)
-            
-                ax.set_ylabel(r'Count rate (cts/s)')#, fontsize=12)
-                
+                    ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
+
+                ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
+
                 if print_name:
-                # user name and time
-                    ax.text(1.015, 0.0, user +' - '+ localtime, rotation=90, fontsize=8, 
-                             verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
+                    # user name and time
+                    ax.text(1.015, 0.0, user + ' - ' + localtime, rotation=90,
+                            fontsize=8, verticalalignment='bottom',
+                            horizontalalignment='left', transform=ax.transAxes)
                 # eROSITA label
-                    ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10, 
-                             verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
-                    ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10, 
-                             verticalalignment='bottom', horizontalalignment='right', transform=ax.transAxes)
+                    ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10,
+                            verticalalignment='bottom',
+                            horizontalalignment='left', transform=ax.transAxes)
+                    ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10,
+                            verticalalignment='bottom',
+                            horizontalalignment='right', transform=ax.transAxes)
                 # label plot:
                     ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
-                             verticalalignment='bottom', horizontalalignment='center', transform=ax.transAxes)
-                
+                            verticalalignment='bottom',
+                            horizontalalignment='center', transform=ax.transAxes)
+
                 for i in range(len(vlines)):
-                    ax.vlines(vlines[i][0], -5, 5, colors = vlines[i][1], linestyle = 'dotted', zorder=vlines[i][2])
+                    ax.vlines(vlines[i][0], -5, 5, colors=vlines[i]
+                              [1], linestyle='dotted', zorder=vlines[i][2])
                 if show_eRASS:
                     if time_axis == 'mjd':
-                        ax.vlines(self.__ero_starttimes, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-2)
+                        ax.vlines(self._ero_starttimes, -5, 5,
+                                  colors='grey', linestyle='dotted', zorder=-2)
                     elif time_axis == 's':
-                        ax.vlines((np.array(self.__ero_starttimes) - self.__mjdref) * 3600 * 24, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-4)
-       
+                        ax.vlines((np.array(self._ero_starttimes) - self._mjdref) *
+                                  3600 * 24, -5, 5, colors='grey',
+                                  linestyle='dotted', zorder=-4)
+
                 fig1.tight_layout()
-       
+
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
                 logfile.writelines(f'{pltfile} created')
@@ -591,37 +657,54 @@ class HiMaXBi:
                 pltfile = outfile + ".png"
                 plt.savefig(pltfile)
                 logfile.writelines(f'{pltfile} created')
-            
+
         logfile.close()
 
-    def plot_lc_parts(self, fracexp = '0.15', mincounts = '10', mode = 'mincounts_ul', show_eRASS = True, logname = 'lc_parts_autosave.log', time_axis = 'mjd', print_name = False, print_datetime = False, label_style = 'serif', label_size = 12, figsize = [8, 5.5], colors = [], fileid = '', toplab = '', separate_TM = False, vlines = [], ticknumber_y = 5.0, ticknumber_x = 8.0, eRASSi = [], E_bins = [], lc_binning = -1):
-        '''
+    def plot_lc_parts(self, fracexp='0.15', mincounts='10', mode='mincounts_ul',
+                      show_eRASS=True, logname='lc_parts_autosave.log',
+                      time_axis='mjd', print_name=False, print_datetime=False,
+                      label_style='serif', label_size=12, figsize=[8, 5.5],
+                      colors=[], fileid='', toplab='', separate_TM=False,
+                      vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, eRASSi=[],
+                      E_bins=[], lc_binning=-1):
+        '''Function to create lightcurve of eRASSi/epochs.
+
         Parameters
         ----------
         fracexp : str or float, optional
-            Fractional exposure lower limit for times taken into account for LC (noise reduction). The default is '0.15'.
+            Fractional exposure lower limit for times taken into account for LC
+            (noise reduction). The default is '0.15'.
         mincounts : str, float or int, optional
-            Minimum number of counts for counts per bin to not be noted as an upper limit as well as minimum number of counts per bin for mode mincounts/mincounts_ul. The default is '10'.
+            Minimum number of counts for counts per bin to not be noted as an
+            upper limit as well as minimum number of counts per bin for mode
+            mincounts/mincounts_ul. The default is '10'.
         mode : str, optional
-            Type of LC to be produced. Either 'ul', 'mincounts' or 'mincounts_ul'. The default is 'mincounts_ul'.
+            Type of LC to be produced. Either 'ul', 'mincounts' or
+            'mincounts_ul'. The default is 'mincounts_ul'.
         show_eRASS : bool, optional
-            True to show start/end dates of eRASSi as vertical lines. The default is True.
+            True to show start/end dates of eRASSi as vertical lines. The
+            default is True.
         logname : str, optional
             Name of the logfile. The default is 'lc_parts_autosave.log'.
         time_axis : str, optional
-            Defines the unit of time axis. Either 'mjd' or 's'. The default is 'mjd'.
+            Defines the unit of time axis. Either 'mjd' or 's'. The default is
+            'mjd'.
         print_name : bool, optional
             Print name of person who runs the skript. The default is False.
         print_datetime : bool, optional
             Print date-time when skript was run. The default is False.
         label_style : str, optional
-            Sets fontstyle of plots. Any possible style available for matplotlib.pyplot.rc. The default is 'serif'.
+            Sets fontstyle of plots. Any possible style available for
+            matplotlib.pyplot.rc. The default is 'serif'.
         label_size : float or int, optional
             Sets fontsize. The default is 12.
         figsize : array-like (2,), optional
             Sets width and height of figure. The default is [8, 5.5].
         colors : array of str (1,) or (2,), optional
-            Sets colors of plots. Any color available to matplotlib possible. For mode 'ul' and 'mincounts' the first entry is used, for mode 'mincounts_ul' the first entry sets color for 'ul' part, and the second for 'mincounts' part. The default is [].
+            Sets colors of plots. Any color available to matplotlib possible.
+            For mode 'ul' and 'mincounts' the first entry is used, for mode
+            'mincounts_ul' the first entry sets color for 'ul' part, and the
+            second for 'mincounts' part. The default is [].
         fileid : str, optional
             Name of outputfile without filespecific ending. The default is ''.
         toplab : str, optional
@@ -629,21 +712,24 @@ class HiMaXBi:
         separate_TM : bool, optional
             Create LC for each TM. The default is False.
         vlines : array of mjd-color-zorder combinations (n, 3), optional
-            Adds additional vertical lines in the plot at given MJD with given color. The zorder entries need to be distinct negative integers < -2. The default is [].
+            Adds additional vertical lines in the plot at given MJD with given
+            color. The zorder entries need to be distinct negative
+            integers < -2. The default is [].
         ticknumber_y : float or int, optional
-            Sets the approximate number of tickmarks along the y axis. The default is 5.0.
+            Sets the approximate number of tickmarks along the y axis.
+            The default is 5.0.
         ticknumber_x : float or int, optional
-            Sets the approximate number of tickmarks along the x axis. The default is 8.0.
+            Sets the approximate number of tickmarks along the x axis.
+            The default is 8.0.
         eRASSi : array-like of ints
             List of from which eRASS eventfiles were used. The default is [].
         E_bins : array-like (n,2), optional
-            Sets energy bins that should be analysed. For each bin E_min and E_max must be given in keV. The default is [] (meaning the current value is not changed)
+            Sets energy bins that should be analysed. For each bin E_min and
+            E_max must be given in keV. The default is [] (meaning the current
+                                                           value is not changed)
         lc_binning : str or float, optional
-            Sets initial lc binsize in seconds. The default is -1 (meaning the current value is not changeds)
-
-        Returns
-        -------
-        Creates LC of eRASSi/epochs.
+            Sets initial lc binsize in seconds. The default is -1
+            (meaning the current value is not changeds)
 
         '''
         if not (type(lc_binning) == str or type(lc_binning) == float):
@@ -661,7 +747,8 @@ class HiMaXBi:
             raise Exception('mode must be a string.')
         else:
             if mode != 'ul' and mode != 'mincounts' and mode != 'mincounts_ul':
-                raise Exception('mode must be \'ul\', \'mincounts\' or \'mincounts_ul\'')
+                raise Exception(
+                    'mode must be \'ul\', \'mincounts\' or \'mincounts_ul\'')
         if type(fracexp) != str and type(fracexp) != float:
             raise Exception('mincounts must be a string or float.')
         else:
@@ -705,13 +792,17 @@ class HiMaXBi:
                 if len(line) != 3:
                     raise Exception('Each line in vlines needs 3 entries.')
                 if type(line[0]) != float and type(line[0]) != int:
-                    raise Exception('The first entry in each line of vlines needs to be the MJD given as float or int.')
+                    raise Exception(
+                        'The first entry in each line of vlines needs to be the MJD given as float or int.')
                 if type(line[1]) != str:
-                    raise Exception('The second entry in each line of vlines needs to be a matplotlib color given as a string.')
+                    raise Exception(
+                        'The second entry in each line of vlines needs to be a matplotlib color given as a string.')
                 if type(line[2]) != int:
-                    raise Exception('The third entry in each line of vlines needs to be a negative integer < -2.')
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a negative integer < -2.')
                 elif line[2] >= -1:
-                    raise Exception('The third entry in each line of vlines needs to be a negative integer < -2.')
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a negative integer < -2.')
         if type(eRASSi) != list and type(eRASSi) != np.ndarray:
             raise Exception('eRASSi must be array-like.')
         else:
@@ -722,102 +813,126 @@ class HiMaXBi:
             raise Exception('eRASSi must be sorted ascending.')
         if eRASSi != []:
             warnings.warn('Use of eRASSi is currently not supported.')
-        
+
         if lc_binning != -1:
-            self.LC_prebinning(lc_binning = lc_binning)
+            self.LC_prebinning(lc_binning=lc_binning)
         if np.array(E_bins).tolist() != []:
-            self.set_Ebins(bins = E_bins)
-        if not self.__LC_extracted:
-            self.extract_lc()
-        
-        logfile = open(self.__working_dir + '/logfiles/analysis/' + logname, 'w')
-        
-        for i, period in enumerate(self.__obs_periods):
-            naming = self.__period_names[i]
-            
+            self.set_Ebins(bins=E_bins)
+        if not self._LC_extracted:
+            self._extract_lc()
+
+        logfile = open(self._working_dir +
+                       '/logfiles/lightcurves/' + logname, 'w')
+
+        for i, period in enumerate(self._obs_periods):
+            naming = self._period_names[i]
+
             localtime = time.asctime(time.localtime(time.time()))
-            
+
             logfile.writelines(localtime + '\n')
             user = getpass.getuser()
             plt.rc('text', usetex=True)
-            plt.rc('font', family=label_style, size = label_size)
-            
+            plt.rc('font', family=label_style, size=label_size)
+
             if separate_TM:
                 TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
             else:
                 TM_list = [0]
-            
-            for bin_e in self.__energy_bins:
+
+            for bin_e in self._energy_bins:
                 for TM in TM_list:
                     if fileid == '':
-                        pfile = f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
-                        outfile = f'{self.__working_dir}/results/{self.__src_name}_{self.__skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
+                        pfile = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
+                        outfile = f'{self._working_dir}/results/lightcurves/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
                     else:
-                        pfile = f'{self.__working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
-                        outfile = f'{self.__working_dir}/results/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                        pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                        outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
                     selection = f'FRACEXP>{fracexp} && TIME < {period[1]} && TIME > {period[0]}'
-                    replacements = [['@infile', f'{self.__working_dir}/working/{self.__src_name}_{self.__skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                    replacements = [['@infile', f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
                                     ['@pfile', f'{pfile}.fits'],
                                     ['@selection', selection]]
-                    sh_file = self.__working_dir + '/working/fselect_lc.sh'
-                    self.__replace_in_ssh(sh_file, replacements)
-                    
-                    fig1 = plt.figure(figsize=(figsize[0],figsize[1]))
+                    sh_file = self._working_dir + '/working/fselect_lc.sh'
+                    self._replace_in_ssh(sh_file, replacements)
+
+                    fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                     ax = fig1.add_subplot(111)
-                    
+
                     logfile.writelines(f'Now working on {pfile}.fits')
                     hdulist = fits.open(f'{pfile}.fits')
-                    
+
                     if time_axis == 'mjd':
                         xflag = 2
                     elif time_axis == 's':
                         xflag = 1
-                    
+
                     if colors == []:
                         colors = ['lightblue', 'black']
-                    
+
                     if mode == 'ul':
-                        pxmin, pxmax, pymin, pymax = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
+                        pxmin, pxmax, pymin, pymax = plot_lc_UL(
+                            hdulist=hdulist, ax=ax, logfile=logfile,
+                            mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                            color=colors[0])
                     elif mode == 'mincounts':
-                        pxmin, pxmax, pymin, pymax = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[0])
+                        pxmin, pxmax, pymin, pymax = plot_lc_mincounts(
+                            hdulist=hdulist, ax=ax, logfile=logfile,
+                            mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                            color=colors[0])
                     elif mode == 'mincounts_ul':
-                        pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, colors = colors[0])
-                        pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(hdulist = hdulist, ax = ax, logfile = logfile, mjdref = self.__mjdref, xflag = xflag, mincounts = mincounts, color = colors[1])
-                        pxmin, pxmax, pymin, pymax = get_boundaries([[pxmin1, pxmax1, pymin1, pymax1], [pxmin2, pxmax2, pymin2, pymax2]])
-                    
-                    format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y)
-                    
+                        pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(
+                            hdulist=hdulist, ax=ax, logfile=logfile,
+                            mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                            colors=colors[0])
+                        pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(
+                            hdulist=hdulist, ax=ax, logfile=logfile,
+                            mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                            color=colors[1])
+                        pxmin, pxmax, pymin, pymax = get_boundaries(
+                            [[pxmin1, pxmax1, pymin1, pymax1],
+                             [pxmin2, pxmax2, pymin2, pymax2]])
+
+                    format_axis(ax, pxmin, pxmax, pymin, pymax,
+                                ticknumber_x, ticknumber_y)
+
                     # plot time in s from beginning (xflag=1) or in MJD
                     if time_axis == 's':
-                       ax.set_xlabel(r'Time (s)')#, fontsize=12)
+                        ax.set_xlabel(r'Time (s)')  # , fontsize=12)
                     elif time_axis == 'mjd':
-                       ax.set_xlabel(r'MJD (days)')#, fontsize=12)
-                
-                    ax.set_ylabel(r'Count rate (cts/s)')#, fontsize=12)
-                    
+                        ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
+
+                    ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
+
                     if print_name:
-                    # user name and time
-                        ax.text(1.015, 0.0, user +' - '+ localtime, rotation=90, fontsize=8, 
-                                 verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
+                        # user name and time
+                        ax.text(1.015, 0.0, user + ' - ' + localtime,
+                                rotation=90, fontsize=8, verticalalignment='bottom',
+                                horizontalalignment='left', transform=ax.transAxes)
                     # eROSITA label
-                        ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10, 
-                                 verticalalignment='bottom', horizontalalignment='left', transform=ax.transAxes)
-                        ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10, 
-                                 verticalalignment='bottom', horizontalalignment='right', transform=ax.transAxes)
+                        ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10,
+                                verticalalignment='bottom',
+                                horizontalalignment='left', transform=ax.transAxes)
+                        ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10,
+                                verticalalignment='bottom',
+                                horizontalalignment='right', transform=ax.transAxes)
                     # label plot:
                         ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
-                                 verticalalignment='bottom', horizontalalignment='center', transform=ax.transAxes)
-                    
+                                verticalalignment='bottom',
+                                horizontalalignment='center', transform=ax.transAxes)
+
                     for i in range(len(vlines)):
-                        ax.vlines(vlines[i][0], -5, 5, colors = vlines[i][1], linestyle = 'dotted', zorder=vlines[i][2])
+                        ax.vlines(vlines[i][0], -5, 5, colors=vlines[i]
+                                  [1], linestyle='dotted', zorder=vlines[i][2])
                     if show_eRASS:
                         if time_axis == 'mjd':
-                            ax.vlines(self.__ero_starttimes, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-2)
+                            ax.vlines(self._ero_starttimes, -5, 5,
+                                      colors='grey', linestyle='dotted', zorder=-2)
                         elif time_axis == 's':
-                            ax.vlines((np.array(self.__ero_starttimes) - self.__mjdref) * 3600 * 24, -5, 5, colors = 'grey', linestyle = 'dotted', zorder=-4)
-           
+                            ax.vlines((np.array(self._ero_starttimes) - self._mjdref) *
+                                      3600 * 24, -5, 5, colors='grey',
+                                      linestyle='dotted', zorder=-4)
+
                     fig1.tight_layout()
-           
+
                     pltfile = outfile + ".pdf"
                     plt.savefig(pltfile)
                     logfile.writelines(f'{pltfile} created')
@@ -827,91 +942,145 @@ class HiMaXBi:
                     pltfile = outfile + ".png"
                     plt.savefig(pltfile)
                     logfile.writelines(f'{pltfile} created')
-            
+
         logfile.close()
-    
-    def __extract_spectrum(self, logfile, mode, filelist):
-        replacements = [['@source_name', self.__src_name],
-                        ['@main_name', self.__working_dir],
-                        ['@result_dir', self.__working_dir + '/working'],
-                        ['@region_code', self.__skytile],
+
+    def _extract_spectrum(self, logfile, mode, filelist, epoch):
+        replacements = [['@source_name', self._src_name],
+                        ['@main_name', self._working_dir],
+                        ['@result_dir', self._working_dir + '/working'],
+                        ['@region_code', self._skytile],
                         ['@sources_list', filelist],
-                        ['@right_ascension', self.__RA],
-                        ['@declination', self.__Dec],
-                        ['@esass_location', self.__esass],
-                        ['@group', self.__grouping],
-                        ['@mode', mode]]
-        sh_file = self.__working_dir + '/working/extract_spectrum.sh'
-        self.__replace_in_ssh(sh_file, replacements)
-        process = subprocess.Popen([sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait() # Wait for process to complete.
+                        ['@right_ascension', self._RA],
+                        ['@declination', self._Dec],
+                        ['@esass_location', self._esass],
+                        ['@group', self._grouping],
+                        ['@mode', mode],
+                        ['@epoch', epoch]]
+        sh_file = self._working_dir + '/working/extract_spectrum.sh'
+        self._replace_in_ssh(sh_file, replacements)
+        process = subprocess.Popen(
+            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()  # Wait for process to complete.
 
         # iterate on the stdout line by line
         for line in process.stdout.readlines():
             logfile.writelines(line)
 
-    
-    def plot_spectra(self, mode = 'all', log_prefix = 'spectrum', log_suffix = 'autosafe.log', Z = -1, distance = -1, skip_varabs = False, absorption = 6 * 10 ** -2, rebin = True, rebin_params = [3, 10], rescale = False, rescale_F = [1e-6, 1], rescale_chi = [-5, 5], model_file = '', save_settings = False, grouping = -1, fit_statistic = 'cstat', colors = [], markers = [], title = '', varabs_starting_pars = [], plot_command = ["ldata", "delchi"], return_array = False, conf_contours = False):
-        '''
+    def plot_spectra(self, mode='all', log_prefix='spectrum',
+                     log_suffix='autosafe.log', Z=-1, distance=-1,
+                     skip_varabs=False, absorption=6 * 10 ** -2, rebin=True,
+                     rebin_params=[3, 10], rescale=False, rescale_F=[1e-6, 1],
+                     rescale_chi=[-5, 5], model_file='', save_settings=False,
+                     grouping=-1, fit_statistic='cstat', colors=[], markers=[],
+                     title='', varabs_starting_pars=[], separate=False,
+                     plot_command=["ldata", "delchi"], return_array=False,
+                     conf_contours=False, abund='wilm'):
+        '''Fit and plot spectrum in prefered mode.
+
         Parameters
         ----------
         mode : str, optional
-            Sets how data should be arranged for analysis. 'simultaneous' fits all eRASS spectra simultaneously (powerlaw index and absorption parameters are tied, normalisation is free), 'merged' creates a single spectrum of all existing data, 'individual' fits each eRASS/epoch individually with no parameters tied, 'all' does each of the possibilities mentioned. The default is 'all'.
+            Sets how data should be arranged for analysis. 'simultaneous' fits
+            all eRASS spectra simultaneously
+            (powerlaw index and absorption parameters are tied, normalisation
+             is free), 'merged' creates a single spectrum of all existing data,
+            'individual' fits each eRASS/epoch individually with no parameters
+            tied, 'all' does each of the possibilities mentioned. The default
+            is 'all'.
         log_prefix : str, optional
             Sets a prefix for logfiles. The default is 'spectrum'.
         log_suffix : str, optional
-            Sets a suffix for logfiles (including data type extension). The default is 'autosafe.log'.
+            Sets a suffix for logfiles (including data type extension).
+            The default is 'autosafe.log'.
         Z : float or str, optional
-            Sets the metalicity to use for the varabs model (e.g. '0.49' for LMC sources). The default is -1 which uses the previously set metalicity.
+            Sets the metalicity to use for the varabs model
+            (e.g. '0.49' for LMC sources). The default is -1 which uses the
+            previously set metalicity.
         distance : float or str, optional
-            Sets the distance to the source in kpc to calculate luminosities. The default is -1 which uses the previously set value (default saved is 50).
+            Sets the distance to the source in kpc to calculate luminosities.
+            The default is -1 which uses the previously set value
+            (default saved is 50).
         skip_varabs : bool, optional
-            Skips model fitting of models using varabs (can be used for low count data to reduce computation time since the varabs fit usually does not converge then). The default is False.
+            Skips model fitting of models using varabs
+            (can be used for low count data to reduce computation time since
+             the varabs fit usually does not converge then). The default is False.
         absorption : float or str, optional
             Sets the MW absorption modeled by Tbabs. The default is 6 * 10 ** -2.
         rebin : bool, optional
-            Rebin energy bins during plotting (does not influence fit). The default is True.
+            Rebin energy bins during plotting (does not influence fit).
+            The default is True.
         rebin_params :  int array-like (2,), optional
             Sets rebin parameters for plotting. The default is [3, 10].
         rescale : bool, optional
-            Rescale y axis during plotting (does not influence fit). The default is False.
+            Rescale y axis during plotting (does not influence fit). The
+            default is False.
         rescale_F :  float array-like (2,), optional
-            Sets rescale parameters for top plot during plotting. The default is [1e-6, 1].
+            Sets rescale parameters for top plot during plotting. The default
+            is [1e-6, 1].
         rescale_chi :  float array-like (2,), optional
-            Sets rescale parameters for bottom plot during plotting. The default is [-5, 5].
+            Sets rescale parameters for bottom plot during plotting. The
+            default is [-5, 5].
         model_file : str, optional
-            Loads a *.xcm setting file with model and plotting settings. When used no additional settings are done, which means the file must always include both model and plotting settings. The default is ''.
+            Loads a *.xcm setting file with model and plotting settings. When
+            used no additional settings are done, which means the file must
+            always include both model and plotting settings. The default is ''.
         save_settings : bool, optional
-            If True a setting file (*.xcm) with all plot and model settings used is saved for each fit done with the corresponding names. The default is False.
+            If True a setting file (*.xcm) with all plot and model settings
+            used is saved for each fit done with the corresponding names. The
+            default is False.
         grouping : int or str, optional
-            Sets the minimum number of events per energy bin during spectrum extraction. The default is -1 which uses the previously set value (default saved is 1).
+            Sets the minimum number of events per energy bin during spectrum
+            extraction. The default is -1 which uses the previously set value
+            (default saved is 1).
         fit_statistic : str, optional
-            Sets the fit-statistic used. Possible entries are 'cstat' and 'chi'. If set to 'chi' a grouping parameter <20 will be overwritten to 20. Future releases will allow 'bxa' and '3ml' as input. The default is 'cstat'.
+            Sets the fit-statistic used. Possible entries are 'cstat' and 'chi'.
+            If set to 'chi' a grouping parameter <20 will be overwritten to 20.
+            Future releases will allow 'bxa' and '3ml' as input. The default is
+            'cstat'.
         colors : array-like (n,), optional
-            If set, overwrites default colors during plotting. n has to be equal to the number of datasets used (number of eRASS/epochs). The 0th component will be used for merged and individual spectra. Entries have to be integers. The default is [].
+            If set, overwrites default colors during plotting. n has to be equal
+            to the number of datasets used (number of eRASS/epochs). The 0th
+            component will be used for merged and individual spectra. Entries
+            have to be integers. The default is [].
         markers : array-like (n,), optional
-            If set, overwrites default markers during plotting. n has to be equal to the number of datasets used (number of eRASS/epochs). The 0th component will be used for merged and individual spectra. Entries have to be integers. The default is [].
+            If set, overwrites default markers during plotting. n has to be
+            equal to the number of datasets used (number of eRASS/epochs). The
+            0th component will be used for merged and individual spectra.
+            Entries have to be integers. The default is [].
         title : str, optional
             Set title of spectrum plots. The default is ''.
         varabs_starting_pars : array-like (2,), optional
-            Sets starting value of powerlaw index and absorption for models including varabs. The default is [1, absorption] (absorption parameter set before or 6 * 10 ** -2 if left to default).
+            Sets starting value of powerlaw index and absorption for models
+            including varabs. The default is [1, absorption]
+            (absorption parameter set before or 6 * 10 ** -2 if left to default).
+        separate : bool, optional
+            If True creates a plot for each epoch/eRASS separately instead of a
+            combined one.
         plot_command : array-like (2,), optional
-            Sets the two panels to be plot (must be available in xspec). The default is ["ldata", "delchi"]. Example alternative ["ldata", "rat"]
+            Sets the two panels to be plot (must be available in xspec). The
+            default is ["ldata", "delchi"]. Example alternative ["ldata", "rat"]
         return_array : bool, optional
-            If True returns a numpy array of model and data points. Not available yet, will be included in future releases. The default is False.
+            If True returns a numpy array of model and data points. Not
+            available yet, will be included in future releases. The default is False.
         conf_contours : bool, optional
-            If True plots confidence contours of model parameters. Not available yet, will be included in future releases. The default is False.
+            If True plots confidence contours of model parameters. Not available
+            yet, will be included in future releases. The default is False.
+        abund : str, optional
+            Sets the abundance table used. Default is 'wilm'
 
         '''
-        if self.__skytile == '' or self.__filelist == '':
-            raise Exception('Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
-        if not self.__LC_extracted:
-            self.extract_lc()
+        if self._skytile == '' or self._filelist == '':
+            raise Exception(
+                'Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
+        if not self._LC_extracted:
+            self._extract_lc()
         if type(mode) != str:
             raise Exception('mode must be a string.')
         else:
             if mode != 'all' and mode != 'individual' and mode != 'merged' and mode != 'simultaneous':
-                raise Exception('mode must be \'individual\', \'merged\', \'simultaneous\' or \'all\'.')
+                raise Exception(
+                    'mode must be \'individual\', \'merged\', \'simultaneous\' or \'all\'.')
         if type(log_prefix) != str:
             raise Exception('log_prefix must be a string.')
         if type(log_suffix) != str:
@@ -960,9 +1129,11 @@ class HiMaXBi:
         else:
             for entry in rebin_params:
                 if type(entry) != int:
-                    raise Exception('The entries of rebin_params need to be given as int.')
+                    raise Exception(
+                        'The entries of rebin_params need to be given as int.')
                 if entry <= 0:
-                    raise Exception('The entries of rebin_params need to be >0.')
+                    raise Exception(
+                        'The entries of rebin_params need to be >0.')
             if len(rebin_params) != 2:
                 raise Exception('rebin_params needs exactly 2 entries.')
         if type(rescale_F) != list and type(rescale_F) != np.ndarray:
@@ -970,7 +1141,8 @@ class HiMaXBi:
         else:
             for entry in rescale_F:
                 if type(entry) != float:
-                    raise Exception('The entries of rescale_F need to be given as float.')
+                    raise Exception(
+                        'The entries of rescale_F need to be given as float.')
                 if entry <= 0:
                     raise Exception('The entries of rescale_F need to be >0.')
             if len(rescale_F) != 2:
@@ -980,14 +1152,16 @@ class HiMaXBi:
         else:
             for entry in rescale_chi:
                 if type(entry) != float:
-                    raise Exception('The entries of rescale_chi need to be given as float.')
+                    raise Exception(
+                        'The entries of rescale_chi need to be given as float.')
                 if entry <= 0:
-                    raise Exception('The entries of rescale_chi need to be >0.')
+                    raise Exception(
+                        'The entries of rescale_chi need to be >0.')
             if len(rescale_chi) != 2:
                 raise Exception('rescale_chi needs exactly 2 entries.')
         if type(model_file) != str:
             raise Exception('model_file must be string.')
-        if not os.path.exists(self.__working_dir + '/' + model_file):
+        if not os.path.exists(self._working_dir + '/' + model_file):
             raise Exception(f'File {model_file} does not exist.')
         if type(grouping) != str and type(grouping) != int:
             raise Exception('grouping must be a string or int.')
@@ -1003,7 +1177,8 @@ class HiMaXBi:
             raise Exception('fit_statistic must be a string.')
         else:
             if fit_statistic != 'chi' and fit_statistic != 'cstat':
-                raise Exception('mode must be \'chi\' or \'cstat\'. (\'3ml\' and \'bxa\' not supported yet.)')
+                raise Exception(
+                    'mode must be \'chi\' or \'cstat\'. (\'3ml\' and \'bxa\' not supported yet.)')
             if fit_statistic == 'chi':
                 if grouping < 20:
                     grouping = 20
@@ -1012,17 +1187,21 @@ class HiMaXBi:
         else:
             for entry in colors:
                 if type(entry) != int:
-                    raise Exception('The entries of colors need to be given as int.')
-            if colors != [] and len(colors) < len(self.__filelist.split(sep = ' ')):
-                raise Exception('If colors are set, they need to be set for every eRASS used.')
+                    raise Exception(
+                        'The entries of colors need to be given as int.')
+            if colors != [] and len(colors) < len(self._filelist.split(sep=' ')):
+                raise Exception(
+                    'If colors are set, they need to be set for every eRASS used.')
         if type(markers) != list and type(markers) != np.ndarray:
             raise Exception('markers must be array-like')
         else:
             for entry in markers:
                 if type(entry) != int:
-                    raise Exception('The entries of markers need to be given as int.')
-            if markers != [] and len(markers) < len(self.__filelist.split(sep = ' ')):
-                raise Exception('If markers are set, they need to be set for every eRASS used.')
+                    raise Exception(
+                        'The entries of markers need to be given as int.')
+            if markers != [] and len(markers) < len(self._filelist.split(sep=' ')):
+                raise Exception(
+                    'If markers are set, they need to be set for every eRASS used.')
         if type(title) != str:
             raise Exception('title must be a string.')
         if type(varabs_starting_pars) != list and type(varabs_starting_pars) != np.ndarray:
@@ -1030,59 +1209,84 @@ class HiMaXBi:
         else:
             for entry in varabs_starting_pars:
                 if type(entry) != float:
-                    raise Exception('The entries of varabs_starting_pars need to be given as float.')
+                    raise Exception(
+                        'The entries of varabs_starting_pars need to be given as float.')
                 if entry <= 0:
-                    raise Exception('The entries of varabs_starting_pars need to be >0.')
+                    raise Exception(
+                        'The entries of varabs_starting_pars need to be >0.')
             if len(varabs_starting_pars) != 2:
-                raise Exception('varabs_starting_pars needs exactly 2 entries.')
+                raise Exception(
+                    'varabs_starting_pars needs exactly 2 entries.')
         if type(plot_command) != list and type(plot_command) != np.ndarray:
             raise Exception('plot_command must be array-like')
         else:
             for entry in plot_command:
                 if type(entry) != float:
-                    raise Exception('The entries of plot_command need to be given as str.')
-        
-    
-    def __plot_spectra_simultaneous(self, table_name, rebin, mode):
-        file_list = ''
-        for i, entry in enumerate(self.__filenames.split(sep = ' ')):
-            self.__extract_spectrum(f'spectra_{mode}_extraction.log', mode, entry)
-            if i == 0:
-                file_list += f'{self.__working_dir}/working/{self.__src_name}_{self.__region}_eROSITA_PATall_TMon020_SourceSpec_00001_g{self.__grouping}.fits'
-            else:
-                file_list += f'{i+1}:{i+1} {self.__working_dir}/working/{self.__src_name}_{self.__region}_eROSITA_PATall_TMon020_SourceSpec_00001_g{self.__grouping}.fits'
+                    raise Exception(
+                        'The entries of plot_command need to be given as str.')
+        if type(abund) != str:
+            raise Exception('abund must be a string.')
+
+        if Z != -1:
+            self.set_metallicity(Z)
+        if distance != -1:
+            self.set_distance(distance)
+        if grouping != -1:
+            self.set_grouping(grouping)
+        # XXX
+
+    def _plot_spectra_simultaneous(self, table_name, skip_varabs, absorption, separate, rebin, rebin_params, rescale_F, rescale_chi, abund):
+        # file_list = ''
+        # for i, entry in enumerate(self._filenames.split(sep=' ')):
+        #     self._extract_spectrum(
+        #         f'spectra_{mode}_extraction.log', mode, entry)
+        #     if i == 0:
+        #         file_list += f'{self._working_dir}/working/{self._src_name}_{self._region}_eROSITA_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
+        #     else:
+        #         file_list += f'{i+1}:{i+1} {self._working_dir}/working/{self._src_name}_{self._region}_eROSITA_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
+
         bands = {}
-        for t, pair in enumerate(self.__energy_bins):
-            bands[f'table_{t}'] = open(f'{table_name}_simultaneous_{pair[0]}keV_{pair[1]}keV.tex')
-            
+        for t, energy_bin in enumerate(self._energy_bins):
+            bands[f'table_{t}'] = open(
+                f'{table_name}_simultaneous_{energy_bin[0]}keV_{energy_bin[1]}keV.tex')
+
             bands[f'table_{t}'].write('\\begin{{tabular}}{{cccccc}}\n')
             bands[f'table_{t}'].write('\\hline\\hline\n')
-            bands[f'table_{t}'].write('Data & Part & Power-law & N$_{{\\rm H, varab}}$ & \\mbox{{F$_{{\\rm x}}$}} & \\mbox{{L$_{{\\rm x}}$}} \\\\ \n')
-            bands[f'table_{t}'].write('-- & -- & index & $\\times 10^{{20}}$ cm$^{{-2}}$ & $\\times$erg cm$^{{-2}}$s$^{{-1}}$ & $\\times$erg s$^{{-1}}$ \\\\ \n')
+            bands[f'table_{t}'].write(
+                'Data & Part & Power-law & N$_{{\\rm H, varab}}$ & \\mbox{{F$_{{\\rm x}}$}} & \\mbox{{L$_{{\\rm x}}$}} \\\\ \n')
+            bands[f'table_{t}'].write(
+                '-- & -- & index & $\\times 10^{{20}}$ cm$^{{-2}}$ & $\\times$erg cm$^{{-2}}$s$^{{-1}}$ & $\\times$erg s$^{{-1}}$ \\\\ \n')
             bands[f'table_{t}'].write('\\hline\n')
             bands[f'table_{t}'].write('& & & & & \\\\ \n')
-            
+
             AllData(file_list)
             AllData.ignore('bad')
             AllData.ignore('*:**-0.2 8.0-**')
 
             epoch = 'epoch1:5 simultaneous'
 
-            exec(open(os.getenv("HOME") + f"/galaxy/eROSITA/david_test/xspec_model_{region}.py").read())
+            spec_model(Xset, AllModels, AllData, Model, Fit, Plot, self._working_dir,
+                       bands[f'table_{t}'], self._Z, self._distance, skip_varabs, epoch, absorption,
+                       separate, visible, rebin, [rebin_params[0], rebin_params[1], rescale_F[0],
+                                                  rescale_F[1], rescale_chi[0], rescale_chi[1]], abund, energy_bin[0],
+                       energy_bin[1])
 
             for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
-                os.rename(f'{product_dir}xspec_part{part}.log', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.log')
-                os.rename(f'{product_dir}xspec_part{part}.ps', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.ps')
-                os.rename(f'{product_dir}xspec_part{part}.qdp', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.qdp')
-                os.rename(f'{product_dir}xspec_part{part}.pco', f'{product_dir}xspec_spectra/xspec_part{part}_epoch1-5.pco')
-            
-    
-    def __plot_spectra_merged():
+                for extension in ['.log', '.ps', '.qdp', '.pco']:
+                    os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                              f'{self._working_dir}/results/spectra/xspec_part{part}_epoch1-5_simultaneous{extension}')
+
+        for part_table in bands:
+            bands[part_table].write('\\hline\n')
+            bands[part_table].write("\\end{{tabular}}")
+            bands[part_table].close()
+
+    def _plot_spectra_merged():
         return
-    
-    def __plot_spectra_individual():
+
+    def _plot_spectra_individual():
         return
-    
+
     def run_standard(self):
         '''
         Returns
@@ -1092,29 +1296,28 @@ class HiMaXBi:
         '''
         self.plot_lc_full()
         self.plot_lc_parts()
-        #XXX
-        
-        
-        # if not self.__create_epochs:
-        #     for i in range(len(self.__gap_centres) + 1):
+        # XXX
+
+        # if not self._create_epochs:
+        #     for i in range(len(self._gap_centres) + 1):
         #         if i == 0:
-        #             lower = self.__time_max
-        #             upper = self.__gap_centres[i]
-        #         elif i == len(self.__gap_centres):
-        #             lower = self.__gap_centres[i]
-        #             upper = self.__time_max
+        #             lower = self._time_max
+        #             upper = self._gap_centres[i]
+        #         elif i == len(self._gap_centres):
+        #             lower = self._gap_centres[i]
+        #             upper = self._time_max
         #         else:
-        #             lower = self.__gap_centres[i]
-        #             upper = self.__gap_centres[i+1]
+        #             lower = self._gap_centres[i]
+        #             upper = self._gap_centres[i+1]
         #         temp_files = []
-        #         for file in self.__filelist.split(sep = ' '):
+        #         for file in self._filelist.split(sep = ' '):
         #             with fits.open(file) as hdulist:
         #                 times = hdulist[1].data.field('TIME')
         #             if (times < upper).all() and (times > lower).all():
         #                 temp_files.append(file)
         #         eRASSi = []
         #         for path in temp_files:
-        #             temp = path[len(self.__data_dir)-1:]
+        #             temp = path[len(self._data_dir)-1:]
         #             eRASSi.append(temp[temp.find('em'):temp.find('em') + 5])
         #         eRASSi.sort()
         #         mode = ''
