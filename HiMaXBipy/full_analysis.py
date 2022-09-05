@@ -510,8 +510,9 @@ class HiMaXBi:
             raise Exception('ticknumber_x must be a float or int.')
         if type(ticknumber_y) != float and type(ticknumber_y) != int:
             raise Exception('ticknumber_y must be a float or int.')
-        if (type(colors) != list and type(colors) != np.ndarray) or (np.shape(colors) != (2,) and np.shape(colors) != (1,)):
-            raise Exception('colors must be (2,) or (1,) array-like.')
+        if colors != []:
+            if (type(colors) != list and type(colors) != np.ndarray) or (np.shape(colors) != (2,) and np.shape(colors) != (1,)):
+                raise Exception('colors must be (2,) or (1,) array-like.')
         if type(fileid) != str:
             raise Exception('fileid must be a string.')
         if type(toplab) != str:
@@ -779,8 +780,9 @@ class HiMaXBi:
             raise Exception('ticknumber_x must be a float or int.')
         if type(ticknumber_y) != float and type(ticknumber_y) != int:
             raise Exception('ticknumber_y must be a float or int.')
-        if (type(colors) != list and type(colors) != np.ndarray) or (np.shape(colors) != (2,) and np.shape(colors) != (1,)):
-            raise Exception('colors must be (2,) or (1,) array-like.')
+        if colors != []:
+            if (type(colors) != list and type(colors) != np.ndarray) or (np.shape(colors) != (2,) and np.shape(colors) != (1,)):
+                raise Exception('colors must be (2,) or (1,) array-like.')
         if type(fileid) != str:
             raise Exception('fileid must be a string.')
         if type(toplab) != str:
@@ -1264,7 +1266,9 @@ class HiMaXBi:
             self._plot_spectra_merged(self, log_prefix, latest_eRASS, table_name, skip_varabs,
                                       absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
 
-    def _plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs, absorption, separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS):
+    def _plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs,
+                                   absorption, separate, rebin, rebin_params,
+                                   rescale_F, rescale_chi, abund, latest_eRASS):
         if self._create_epochs:
             period = 'epoch'
         else:
@@ -1296,8 +1300,9 @@ class HiMaXBi:
                                        + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
 
         self._standard_spec_an(separate, latest_eRASS, table_name, 'simultaneous',
-                               file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
-                               rescale_F, rescale_chi, abund, period)
+                               file_list_xspec, skip_varabs, absorption, rebin,
+                               rebin_params, rescale_F, rescale_chi, abund,
+                               period)
 
         if self._create_epochs:
             file_list_xspec = ''
@@ -1343,11 +1348,14 @@ class HiMaXBi:
                                            + '{' + str(epoch_counter) + '} '
                                            + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
 
-            self._standard_spec_an(separate, latest_eRASS, table_name, 'simultaneous',
-                                   file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
-                                   rescale_F, rescale_chi, abund, 'e{self._ownership}')
+            self._standard_spec_an(separate, latest_eRASS, table_name,
+                                   'simultaneous', file_list_xspec, skip_varabs,
+                                   absorption, rebin, rebin_params, rescale_F,
+                                   rescale_chi, abund, 'e{self._ownership}')
 
-    def _plot_spectra_merged(self, log_prefix, latest_eRASS, table_name, skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund):
+    def _plot_spectra_merged(self, log_prefix, latest_eRASS, table_name,
+                             skip_varabs, absorption, rebin, rebin_params,
+                             rescale_F, rescale_chi, abund):
         if self._create_epochs:
             period = 'epoch'
         else:
@@ -1362,11 +1370,13 @@ class HiMaXBi:
         file_list_xspec = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{period}{suffix}_eROSITA_merged_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
 
         self._standard_spec_an(False, latest_eRASS, table_name,
-                               f'merged_{period}{suffix}',
-                               file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
+                               f'merged_{period}{suffix}', file_list_xspec,
+                               skip_varabs, absorption, rebin, rebin_params,
                                rescale_F, rescale_chi, abund, period)
 
-    def _plot_spectra_individual(self, table_name, log_prefix, latest_eRASS, skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund):
+    def _plot_spectra_individual(self, table_name, log_prefix, latest_eRASS,
+                                 skip_varabs, absorption, rebin, rebin_params,
+                                 rescale_F, rescale_chi, abund):
         if self._create_epochs:
             period = 'epoch'
         else:
@@ -1438,8 +1448,8 @@ class HiMaXBi:
                                        rescale_F, rescale_chi, abund, 'e{self._ownership}')
 
     def _standard_spec_an(self, separate, latest_eRASS, table_name, mode,
-                          file_list, skip_varabs, absorption, rebin, rebin_params,
-                          rescale_F, rescale_chi, abund, period):
+                          file_list, skip_varabs, absorption, rebin,
+                          rebin_params, rescale_F, rescale_chi, abund, period):
         bands = {}
         if separate:
             list_visibles = range(1, len(file_list.split(sep=' ')) + 1)
@@ -1474,11 +1484,13 @@ class HiMaXBi:
                 else:
                     epoch = f'{mode}'
 
-                spec_model(Xset, AllModels, AllData, Model, Fit, Plot, self._working_dir,
-                           bands[f'table_{t}'], self._Z, self._distance, skip_varabs, epoch, absorption,
-                           separate, visible, rebin, [rebin_params[0], rebin_params[1], rescale_F[0],
-                                                      rescale_F[1], rescale_chi[0], rescale_chi[1]], abund, energy_bin[0],
-                           energy_bin[1])
+                spec_model(Xset, AllModels, AllData, Model, Fit, Plot,
+                           self._working_dir, bands[f'table_{t}'], self._Z,
+                           self._distance, skip_varabs, epoch, absorption,
+                           separate, visible, rebin,
+                           [rebin_params[0], rebin_params[1], rescale_F[0],
+                            rescale_F[1], rescale_chi[0], rescale_chi[1]],
+                           abund, energy_bin[0], energy_bin[1])
 
                 for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
                     for extension in ['.log', '.ps', '.qdp', '.pco']:
