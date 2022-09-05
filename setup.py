@@ -35,6 +35,8 @@ setup(
 
     requires=[
         'numpy',
-        'matplotlib'
+        'matplotlib',
+	'astropy',
+	'xspec'
     ],
 )
