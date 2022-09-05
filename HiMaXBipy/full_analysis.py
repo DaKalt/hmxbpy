@@ -82,7 +82,7 @@ class HiMaXBi:
 
         for (path, directories, filenames) in os.walk(self._sh_dir_):
             for filename in filenames:
-                shutil.copy(self._sh_dir_ + filename,
+                shutil.copy(self._sh_dir_ + '/' + filename,
                             self._working_dir + '/working')
 
     def _replace_in_ssh(self, path, replacements):
