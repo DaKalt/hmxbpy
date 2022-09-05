@@ -567,9 +567,11 @@ class HiMaXBi:
                     pfile = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
                     outfile = f'{self._working_dir}/results/lightcurves/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
                 else:
-                    pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
-                    outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
-                replacements = [['@infile', f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                    pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
+                    outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
+                replacements = [['@esass_location', self._esass],
+                                ['@infile',
+                                 f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
                                 ['@pfile', f'{pfile}.fits'],
                                 ['@selection', f'FRACEXP>{fracexp}']]
                 sh_file = self._working_dir + '/working/fselect_lc.sh'
@@ -857,10 +859,11 @@ class HiMaXBi:
                         pfile = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
                         outfile = f'{self._working_dir}/results/lightcurves/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
                     else:
-                        pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
-                        outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV'
+                        pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_{naming}'
+                        outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_{naming}'
                     selection = f'FRACEXP>{fracexp} && TIME < {period[1]} && TIME > {period[0]}'
-                    replacements = [['@infile', f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                    replacements = [['@esass_location', self._esass],
+                                    ['@infile', f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
                                     ['@pfile', f'{pfile}.fits'],
                                     ['@selection', selection]]
                     sh_file = self._working_dir + '/working/fselect_lc.sh'
