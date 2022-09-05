@@ -1,3 +1,5 @@
+#!/bin/sh
+
 source @esass_location
 
 infiles=@infiles

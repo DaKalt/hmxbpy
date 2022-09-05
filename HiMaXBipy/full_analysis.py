@@ -1275,7 +1275,8 @@ class HiMaXBi:
             period = f'e{self._ownership}'
         file_list_xspec = ''
         for epoch_counter in range(len(self._period_names)):
-            replacements = [['@infiles', self._filelist],
+            replacements = [['@esass_location', self._esass],
+                            ['@infiles', self._filelist],
                             ['@outfile',
                                 f'{self._working_dir}/working/{self._period_names[epoch_counter]}_simultaneous.fits'],
                             ['@start',
@@ -1325,7 +1326,8 @@ class HiMaXBi:
                     stop = (
                         self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
 
-                replacements = [['@infiles', self._filelist],
+                replacements = [['@esass_location', self._esass],
+                                ['@infiles', self._filelist],
                                 ['@outfile',
                                  f'{self._working_dir}/working/e{self._ownership}{epoch}_simultaneous.fits'],
                                 ['@start', f'{start}'],
@@ -1382,7 +1384,8 @@ class HiMaXBi:
         else:
             period = f'e{self._ownership}'
         for epoch_counter in range(len(self._period_names)):
-            replacements = [['@infiles', self._filelist],
+            replacements = [['@esass_location', self._esass],
+                            ['@infiles', self._filelist],
                             ['@outfile',
                                 f'{self._working_dir}/working/{self._period_names[epoch_counter]}_individual.fits'],
                             ['@start',
@@ -1425,7 +1428,8 @@ class HiMaXBi:
                     stop = (
                         self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
 
-                replacements = [['@infiles', self._filelist],
+                replacements = [['@esass_location', self._esass],
+                                ['@infiles', self._filelist],
                                 ['@outfile',
                                  f'{self._working_dir}/working/e{self._ownership}{epoch}_individual.fits'],
                                 ['@start', f'{start}'],
