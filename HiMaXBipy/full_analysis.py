@@ -73,7 +73,7 @@ class HiMaXBi:
         for subdir in ['/working', '/results', '/logfiles']:
             if not os.path.exists(self._working_dir + subdir):
                 os.mkdir(self._working_dir + subdir)
-        for subdir in ['/results', 'logfiles']:
+        for subdir in ['/results', '/logfiles']:
             for subsubdir in ['/lightcurves', '/spectra']:
                 if not os.path.exists(self._working_dir + subdir + subsubdir):
                     os.mkdir(self._working_dir + subdir + subsubdir)
