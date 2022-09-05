@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 source @esass_location
 
-infiles=@infiles
+infiles='@infiles'
 outfile=@outfile
 tmin=@start
 tmax=@stop

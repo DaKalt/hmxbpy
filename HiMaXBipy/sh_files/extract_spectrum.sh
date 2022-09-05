@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 source @esass_location
 
@@ -14,7 +14,7 @@ product_dir=@result_dir
 
 region=@region_code
 
-sources=@sources_list
+sources='@sources_list'
 
 group=@group
 

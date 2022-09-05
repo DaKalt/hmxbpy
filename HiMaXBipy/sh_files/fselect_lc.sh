@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 source @esass_location
 
-infile=@infile
+infile='@infile'
 pfile=@pfile
 selection=@selection
 

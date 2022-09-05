@@ -310,7 +310,7 @@ class HiMaXBi:
                 'grouping is treated as an integer. Float values will be rounded down to the next integer.')
         self._grouping = str(int(grouping))
 
-    def _extract_lc(self, logname='lc_extract_autosave.log'):
+    def _extract_lc(self, logname='lc_extract_autosave'):
         '''
         Parameters
         ----------
@@ -347,7 +347,7 @@ class HiMaXBi:
 
             # iterate on the stdout line by line
             if not logname == '':
-                with open(f'{self._working_dir}/logfiles/lightcurves/{logname}_{bin_e[0]}keV_{bin_e[1]}keV', 'w') as logfile:
+                with open(f'{self._working_dir}/logfiles/lightcurves/{logname}_{bin_e[0]}keV_{bin_e[1]}keV.log', 'w') as logfile:
                     for line in process.stdout.readlines():
                         logfile.writelines(line)
         self._LC_extracted = True
