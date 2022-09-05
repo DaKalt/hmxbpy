@@ -898,7 +898,7 @@ class HiMaXBi:
                         pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(
                             hdulist=hdulist, ax=ax, logfile=logfile,
                             mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                            colors=colors[0])
+                            color=colors[0])
                         pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(
                             hdulist=hdulist, ax=ax, logfile=logfile,
                             mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
