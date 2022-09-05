@@ -356,7 +356,8 @@ class HiMaXBi:
         self._eRASS_vs_epoch()
 
     def _find_obs_periods(self, gapsize):
-        with fits.open(f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s020_LightCurve_00001.fits') as hdulist:
+        bin_e = self._energy_bins[0]
+        with fits.open(f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_020_LightCurve_00001.fits') as hdulist:
             time = hdulist[1].data.field('TIME').tolist().sort()
         self._obs_periods = []
         for i in range(len(time) - 1):
