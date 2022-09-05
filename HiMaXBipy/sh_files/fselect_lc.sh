@@ -4,6 +4,6 @@ source @esass_location
 
 infile='@infile'
 pfile=@pfile
-selection=@selection
+selection='@selection'
 
 fselect ${infile}[1] $pfile "${selection}" clobber=yes
