@@ -26,7 +26,7 @@ from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 class HiMaXBi:
     _skytile = ''
-    _filenames = ''
+    _filelist = ''
     _esass = '/home/erosita/sw/eSASSusers_211214/bin/esass-init.sh'
     _LC_prebinning = '1.0'
     _LC_extracted = False
@@ -255,7 +255,7 @@ class HiMaXBi:
             temp1 = temp1[temp1.find(' '):].strip()
             if not os.path.exists(self._data_dir + '/' + temp2):
                 raise Exception(f'File {temp2} does not exist.')
-            temp3 += self._data_dir + '/' + temp2
+            temp3 += self._data_dir + '/' + temp2 + ' '
         if not os.path.exists(self._data_dir + '/' + temp1):
             raise Exception(f'File {temp1} does not exist.')
         temp3 += self._data_dir + '/' + temp1
@@ -975,7 +975,7 @@ class HiMaXBi:
                      grouping=-1, fit_statistic='cstat', colors=[], markers=[],
                      title='', varabs_starting_pars=[], separate=False,
                      plot_command=["ldata", "delchi"], return_array=False,
-                     conf_contours=False, abund='wilm'):
+                     conf_contours=False, abund='wilm', latest_eRASS=5):
         '''Fit and plot spectrum in prefered mode.
 
         Parameters
@@ -1068,13 +1068,11 @@ class HiMaXBi:
             yet, will be included in future releases. The default is False.
         abund : str, optional
             Sets the abundance table used. Default is 'wilm'
+        latest_eRASS : int or str, optional
+            Sets the number of latest eRASS in use. The default is 5.
 
         '''
-        if self._skytile == '' or self._filelist == '':
-            raise Exception(
-                'Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
-        if not self._LC_extracted:
-            self._extract_lc()
+        # Checking if input is sensible
         if type(mode) != str:
             raise Exception('mode must be a string.')
         else:
@@ -1226,66 +1224,281 @@ class HiMaXBi:
                         'The entries of plot_command need to be given as str.')
         if type(abund) != str:
             raise Exception('abund must be a string.')
-
         if Z != -1:
             self.set_metallicity(Z)
         if distance != -1:
             self.set_distance(distance)
         if grouping != -1:
             self.set_grouping(grouping)
-        # XXX
+        if type(latest_eRASS) != int and type(latest_eRASS) != str:
+            raise Exception('latest_eRASS must be str or int.')
+        else:
+            try:
+                if int(latest_eRASS) != float(latest_eRASS):
+                    raise Exception('latest_eRASS must be int.')
+            except ValueError:
+                raise Exception('latest_eRASS must be a number.')
 
-    def _plot_spectra_simultaneous(self, table_name, skip_varabs, absorption, separate, rebin, rebin_params, rescale_F, rescale_chi, abund):
-        # file_list = ''
-        # for i, entry in enumerate(self._filenames.split(sep=' ')):
-        #     self._extract_spectrum(
-        #         f'spectra_{mode}_extraction.log', mode, entry)
-        #     if i == 0:
-        #         file_list += f'{self._working_dir}/working/{self._src_name}_{self._region}_eROSITA_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
-        #     else:
-        #         file_list += f'{i+1}:{i+1} {self._working_dir}/working/{self._src_name}_{self._region}_eROSITA_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
+        # Prerequisites
+        if self._skytile == '' or self._filelist == '':
+            raise Exception(
+                'Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
+        if not self._LC_extracted:
+            self._extract_lc()
 
+        table_name = log_prefix  # not sure if this works the inteded way
+        if mode == 'all':
+            self._plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs, absorption,
+                                            separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS)
+            self._plot_spectra_merged(self, log_prefix, latest_eRASS, table_name, skip_varabs,
+                                      absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
+            self._plot_spectra_individual(self, table_name, log_prefix, latest_eRASS,
+                                          skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
+        elif mode == 'individual':
+            self._plot_spectra_individual(self, table_name, log_prefix, latest_eRASS,
+                                          skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
+        elif mode == 'simultaneous':
+            self._plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs, absorption,
+                                            separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS)
+        elif mode == 'merged':
+            self._plot_spectra_merged(self, log_prefix, latest_eRASS, table_name, skip_varabs,
+                                      absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
+
+    def _plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs, absorption, separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS):
+        if self._create_epochs:
+            period = 'epoch'
+        else:
+            period = f'e{self._ownership}'
+        file_list_xspec = ''
+        for epoch_counter in range(len(self._period_names)):
+            replacements = [['@infiles', self._filelist],
+                            ['@outfile',
+                                f'{self._working_dir}/working/{self._period_names[epoch_counter]}_simultaneous.fits'],
+                            ['@start',
+                                f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}'],
+                            ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}']]
+            sh_file = self._working_dir + '/working/trim_eventfile.sh'
+            self._replace_in_ssh(sh_file, replacements)
+            process = subprocess.Popen(
+                [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
+
+            self._extract_spectrum(f'{log_prefix}_simultaneous_{self._period_names[epoch_counter]}.log',
+                                   'simultaneous', f'{self._working_dir}/working/{self._period_names[epoch_counter]}_simultaneous.fits',
+                                   f'{self._period_names[epoch_counter]}')
+
+            if epoch_counter == 0:
+                file_list_xspec.appen(
+                    f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
+            else:
+                file_list_xspec.append(' {' + str(epoch_counter) + '}:'
+                                       + '{' + str(epoch_counter) + '} '
+                                       + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
+
+        self._standard_spec_an(separate, latest_eRASS, table_name, 'simultaneous',
+                               file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
+                               rescale_F, rescale_chi, abund, period)
+
+        if self._create_epochs:
+            file_list_xspec = ''
+            for epoch_counter in range(len(self._ero_starttimes)):
+                if epoch_counter == 0:
+                    epoch = '0:1'
+                    start = (58500 - self._mjdref) / 24. / 3600.
+                    stop = (
+                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
+                elif epoch_counter == len(self._ero_starttimes) - 1:
+                    epoch = f'{epoch_counter + 1}'
+                    start = (
+                        self._ero_starttimes[epoch_counter] - self._mjdref) / 3600. / 24.
+                    stop = (
+                        self._ero_starttimes[epoch_counter] + 200 - self._mjdref) / 3600. / 24.
+                else:
+                    epoch = f'{epoch_counter + 1}'
+                    start = (
+                        self._ero_starttimes[epoch_counter] - self._mjdref) / 3600. / 24.
+                    stop = (
+                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
+
+                replacements = [['@infiles', self._filelist],
+                                ['@outfile',
+                                 f'{self._working_dir}/working/e{self._ownership}{epoch}_simultaneous.fits'],
+                                ['@start', f'{start}'],
+                                ['@stop', f'{stop}']]
+                sh_file = self._working_dir + '/working/trim_eventfile.sh'
+                self._replace_in_ssh(sh_file, replacements)
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
+
+                self._extract_spectrum(f'{log_prefix}_simultaneous_e{self._ownership}{epoch}.log',
+                                       'simultaneous', f'{self._working_dir}/working/f{self._working_dir}/working/e{self._ownership}{epoch}_simultaneous.fits',
+                                       f'e{self._ownership}{epoch}')
+
+                if epoch_counter == 0:
+                    file_list_xspec.appen(
+                        f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
+                else:
+                    file_list_xspec.append(' {' + str(epoch_counter) + '}:'
+                                           + '{' + str(epoch_counter) + '} '
+                                           + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
+
+            self._standard_spec_an(separate, latest_eRASS, table_name, 'simultaneous',
+                                   file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
+                                   rescale_F, rescale_chi, abund, 'e{self._ownership}')
+
+    def _plot_spectra_merged(self, log_prefix, latest_eRASS, table_name, skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund):
+        if self._create_epochs:
+            period = 'epoch'
+        else:
+            period = f'e{self._ownership}'
+        suffix = ''
+        for entry in self._period_names:
+            suffix += entry[len(period):]
+        self._extract_spectrum(f'{log_prefix}_merged_{period}{suffix}.log',
+                               'merged', f'{self._working_dir}/working/{period}{suffix}_merged.fits',
+                               f'{period}{suffix}')
+
+        file_list_xspec = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{period}{suffix}_eROSITA_merged_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
+
+        self._standard_spec_an(False, latest_eRASS, table_name,
+                               f'merged_{period}{suffix}',
+                               file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
+                               rescale_F, rescale_chi, abund, period)
+
+    def _plot_spectra_individual(self, table_name, log_prefix, latest_eRASS, skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund):
+        if self._create_epochs:
+            period = 'epoch'
+        else:
+            period = f'e{self._ownership}'
+        for epoch_counter in range(len(self._period_names)):
+            replacements = [['@infiles', self._filelist],
+                            ['@outfile',
+                                f'{self._working_dir}/working/{self._period_names[epoch_counter]}_individual.fits'],
+                            ['@start',
+                                f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}'],
+                            ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}']]
+            sh_file = self._working_dir + '/working/trim_eventfile.sh'
+            self._replace_in_ssh(sh_file, replacements)
+            process = subprocess.Popen(
+                [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
+
+            self._extract_spectrum(f'{log_prefix}_individual_{self._period_names[epoch_counter]}.log',
+                                   'individual', f'{self._working_dir}/working/{self._period_names[epoch_counter]}_individual.fits',
+                                   f'{self._period_names[epoch_counter]}')
+
+            file_list_xspec = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_individual_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
+
+            self._standard_spec_an(False, latest_eRASS, table_name,
+                                   f'individual {self._period_names[epoch_counter][len(period):]}',
+                                   file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
+                                   rescale_F, rescale_chi, abund, period)
+
+        if self._create_epochs:
+            for epoch_counter in range(len(self._ero_starttimes)):
+                if epoch_counter == 0:
+                    epoch = '0:1'
+                    start = (58500 - self._mjdref) / 24. / 3600.
+                    stop = (
+                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
+                elif epoch_counter == len(self._ero_starttimes) - 1:
+                    epoch = f'{epoch_counter + 1}'
+                    start = (
+                        self._ero_starttimes[epoch_counter] - self._mjdref) / 3600. / 24.
+                    stop = (
+                        self._ero_starttimes[epoch_counter] + 200 - self._mjdref) / 3600. / 24.
+                else:
+                    epoch = f'{epoch_counter + 1}'
+                    start = (
+                        self._ero_starttimes[epoch_counter] - self._mjdref) / 3600. / 24.
+                    stop = (
+                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
+
+                replacements = [['@infiles', self._filelist],
+                                ['@outfile',
+                                 f'{self._working_dir}/working/e{self._ownership}{epoch}_individual.fits'],
+                                ['@start', f'{start}'],
+                                ['@stop', f'{stop}']]
+                sh_file = self._working_dir + '/working/trim_eventfile.sh'
+                self._replace_in_ssh(sh_file, replacements)
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
+
+                self._extract_spectrum(f'{log_prefix}_individual_e{self._ownership}{epoch}.log',
+                                       'individual', f'{self._working_dir}/working/f{self._working_dir}/working/e{self._ownership}{epoch}_individual.fits',
+                                       f'e{self._ownership}{epoch}')
+
+                file_list_xspec = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_individual_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
+
+                self._standard_spec_an(False, latest_eRASS, table_name,
+                                       f'individual {self._period_names[epoch_counter][len(period):]}',
+                                       file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
+                                       rescale_F, rescale_chi, abund, 'e{self._ownership}')
+
+    def _standard_spec_an(self, separate, latest_eRASS, table_name, mode,
+                          file_list, skip_varabs, absorption, rebin, rebin_params,
+                          rescale_F, rescale_chi, abund, period):
         bands = {}
+        if separate:
+            list_visibles = range(1, len(file_list.split(sep=' ')) + 1)
+        else:
+            list_visibles = [-1]
         for t, energy_bin in enumerate(self._energy_bins):
-            bands[f'table_{t}'] = open(
-                f'{table_name}_simultaneous_{energy_bin[0]}keV_{energy_bin[1]}keV.tex')
+            for visible in list_visibles:
+                if mode.find(' ') == -1:
+                    bands[f'table_{t}'] = open(
+                        f'{table_name}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV.tex')
+                else:
+                    bands[f'table_{t}'] = open(
+                        f'{table_name}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{mode.split()[1]}.tex')
 
-            bands[f'table_{t}'].write('\\begin{{tabular}}{{cccccc}}\n')
-            bands[f'table_{t}'].write('\\hline\\hline\n')
-            bands[f'table_{t}'].write(
-                'Data & Part & Power-law & N$_{{\\rm H, varab}}$ & \\mbox{{F$_{{\\rm x}}$}} & \\mbox{{L$_{{\\rm x}}$}} \\\\ \n')
-            bands[f'table_{t}'].write(
-                '-- & -- & index & $\\times 10^{{20}}$ cm$^{{-2}}$ & $\\times$erg cm$^{{-2}}$s$^{{-1}}$ & $\\times$erg s$^{{-1}}$ \\\\ \n')
-            bands[f'table_{t}'].write('\\hline\n')
-            bands[f'table_{t}'].write('& & & & & \\\\ \n')
+                bands[f'table_{t}'].write('\\begin{{tabular}}{{cccccc}}\n')
+                bands[f'table_{t}'].write('\\hline\\hline\n')
+                bands[f'table_{t}'].write(
+                    'Data & Part & Power-law & N$_{{\\rm H, varab}}$ & \\mbox{{F$_{{\\rm x}}$}} & \\mbox{{L$_{{\\rm x}}$}} \\\\ \n')
+                bands[f'table_{t}'].write(
+                    '-- & -- & index & $\\times 10^{{20}}$ cm$^{{-2}}$ & $\\times$erg cm$^{{-2}}$s$^{{-1}}$ & $\\times$erg s$^{{-1}}$ \\\\ \n')
+                bands[f'table_{t}'].write('\\hline\n')
+                bands[f'table_{t}'].write('& & & & & \\\\ \n')
 
-            AllData(file_list)
-            AllData.ignore('bad')
-            AllData.ignore('*:**-0.2 8.0-**')
+                AllData(file_list)
+                AllData.ignore('bad')
+                AllData.ignore('*:**-0.2 8.0-**')
 
-            epoch = 'epoch1:5 simultaneous'
+                if mode.find(' ') != -1:
+                    epoch = f'{period}{mode.split()[1]} {mode.split()[0]}'
+                elif mode.find('_'):
+                    epoch = f'merged {mode.split(sep="_")[1]}'
+                else:
+                    epoch = f'{mode}'
 
-            spec_model(Xset, AllModels, AllData, Model, Fit, Plot, self._working_dir,
-                       bands[f'table_{t}'], self._Z, self._distance, skip_varabs, epoch, absorption,
-                       separate, visible, rebin, [rebin_params[0], rebin_params[1], rescale_F[0],
-                                                  rescale_F[1], rescale_chi[0], rescale_chi[1]], abund, energy_bin[0],
-                       energy_bin[1])
+                spec_model(Xset, AllModels, AllData, Model, Fit, Plot, self._working_dir,
+                           bands[f'table_{t}'], self._Z, self._distance, skip_varabs, epoch, absorption,
+                           separate, visible, rebin, [rebin_params[0], rebin_params[1], rescale_F[0],
+                                                      rescale_F[1], rescale_chi[0], rescale_chi[1]], abund, energy_bin[0],
+                           energy_bin[1])
 
-            for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
-                for extension in ['.log', '.ps', '.qdp', '.pco']:
-                    os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
-                              f'{self._working_dir}/results/spectra/xspec_part{part}_epoch1-5_simultaneous{extension}')
+                for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
+                    for extension in ['.log', '.ps', '.qdp', '.pco']:
+                        if separate:
+                            os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                                      f'{self._working_dir}/results/spectra/xspec_part{part}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{visible}{extension}')
+                        elif mode.find(' ') != -1:
+                            os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                                      f'{self._working_dir}/results/spectra/xspec_part{part}_{mode.split()[0]}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{mode.split()[1]}{extension}')
+                        elif mode.find('_') != -1:
+                            os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                                      f'{self._working_dir}/results/spectra/xspec_part{part}_{mode.split()[0]}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{mode.split(sep="_")[1]}{extension}')
+                        else:
+                            os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                                      f'{self._working_dir}/results/spectra/xspec_part{part}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV{extension}')
 
         for part_table in bands:
             bands[part_table].write('\\hline\n')
             bands[part_table].write("\\end{{tabular}}")
             bands[part_table].close()
-
-    def _plot_spectra_merged():
-        return
-
-    def _plot_spectra_individual():
-        return
 
     def run_standard(self):
         '''
@@ -1296,39 +1509,4 @@ class HiMaXBi:
         '''
         self.plot_lc_full()
         self.plot_lc_parts()
-        # XXX
-
-        # if not self._create_epochs:
-        #     for i in range(len(self._gap_centres) + 1):
-        #         if i == 0:
-        #             lower = self._time_max
-        #             upper = self._gap_centres[i]
-        #         elif i == len(self._gap_centres):
-        #             lower = self._gap_centres[i]
-        #             upper = self._time_max
-        #         else:
-        #             lower = self._gap_centres[i]
-        #             upper = self._gap_centres[i+1]
-        #         temp_files = []
-        #         for file in self._filelist.split(sep = ' '):
-        #             with fits.open(file) as hdulist:
-        #                 times = hdulist[1].data.field('TIME')
-        #             if (times < upper).all() and (times > lower).all():
-        #                 temp_files.append(file)
-        #         eRASSi = []
-        #         for path in temp_files:
-        #             temp = path[len(self._data_dir)-1:]
-        #             eRASSi.append(temp[temp.find('em'):temp.find('em') + 5])
-        #         eRASSi.sort()
-        #         mode = ''
-        #         for j, entry in enumerate(eRASSi):
-        #             if j == 0:
-        #                 mode += entry
-        #             else:
-        #                 mode += f'_{entry}'
-        #         temp_filelist = ''
-        #         for j, entry in enumerate(temp_files):
-        #             if j == 0:
-        #                 temp_filelist += entry
-        #             else:
-        #                 temp_filelist += f' {entry}'
+        self.plot_spectra()
