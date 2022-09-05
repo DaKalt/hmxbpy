@@ -745,8 +745,6 @@ class HiMaXBi:
             (meaning the current value is not changeds)
 
         '''
-        if not (type(lc_binning) == str or type(lc_binning) == float):
-            raise Exception('lc_binning must be a string or float.')
         if type(logname) != str:
             raise Exception('logname must be a string.')
         if type(mincounts) != str and type(mincounts) != float and type(mincounts) != int:
