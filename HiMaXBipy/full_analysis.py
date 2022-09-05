@@ -102,7 +102,7 @@ class HiMaXBi:
         '''
         for pair in replacements:
             for line in fileinput.input(path, inplace=True):
-                line = line.replace(pair[0], pair[1])
+                line = line.replace(str(pair[0]), str(pair[1]))
                 sys.stdout.write(line)
 
     def set_Ebins(self, bins):
