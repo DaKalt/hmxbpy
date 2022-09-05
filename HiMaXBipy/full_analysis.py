@@ -574,6 +574,9 @@ class HiMaXBi:
                                 ['@selection', f'FRACEXP>{fracexp}']]
                 sh_file = self._working_dir + '/working/fselect_lc.sh'
                 sh_file = self._replace_in_sh(sh_file, replacements)
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
 
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                 ax = fig1.add_subplot(111)
@@ -614,6 +617,8 @@ class HiMaXBi:
 
                 format_axis(ax, pxmin, pxmax, pymin, pymax,
                             ticknumber_x, ticknumber_y)
+
+                hdulist.close()
 
                 # plot time in s from beginning (xflag=1) or in MJD
                 if time_axis == 's':
@@ -860,6 +865,9 @@ class HiMaXBi:
                                     ['@selection', selection]]
                     sh_file = self._working_dir + '/working/fselect_lc.sh'
                     sh_file = self._replace_in_sh(sh_file, replacements)
+                    process = subprocess.Popen(
+                        [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    process.wait()  # Wait for process to complete.
 
                     fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                     ax = fig1.add_subplot(111)
