@@ -349,7 +349,7 @@ class HiMaXBi:
             if not logname == '':
                 with open(f'{self._working_dir}/logfiles/lightcurves/{logname}_{bin_e[0]}keV_{bin_e[1]}keV.log', 'w') as logfile:
                     for line in process.stdout.readlines():
-                        logfile.writelines(line)
+                        logfile.writelines(str(line))
         self._LC_extracted = True
         # one month gap minimum to sort out possible short gaps due to problems during observation
         self._find_obs_periods(60 * 60 * 24 * 30)
@@ -970,7 +970,7 @@ class HiMaXBi:
 
         # iterate on the stdout line by line
         for line in process.stdout.readlines():
-            logfile.writelines(line)
+            logfile.writelines(str(line))
 
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='autosafe.log', Z=-1, distance=-1,
