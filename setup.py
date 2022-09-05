@@ -22,9 +22,13 @@ setup(
     name="HiMaXBipy",
     packages=[
         'HiMaXBipy',
+	'HiMaXBipy/io',
+	'HiMaXBipy/lc_plotting',
+	'HiMaXBipy/sh_files',
+	'HiMaXBipy/spectral_analysis',
 
     ],
-    version='v0.1',
+    version='v0.2',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',
