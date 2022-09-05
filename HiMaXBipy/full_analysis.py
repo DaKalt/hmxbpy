@@ -85,25 +85,28 @@ class HiMaXBi:
                 shutil.copy(self._sh_dir_ + '/' + filename,
                             self._working_dir + '/working')
 
-    def _replace_in_ssh(self, path, replacements):
+    def _replace_in_sh(self, path, replacements):
         '''
         Parameters
         ----------
         replacements : array-like shape (n, 2)
-            array of n keywords to replace in ssh file; 0th entry in each pair
+            array of n keywords to replace in sh file; 0th entry in each pair
             states the original keyword, 1st entry states the new keyword
         path : str
-            path of ssh file in which to replace entries
+            path of sh file in which to replace entries
 
         Returns
         -------
         None.
 
         '''
+        new_sh = path[:-3] + '_modified.sh'
+        shutil.copy(path, new_sh)
         for pair in replacements:
-            for line in fileinput.input(path, inplace=True):
+            for line in fileinput.input(new_sh, inplace=True):
                 line = line.replace(str(pair[0]), str(pair[1]))
                 sys.stdout.write(line)
+        return new_sh
 
     def set_Ebins(self, bins):
         '''Set energy bins to be analysed in keV. The default is [0.2, 8.0].
@@ -337,7 +340,7 @@ class HiMaXBi:
                             ['@emin', bin_e[0]],
                             ['@emax', bin_e[1]]]
             sh_file = self._working_dir + '/working/extract_lc.sh'
-            self._replace_in_ssh(sh_file, replacements)
+            sh_file = self._replace_in_sh(sh_file, replacements)
             process = subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
@@ -568,7 +571,7 @@ class HiMaXBi:
                                 ['@pfile', f'{pfile}.fits'],
                                 ['@selection', f'FRACEXP>{fracexp}']]
                 sh_file = self._working_dir + '/working/fselect_lc.sh'
-                self._replace_in_ssh(sh_file, replacements)
+                sh_file = self._replace_in_sh(sh_file, replacements)
 
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                 ax = fig1.add_subplot(111)
@@ -854,7 +857,7 @@ class HiMaXBi:
                                     ['@pfile', f'{pfile}.fits'],
                                     ['@selection', selection]]
                     sh_file = self._working_dir + '/working/fselect_lc.sh'
-                    self._replace_in_ssh(sh_file, replacements)
+                    sh_file = self._replace_in_sh(sh_file, replacements)
 
                     fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                     ax = fig1.add_subplot(111)
@@ -960,7 +963,7 @@ class HiMaXBi:
                         ['@mode', mode],
                         ['@epoch', epoch]]
         sh_file = self._working_dir + '/working/extract_spectrum.sh'
-        self._replace_in_ssh(sh_file, replacements)
+        sh_file = self._replace_in_sh(sh_file, replacements)
         process = subprocess.Popen(
             [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
@@ -1283,7 +1286,7 @@ class HiMaXBi:
                                 f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}'],
                             ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}']]
             sh_file = self._working_dir + '/working/trim_eventfile.sh'
-            self._replace_in_ssh(sh_file, replacements)
+            sh_file = self._replace_in_sh(sh_file, replacements)
             process = subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
@@ -1333,7 +1336,7 @@ class HiMaXBi:
                                 ['@start', f'{start}'],
                                 ['@stop', f'{stop}']]
                 sh_file = self._working_dir + '/working/trim_eventfile.sh'
-                self._replace_in_ssh(sh_file, replacements)
+                sh_file = self._replace_in_sh(sh_file, replacements)
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
@@ -1392,7 +1395,7 @@ class HiMaXBi:
                                 f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}'],
                             ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}']]
             sh_file = self._working_dir + '/working/trim_eventfile.sh'
-            self._replace_in_ssh(sh_file, replacements)
+            sh_file = self._replace_in_sh(sh_file, replacements)
             process = subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
@@ -1435,7 +1438,7 @@ class HiMaXBi:
                                 ['@start', f'{start}'],
                                 ['@stop', f'{stop}']]
                 sh_file = self._working_dir + '/working/trim_eventfile.sh'
-                self._replace_in_ssh(sh_file, replacements)
+                sh_file = self._replace_in_sh(sh_file, replacements)
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
