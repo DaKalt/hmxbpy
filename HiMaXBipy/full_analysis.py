@@ -259,7 +259,7 @@ class HiMaXBi:
             if not os.path.exists(self._data_dir + '/' + temp2):
                 raise Exception(f'File {temp2} does not exist.')
             temp3 += self._data_dir + '/' + temp2 + ' '
-        if not os.path.exists(self._data_dir + '/' + temp1):
+        if not os.path.exists(self._data_dir + '/' + temp1) and False:
             raise Exception(f'File {temp1} does not exist.')
         temp3 += self._data_dir + '/' + temp1
         self._filelist = temp3
