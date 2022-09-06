@@ -1235,20 +1235,21 @@ class HiMaXBi:
 
         table_name = log_prefix  # not sure if this works the inteded way
         if mode == 'all':
-            self._plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs, absorption,
+            self._plot_spectra_simultaneous(table_name, log_prefix, skip_varabs, absorption,
                                             separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS)
-            self._plot_spectra_merged(self, log_prefix, latest_eRASS, table_name, skip_varabs,
+            print('First done.')
+            self._plot_spectra_merged(log_prefix, latest_eRASS, table_name, skip_varabs,
                                       absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
-            self._plot_spectra_individual(self, table_name, log_prefix, latest_eRASS,
+            self._plot_spectra_individual(table_name, log_prefix, latest_eRASS,
                                           skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
         elif mode == 'individual':
-            self._plot_spectra_individual(self, table_name, log_prefix, latest_eRASS,
+            self._plot_spectra_individual(table_name, log_prefix, latest_eRASS,
                                           skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
         elif mode == 'simultaneous':
-            self._plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs, absorption,
+            self._plot_spectra_simultaneous(table_name, log_prefix, skip_varabs, absorption,
                                             separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS)
         elif mode == 'merged':
-            self._plot_spectra_merged(self, log_prefix, latest_eRASS, table_name, skip_varabs,
+            self._plot_spectra_merged(log_prefix, latest_eRASS, table_name, skip_varabs,
                                       absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
 
     def _plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs,
