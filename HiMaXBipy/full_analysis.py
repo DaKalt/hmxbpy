@@ -552,7 +552,7 @@ class HiMaXBi:
         if not self._LC_extracted:
             self._extract_lc()
         logfile = open(self._working_dir +
-                       '/logfiles/lightcurves/' + logname, 'w')
+                       '/logfiles/lightcurves/' + f'{logname}', 'w')
         localtime = time.asctime(time.localtime(time.time()))
 
         logfile.writelines(localtime + '\n')
@@ -984,7 +984,7 @@ class HiMaXBi:
         process.wait()  # Wait for process to complete.
 
         # iterate on the stdout line by line
-        with open('logname', 'w') as logfile:
+        with open(logname, 'w') as logfile:
             for line in process.stdout.readlines():
                 # to fix weird b'something' format
                 logfile.writelines(str(line)[2:-1])
@@ -1453,10 +1453,10 @@ class HiMaXBi:
             for visible in list_visibles:
                 if mode.find(' ') == -1:
                     bands[f'table_{t}'] = open(
-                        f'{table_name}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV.tex')
+                        f'{table_name}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV.tex', 'w')
                 else:
                     bands[f'table_{t}'] = open(
-                        f'{table_name}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{mode.split()[1]}.tex')
+                        f'{table_name}_{mode.split()[0]}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{mode.split()[1]}.tex', 'w')
 
                 bands[f'table_{t}'].write('\\begin{{tabular}}{{cccccc}}\n')
                 bands[f'table_{t}'].write('\\hline\\hline\n')
