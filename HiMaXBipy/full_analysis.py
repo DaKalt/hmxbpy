@@ -87,6 +87,7 @@ class HiMaXBi:
             for filename in filenames:
                 shutil.copy(self._sh_dir_ + '/' + filename,
                             self._working_dir + '/working')
+        os.chdir(self._working_dir + '/working/')
 
     def _replace_in_sh(self, path, replacements):
         '''
@@ -379,6 +380,12 @@ class HiMaXBi:
                 temp = [time[i+1] - 2 * float(self._LC_prebinning)]
         self._obs_periods = np.array(
             self._obs_periods) / 3600. / 24. + self._mjdref
+        # getting rid of spurious LC entries for obs_periods < 1 day
+        index = []
+        for i in range(len(self._obs_periods)):
+            if self._obs_periods[i][1] - self._obs_periods[i][0] < 1:
+                index.append(i)
+        self._obs_periods = np.delete(self._obs_periods, index, axis=0)
 
     def _eRASS_vs_epoch(self):
         self._create_epochs = False
@@ -1232,6 +1239,8 @@ class HiMaXBi:
             except ValueError:
                 raise Exception('latest_eRASS must be a number.')
 
+        # For RMF and ARF files to work as intended
+        os.chdir(self._working_dir + '/working/')
         # Prerequisites
         if self._skytile == '' or self._filelist == '':
             raise Exception(
@@ -1242,7 +1251,9 @@ class HiMaXBi:
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()
 
-        table_name = log_prefix  # not sure if this works the inteded way
+        table_name = self._working_dir + '/results/spectra/' + \
+            log_prefix  # not sure if this works the inteded way
+        log_prefix = self._working_dir + '/logfiles/spectra/' + log_prefix
         if mode == 'all':
             self._plot_spectra_simultaneous(table_name, log_prefix, skip_varabs, absorption,
                                             separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS)
@@ -1468,7 +1479,6 @@ class HiMaXBi:
                 bands[f'table_{t}'].write('\\hline\n')
                 bands[f'table_{t}'].write('& & & & & \\\\ \n')
 
-                print(file_list)
                 AllData(file_list)
                 AllData.ignore('bad')
                 AllData.ignore('*:**-0.2 8.0-**')
