@@ -1246,10 +1246,10 @@ class HiMaXBi:
             raise Exception(
                 'Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
         if not self._LC_extracted:  # for debugging
-            # self._extract_lc()
-            self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
-            self._eRASS_vs_epoch()
+            self._extract_lc()
+            #self._LC_extracted = True
+            #self._find_obs_periods(60 * 60 * 24 * 30)
+            # self._eRASS_vs_epoch()
 
         table_name = self._working_dir + '/results/spectra/' + \
             log_prefix  # not sure if this works the inteded way
