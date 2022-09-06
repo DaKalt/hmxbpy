@@ -256,7 +256,7 @@ class HiMaXBi:
         while temp1.find(' ') != -1:
             temp2 = temp1[:temp1.find(' ')]
             temp1 = temp1[temp1.find(' '):].strip()
-            if not os.path.exists(self._data_dir + '/' + temp2):
+            if not os.path.exists(self._data_dir + '/' + temp2) and False:
                 raise Exception(f'File {temp2} does not exist.')
             temp3 += self._data_dir + '/' + temp2 + ' '
         if not os.path.exists(self._data_dir + '/' + temp1) and False:
