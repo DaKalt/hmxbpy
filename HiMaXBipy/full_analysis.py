@@ -1212,7 +1212,7 @@ class HiMaXBi:
             raise Exception('plot_command must be array-like')
         else:
             for entry in plot_command:
-                if type(entry) != float:
+                if type(entry) != str:
                     raise Exception(
                         'The entries of plot_command need to be given as str.')
         if type(abund) != str:
