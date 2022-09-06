@@ -1266,8 +1266,8 @@ class HiMaXBi:
                             ['@outfile',
                                 f'{self._working_dir}/working/{self._period_names[epoch_counter]}_simultaneous.fits'],
                             ['@start',
-                                f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}'],
-                            ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}']]
+                                f'{(self._obs_periods[epoch_counter][0] - self._mjdref) * 24. * 3600.}'],
+                            ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) * 24. * 3600.}']]
             sh_file = self._working_dir + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
             process = subprocess.Popen(
@@ -1296,21 +1296,21 @@ class HiMaXBi:
             for epoch_counter in range(len(self._ero_starttimes)):
                 if epoch_counter == 0:
                     epoch = '0:1'
-                    start = (58500 - self._mjdref) / 24. / 3600.
+                    start = (58500 - self._mjdref) * 24. * 3600.
                     stop = (
-                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) * 3600. * 24.
                 elif epoch_counter == len(self._ero_starttimes) - 1:
                     epoch = f'{epoch_counter + 1}'
                     start = (
-                        self._ero_starttimes[epoch_counter] - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter] - self._mjdref) * 3600. * 24.
                     stop = (
-                        self._ero_starttimes[epoch_counter] + 200 - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter] + 200 - self._mjdref) * 3600. * 24.
                 else:
                     epoch = f'{epoch_counter + 1}'
                     start = (
-                        self._ero_starttimes[epoch_counter] - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter] - self._mjdref) * 3600. * 24.
                     stop = (
-                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) * 3600. * 24.
 
                 replacements = [['@esass_location', self._esass],
                                 ['@infiles', self._filelist],
@@ -1375,8 +1375,8 @@ class HiMaXBi:
                             ['@outfile',
                                 f'{self._working_dir}/working/{self._period_names[epoch_counter]}_individual.fits'],
                             ['@start',
-                                f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}'],
-                            ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) / 24. / 3600.}']]
+                                f'{(self._obs_periods[epoch_counter][0] - self._mjdref) * 24. * 3600.}'],
+                            ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) * 24. * 3600.}']]
             sh_file = self._working_dir + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
             process = subprocess.Popen(
@@ -1400,19 +1400,19 @@ class HiMaXBi:
                     epoch = '0:1'
                     start = (58500 - self._mjdref) / 24. / 3600.
                     stop = (
-                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) * 3600. * 24.
                 elif epoch_counter == len(self._ero_starttimes) - 1:
                     epoch = f'{epoch_counter + 1}'
                     start = (
-                        self._ero_starttimes[epoch_counter] - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter] - self._mjdref) * 3600. * 24.
                     stop = (
-                        self._ero_starttimes[epoch_counter] + 200 - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter] + 200 - self._mjdref) * 3600. * 24.
                 else:
                     epoch = f'{epoch_counter + 1}'
                     start = (
-                        self._ero_starttimes[epoch_counter] - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter] - self._mjdref) * 3600. * 24.
                     stop = (
-                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) / 3600. / 24.
+                        self._ero_starttimes[epoch_counter + 1] - self._mjdref) * 3600. * 24.
 
                 replacements = [['@esass_location', self._esass],
                                 ['@infiles', self._filelist],
