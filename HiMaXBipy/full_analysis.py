@@ -961,7 +961,7 @@ class HiMaXBi:
 
         logfile.close()
 
-    def _extract_spectrum(self, logfile, mode, filelist, epoch):
+    def _extract_spectrum(self, logname, mode, filelist, epoch):
         replacements = [['@source_name', self._src_name],
                         ['@main_name', self._working_dir],
                         ['@result_dir', self._working_dir + '/working'],
@@ -980,8 +980,9 @@ class HiMaXBi:
         process.wait()  # Wait for process to complete.
 
         # iterate on the stdout line by line
-        for line in process.stdout.readlines():
-            logfile.writelines(str(line))
+        with open('logname', 'w') as logfile:
+            for line in process.stdout.readlines():
+                logfile.writelines(str(line))
 
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='autosafe.log', Z=-1, distance=-1,
