@@ -59,12 +59,15 @@ class HiMaXBi:
         else:
             raise Exception('src_name needs to be of type string.')
 
+        working_dir = os.path.expanduser(working_dir)
+        data_dir = os.path.expanduser(data_dir)
+
         if os.path.exists(working_dir) and type(working_dir) == str:
             self._working_dir = os.path.abspath(working_dir)
         else:
             raise Exception('Not a valid path for a working directory.')
 
-        if (os.path.exists(data_dir) and type(data_dir) == str) or True:
+        if (os.path.exists(data_dir) and type(data_dir) == str):
             self._data_dir = os.path.abspath(data_dir)
         else:
             raise Exception('Not a valid path for a data directory.')
@@ -256,10 +259,10 @@ class HiMaXBi:
         while temp1.find(' ') != -1:
             temp2 = temp1[:temp1.find(' ')]
             temp1 = temp1[temp1.find(' '):].strip()
-            if not os.path.exists(self._data_dir + '/' + temp2) and False:
+            if not os.path.exists(self._data_dir + '/' + temp2):
                 raise Exception(f'File {temp2} does not exist.')
             temp3 += self._data_dir + '/' + temp2 + ' '
-        if not os.path.exists(self._data_dir + '/' + temp1) and False:
+        if not os.path.exists(self._data_dir + '/' + temp1):
             raise Exception(f'File {temp1} does not exist.')
         temp3 += self._data_dir + '/' + temp1
         self._filelist = temp3
@@ -1330,12 +1333,11 @@ class HiMaXBi:
                                        f'e{self._ownership}{epoch}')
 
                 if epoch_counter == 0:
-                    file_list_xspec.appen(
-                        f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
+                    file_list_xspec += f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
                 else:
-                    file_list_xspec.append(' {' + str(epoch_counter) + '}:'
-                                           + '{' + str(epoch_counter) + '} '
-                                           + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
+                    file_list_xspec.append += ' {' + str(epoch_counter) + '}:' \
+                        + '{' + str(epoch_counter) + '} ' \
+                        + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
 
             self._standard_spec_an(separate, latest_eRASS, table_name,
                                    'simultaneous', file_list_xspec, skip_varabs,
