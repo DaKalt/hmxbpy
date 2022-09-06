@@ -1236,7 +1236,7 @@ class HiMaXBi:
         if self._skytile == '' or self._filelist == '':
             raise Exception(
                 'Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
-        if not self._LC_extracted:
+        if not self._LC_extracted and False:  # for debugging
             self._extract_lc()
 
         table_name = log_prefix  # not sure if this works the inteded way
@@ -1467,6 +1467,7 @@ class HiMaXBi:
                 bands[f'table_{t}'].write('\\hline\n')
                 bands[f'table_{t}'].write('& & & & & \\\\ \n')
 
+                print(file_list)
                 AllData(file_list)
                 AllData.ignore('bad')
                 AllData.ignore('*:**-0.2 8.0-**')
