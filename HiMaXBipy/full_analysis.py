@@ -1099,24 +1099,24 @@ class HiMaXBi:
             raise Exception('log_prefix must be a string.')
         if type(log_suffix) != str:
             raise Exception('log_suffix must be a string.')
-        if type(Z) != str and type(Z) != float:
-            raise Exception('Z must be a string or float.')
-        else:
-            try:
-                Z = float(Z)
-                if Z <= 0:
-                    raise Exception('Z must be > 0.')
-            except ValueError:
-                raise Exception('Z must be a number.')
-        if type(distance) != str and type(distance) != float:
-            raise Exception('distance must be a string or float.')
-        else:
-            try:
-                distance = float(distance)
-                if distance <= 0:
-                    raise Exception('distance must be > 0.')
-            except ValueError:
-                raise Exception('distance must be a number.')
+        # if type(Z) != str and type(Z) != float:
+        #     raise Exception('Z must be a string or float.')
+        # else:
+        #     try:
+        #         Z = float(Z)
+        #         if Z <= 0:
+        #             raise Exception('Z must be > 0.')
+        #     except ValueError:
+        #         raise Exception('Z must be a number.')
+        # if type(distance) != str and type(distance) != float:
+        #     raise Exception('distance must be a string or float.')
+        # else:
+        #     try:
+        #         distance = float(distance)
+        #         if distance <= 0:
+        #             raise Exception('distance must be > 0.')
+        #     except ValueError:
+        #         raise Exception('distance must be a number.')
         if type(skip_varabs) != bool:
             raise Exception('skip_varabs must be a bool.')
         if type(rebin) != bool:
