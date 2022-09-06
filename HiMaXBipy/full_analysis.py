@@ -1168,9 +1168,6 @@ class HiMaXBi:
                 if type(entry) != float:
                     raise Exception(
                         'The entries of rescale_chi need to be given as float.')
-                if entry <= 0:
-                    raise Exception(
-                        'The entries of rescale_chi need to be >0.')
             if len(rescale_chi) != 2:
                 raise Exception('rescale_chi needs exactly 2 entries.')
         if type(model_file) != str:
