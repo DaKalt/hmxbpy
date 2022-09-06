@@ -986,8 +986,8 @@ class HiMaXBi:
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='autosafe.log', Z=-1, distance=-1,
                      skip_varabs=False, absorption=6 * 10 ** -2, rebin=True,
-                     rebin_params=[3, 10], rescale=False, rescale_F=[1e-6, 1],
-                     rescale_chi=[-5, 5], model_file='', save_settings=False,
+                     rebin_params=[3, 10], rescale=False, rescale_F=[1e-6, 1.],
+                     rescale_chi=[-5., 5.], model_file='', save_settings=False,
                      grouping=-1, fit_statistic='cstat', colors=[], markers=[],
                      title='', varabs_starting_pars=[], separate=False,
                      plot_command=["ldata", "delchi"], return_array=False,
@@ -1033,10 +1033,10 @@ class HiMaXBi:
             default is False.
         rescale_F :  float array-like (2,), optional
             Sets rescale parameters for top plot during plotting. The default
-            is [1e-6, 1].
+            is [1e-6, 1.].
         rescale_chi :  float array-like (2,), optional
             Sets rescale parameters for bottom plot during plotting. The
-            default is [-5, 5].
+            default is [-5., 5.].
         model_file : str, optional
             Loads a *.xcm setting file with model and plotting settings. When
             used no additional settings are done, which means the file must
