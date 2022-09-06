@@ -352,7 +352,8 @@ class HiMaXBi:
             if not logname == '':
                 with open(f'{self._working_dir}/logfiles/lightcurves/{logname}_{bin_e[0]}keV_{bin_e[1]}keV.log', 'w') as logfile:
                     for line in process.stdout.readlines():
-                        logfile.writelines(str(line))
+                        # to fix the weird b'something' format
+                        logfile.writelines(str(line)[2:-1])
         self._LC_extracted = True
         # one month gap minimum to sort out possible short gaps due to problems during observation
         self._find_obs_periods(60 * 60 * 24 * 30)
@@ -985,7 +986,8 @@ class HiMaXBi:
         # iterate on the stdout line by line
         with open('logname', 'w') as logfile:
             for line in process.stdout.readlines():
-                logfile.writelines(str(line))
+                # to fix weird b'something' format
+                logfile.writelines(str(line)[2:-1])
 
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='autosafe.log', Z=-1, distance=-1,
@@ -1283,12 +1285,11 @@ class HiMaXBi:
                                    f'{self._period_names[epoch_counter]}')
 
             if epoch_counter == 0:
-                file_list_xspec.appen(
-                    f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
+                file_list_xspec += f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
             else:
-                file_list_xspec.append(' {' + str(epoch_counter) + '}:'
-                                       + '{' + str(epoch_counter) + '} '
-                                       + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits')
+                file_list_xspec.append += ' {' + str(epoch_counter) + '}:' \
+                    + '{' + str(epoch_counter) + '} ' \
+                    + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
 
         self._standard_spec_an(separate, latest_eRASS, table_name, 'simultaneous',
                                file_list_xspec, skip_varabs, absorption, rebin,
