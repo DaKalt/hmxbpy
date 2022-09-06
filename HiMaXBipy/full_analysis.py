@@ -1276,7 +1276,7 @@ class HiMaXBi:
                                 f'{self._working_dir}/working/{self._period_names[epoch_counter]}_simultaneous.fits'],
                             ['@start',
                                 f'{(self._obs_periods[epoch_counter][0] - self._mjdref) * 24. * 3600.}'],
-                            ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) * 24. * 3600.}']]
+                            ['@stop', f'{(self._obs_periods[epoch_counter][1] - self._mjdref) * 24. * 3600.}']]
             sh_file = self._working_dir + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
             process = subprocess.Popen(
@@ -1381,7 +1381,7 @@ class HiMaXBi:
                                 f'{self._working_dir}/working/{self._period_names[epoch_counter]}_individual.fits'],
                             ['@start',
                                 f'{(self._obs_periods[epoch_counter][0] - self._mjdref) * 24. * 3600.}'],
-                            ['@stop', f'{(self._obs_periods[epoch_counter][0] - self._mjdref) * 24. * 3600.}']]
+                            ['@stop', f'{(self._obs_periods[epoch_counter][1] - self._mjdref) * 24. * 3600.}']]
             sh_file = self._working_dir + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
             process = subprocess.Popen(
