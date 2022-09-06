@@ -64,7 +64,7 @@ class HiMaXBi:
         else:
             raise Exception('Not a valid path for a working directory.')
 
-        if os.path.exists(data_dir) and type(data_dir) == str:
+        if (os.path.exists(data_dir) and type(data_dir) == str) or True:
             self._data_dir = os.path.abspath(data_dir)
         else:
             raise Exception('Not a valid path for a data directory.')
