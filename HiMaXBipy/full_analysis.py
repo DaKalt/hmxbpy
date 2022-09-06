@@ -1290,8 +1290,8 @@ class HiMaXBi:
             if epoch_counter == 0:
                 file_list_xspec += f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
             else:
-                file_list_xspec += ' {' + str(epoch_counter) + '}:' \
-                    + '{' + str(epoch_counter) + '} ' \
+                file_list_xspec += ' {' + str(epoch_counter+1) + '}:' \
+                    + '{' + str(epoch_counter+1) + '} ' \
                     + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{self._period_names[epoch_counter]}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
 
         self._standard_spec_an(separate, latest_eRASS, table_name, 'simultaneous',
@@ -1339,8 +1339,8 @@ class HiMaXBi:
                 if epoch_counter == 0:
                     file_list_xspec += f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
                 else:
-                    file_list_xspec.append += ' {' + str(epoch_counter) + '}:' \
-                        + '{' + str(epoch_counter) + '} ' \
+                    file_list_xspec.append += ' {' + str(epoch_counter+1) + '}:' \
+                        + '{' + str(epoch_counter+1) + '} ' \
                         + f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_simultaneous_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
 
             self._standard_spec_an(separate, latest_eRASS, table_name,
