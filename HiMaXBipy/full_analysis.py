@@ -989,7 +989,7 @@ class HiMaXBi:
                      rebin_params=[3, 10], rescale=False, rescale_F=[1e-6, 1.],
                      rescale_chi=[-5., 5.], model_file='', save_settings=False,
                      grouping=-1, fit_statistic='cstat', colors=[], markers=[],
-                     title='', varabs_starting_pars=[], separate=False,
+                     title='', varabs_starting_pars=[1., 6 * 10**-2], separate=False,
                      plot_command=["ldata", "delchi"], return_array=False,
                      conf_contours=False, abund='wilm', latest_eRASS=5):
         '''Fit and plot spectrum in prefered mode.
@@ -1099,24 +1099,6 @@ class HiMaXBi:
             raise Exception('log_prefix must be a string.')
         if type(log_suffix) != str:
             raise Exception('log_suffix must be a string.')
-        # if type(Z) != str and type(Z) != float:
-        #     raise Exception('Z must be a string or float.')
-        # else:
-        #     try:
-        #         Z = float(Z)
-        #         if Z <= 0:
-        #             raise Exception('Z must be > 0.')
-        #     except ValueError:
-        #         raise Exception('Z must be a number.')
-        # if type(distance) != str and type(distance) != float:
-        #     raise Exception('distance must be a string or float.')
-        # else:
-        #     try:
-        #         distance = float(distance)
-        #         if distance <= 0:
-        #             raise Exception('distance must be > 0.')
-        #     except ValueError:
-        #         raise Exception('distance must be a number.')
         if type(skip_varabs) != bool:
             raise Exception('skip_varabs must be a bool.')
         if type(rebin) != bool:
@@ -1174,16 +1156,12 @@ class HiMaXBi:
             raise Exception('model_file must be string.')
         if not os.path.exists(self._working_dir + '/' + model_file):
             raise Exception(f'File {model_file} does not exist.')
-        if type(grouping) != str and type(grouping) != int:
-            raise Exception('grouping must be a string or int.')
-        else:
-            try:
-                temp = float(grouping)
-                grouping = int(grouping)
-                if grouping <= 0 or temp != grouping:
-                    raise Exception('grouping must be an integer > 0.')
-            except ValueError:
-                raise Exception('grouping must be a number.')
+        if Z != -1:
+            self.set_metallicity(Z)
+        if distance != -1:
+            self.set_distance(distance)
+        if grouping != -1:
+            self.set_grouping(grouping)
         if type(fit_statistic) != str:
             raise Exception('fit_statistic must be a string.')
         else:
@@ -1191,8 +1169,10 @@ class HiMaXBi:
                 raise Exception(
                     'mode must be \'chi\' or \'cstat\'. (\'3ml\' and \'bxa\' not supported yet.)')
             if fit_statistic == 'chi':
-                if grouping < 20:
-                    grouping = 20
+                if self._grouping < 20:
+                    self._grouping = 20
+                    warnings.WarningMessage(
+                        'Grouping set to 20 due to chi fit-statistic usage.')
         if type(colors) != list and type(colors) != np.ndarray:
             raise Exception('colors must be array-like')
         else:
@@ -1237,12 +1217,6 @@ class HiMaXBi:
                         'The entries of plot_command need to be given as str.')
         if type(abund) != str:
             raise Exception('abund must be a string.')
-        if Z != -1:
-            self.set_metallicity(Z)
-        if distance != -1:
-            self.set_distance(distance)
-        if grouping != -1:
-            self.set_grouping(grouping)
         if type(latest_eRASS) != int and type(latest_eRASS) != str:
             raise Exception('latest_eRASS must be str or int.')
         else:
