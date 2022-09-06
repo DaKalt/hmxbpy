@@ -859,7 +859,7 @@ class HiMaXBi:
                     else:
                         pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_{naming}'
                         outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_{naming}'
-                    selection = f'FRACEXP>{fracexp} && TIME < {period[1]} && TIME > {period[0]}'
+                    selection = f'FRACEXP>{fracexp} && TIME < {(period[1] - self._mjdref) * 24 * 3600} && TIME > {(period[0] - self._mjdref) * 24 * 3600}'
                     replacements = [['@esass_location', self._esass],
                                     ['@infile', f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
                                     ['@pfile', f'{pfile}.fits'],
