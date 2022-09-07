@@ -383,11 +383,11 @@ class HiMaXBi:
                 # to definitely not lose any events
                 temp.append(time[i+1] + 2 * float(self._LC_prebinning))
                 self._obs_periods.append(temp)
+                continue
             if time[i + 1] - time[i] > gapsize:
                 temp.append(time[i] + 2 * float(self._LC_prebinning))
                 self._obs_periods.append(temp)
                 temp = [time[i+1] - 2 * float(self._LC_prebinning)]
-        print(np.array(self._obs_periods))
         self._obs_periods = np.array(
             self._obs_periods) / 3600. / 24. + self._mjdref
         # getting rid of spurious LC entries for obs_periods < 1 day
