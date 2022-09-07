@@ -1377,7 +1377,7 @@ class HiMaXBi:
         for entry in self._period_names:
             suffix += entry[len(period):]
         self._extract_spectrum(f'{log_prefix}_merged_{period}{suffix}.log',
-                               'merged', f'{self._working_dir}/working/{period}{suffix}_merged.fits',
+                               'merged', self._filelist,
                                f'{period}{suffix}')
 
         file_list_xspec = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_{period}{suffix}_eROSITA_merged_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
