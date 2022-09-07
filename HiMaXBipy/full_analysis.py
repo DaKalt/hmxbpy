@@ -78,9 +78,9 @@ class HiMaXBi:
             raise Exception('Not a valid path for a data directory.')
         self.data_files = ''
 
-        if self._working_dir.find("-") != -1 or self._data_dir.find("-") != -1:
-            warnings.warn(
-                'Working and Data directories with a "-" in their full path can cause problems during data analysis.')
+        # if self._working_dir.find("-") != -1 or self._data_dir.find("-") != -1:
+        #     warnings.warn(
+        #         'Working and Data directories with a "-" in their full path can cause problems during data analysis.')
 
         for subdir in ['/working', '/results', '/logfiles']:
             if not os.path.exists(self._working_dir + subdir):
