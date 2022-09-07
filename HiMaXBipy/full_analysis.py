@@ -78,9 +78,9 @@ class HiMaXBi:
             raise Exception('Not a valid path for a data directory.')
         self.data_files = ''
 
-        # if self._working_dir.find("-") != -1 or self._data_dir.find("-") != -1:
-        #     warnings.warn(
-        #         'Working and Data directories with a "-" in their full path can cause problems during data analysis.')
+        if self._working_dir.find("-") != -1 or self._data_dir.find("-") != -1:
+            raise Exception(
+                'Working and Data directories with a "-" in their full path cause problems during data analysis.')
 
         for subdir in ['/working', '/results', '/logfiles']:
             if not os.path.exists(self._working_dir + subdir):
@@ -1510,16 +1510,16 @@ class HiMaXBi:
                 for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
                     for extension in ['.log', '.ps', '.qdp', '.pco']:
                         if separate:
-                            os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                            os.rename(f'{self._working_dir}/working/xspec_part{part}{extension}',
                                       f'{self._working_dir}/results/spectra/xspec_part{part}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{visible}{extension}')
                         elif mode.find(' ') != -1:
-                            os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                            os.rename(f'{self._working_dir}/working/xspec_part{part}{extension}',
                                       f'{self._working_dir}/results/spectra/xspec_part{part}_{mode.split()[0]}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{mode.split()[1]}{extension}')
                         elif mode.find('_') != -1:
-                            os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                            os.rename(f'{self._working_dir}/working/xspec_part{part}{extension}',
                                       f'{self._working_dir}/results/spectra/xspec_part{part}_{mode.split()[0]}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{mode.split(sep="_")[1]}{extension}')
                         else:
-                            os.rename(f'{self._working_dir}/xspec_part{part}{extension}',
+                            os.rename(f'{self._working_dir}/working/xspec_part{part}{extension}',
                                       f'{self._working_dir}/results/spectra/xspec_part{part}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV{extension}')
 
         for part_table in bands:
