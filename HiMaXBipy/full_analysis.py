@@ -1531,6 +1531,11 @@ class HiMaXBi:
                            abund, energy_bin[0], energy_bin[1],
                            varabs_starting_pars, plot_command)
 
+                if skip_varabs:
+                    parts = ['1', '3_1', '3_2']
+                else:
+                    parts = ['1', '2', '3_1', '3_2', '3_3', '3_4']
+
                 for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
                     for extension in ['.log', '.ps', '.qdp', '.pco']:
                         if separate:
