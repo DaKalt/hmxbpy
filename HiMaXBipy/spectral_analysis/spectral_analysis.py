@@ -8,7 +8,7 @@ def lum(flux, distance):
 def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
                   separate, visible=0):
     Plot_.commands = ()
-    Plot_.device = f'{product_dir}xspec_{part}.ps/cps'
+    Plot_.device = f'{product_dir}/working/xspec_{part}.ps/cps'
     Plot_.xAxis = "keV"
     Plot_.xLog = True
     Plot_.yLog = True
@@ -71,7 +71,7 @@ def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
     Plot_.addCommand(f'wenv xspec_{part}')
     if separate:
         Plot_.addCommand(f'color off {off}')
-    Plot_.device = f'{product_dir}xspec_{part}.ps/cps'
+    Plot_.device = f'{product_dir}/working/xspec_{part}.ps/cps'
     Plot_("ldata", "delchi")
 
 
