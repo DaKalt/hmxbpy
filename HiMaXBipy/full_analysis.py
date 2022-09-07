@@ -1265,25 +1265,32 @@ class HiMaXBi:
         log_prefix = self._working_dir + '/logfiles/spectra/' + log_prefix
         if mode == 'all':
             self._plot_spectra_simultaneous(table_name, log_prefix, skip_varabs, absorption,
-                                            separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS)
+                                            separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS,
+                                            varabs_starting_pars, plot_command)
             print('First done.')
             self._plot_spectra_merged(log_prefix, latest_eRASS, table_name, skip_varabs,
-                                      absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
+                                      absorption, rebin, rebin_params, rescale_F, rescale_chi, abund,
+                                      varabs_starting_pars, plot_command)
             self._plot_spectra_individual(table_name, log_prefix, latest_eRASS,
-                                          skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
+                                          skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund,
+                                          varabs_starting_pars, plot_command)
         elif mode == 'individual':
             self._plot_spectra_individual(table_name, log_prefix, latest_eRASS,
-                                          skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
+                                          skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund,
+                                          varabs_starting_pars, plot_command)
         elif mode == 'simultaneous':
             self._plot_spectra_simultaneous(table_name, log_prefix, skip_varabs, absorption,
-                                            separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS)
+                                            separate, rebin, rebin_params, rescale_F, rescale_chi, abund, latest_eRASS,
+                                            varabs_starting_pars, plot_command)
         elif mode == 'merged':
             self._plot_spectra_merged(log_prefix, latest_eRASS, table_name, skip_varabs,
-                                      absorption, rebin, rebin_params, rescale_F, rescale_chi, abund)
+                                      absorption, rebin, rebin_params, rescale_F, rescale_chi, abund,
+                                      varabs_starting_pars, plot_command)
 
     def _plot_spectra_simultaneous(self, table_name, log_prefix, skip_varabs,
                                    absorption, separate, rebin, rebin_params,
-                                   rescale_F, rescale_chi, abund, latest_eRASS):
+                                   rescale_F, rescale_chi, abund, latest_eRASS,
+                                   varabs_starting_pars, plot_command):
         if self._create_epochs:
             period = 'epoch'
         else:
@@ -1316,13 +1323,13 @@ class HiMaXBi:
         self._standard_spec_an(separate, latest_eRASS, table_name, 'simultaneous',
                                file_list_xspec, skip_varabs, absorption, rebin,
                                rebin_params, rescale_F, rescale_chi, abund,
-                               period)
+                               period, varabs_starting_pars, plot_command)
 
         if self._create_epochs:
             file_list_xspec = ''
             for epoch_counter in range(len(self._ero_starttimes)):
                 if epoch_counter == 0:
-                    epoch = '0:1'
+                    epoch = '0_1'
                     start = (58500 - self._mjdref) * 24. * 3600.
                     stop = (
                         self._ero_starttimes[epoch_counter + 1] - self._mjdref) * 3600. * 24.
@@ -1364,11 +1371,13 @@ class HiMaXBi:
             self._standard_spec_an(separate, latest_eRASS, table_name,
                                    'simultaneous', file_list_xspec, skip_varabs,
                                    absorption, rebin, rebin_params, rescale_F,
-                                   rescale_chi, abund, 'e{self._ownership}')
+                                   rescale_chi, abund, 'e{self._ownership}',
+                                   varabs_starting_pars, plot_command)
 
     def _plot_spectra_merged(self, log_prefix, latest_eRASS, table_name,
                              skip_varabs, absorption, rebin, rebin_params,
-                             rescale_F, rescale_chi, abund):
+                             rescale_F, rescale_chi, abund,
+                             varabs_starting_pars, plot_command):
         if self._create_epochs:
             period = 'epoch'
         else:
@@ -1385,11 +1394,13 @@ class HiMaXBi:
         self._standard_spec_an(False, latest_eRASS, table_name,
                                f'merged_{period}{suffix}', file_list_xspec,
                                skip_varabs, absorption, rebin, rebin_params,
-                               rescale_F, rescale_chi, abund, period)
+                               rescale_F, rescale_chi, abund, period,
+                               varabs_starting_pars, plot_command)
 
     def _plot_spectra_individual(self, table_name, log_prefix, latest_eRASS,
                                  skip_varabs, absorption, rebin, rebin_params,
-                                 rescale_F, rescale_chi, abund):
+                                 rescale_F, rescale_chi, abund,
+                                 varabs_starting_pars, plot_command):
         if self._create_epochs:
             period = 'epoch'
         else:
@@ -1417,12 +1428,13 @@ class HiMaXBi:
             self._standard_spec_an(False, latest_eRASS, table_name,
                                    f'individual {self._period_names[epoch_counter][len(period):]}',
                                    file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
-                                   rescale_F, rescale_chi, abund, period)
+                                   rescale_F, rescale_chi, abund, period,
+                                   varabs_starting_pars, plot_command)
 
         if self._create_epochs:
             for epoch_counter in range(len(self._ero_starttimes)):
                 if epoch_counter == 0:
-                    epoch = '0:1'
+                    epoch = '0_1'
                     start = (58500 - self._mjdref) / 24. / 3600.
                     stop = (
                         self._ero_starttimes[epoch_counter + 1] - self._mjdref) * 3600. * 24.
@@ -1460,11 +1472,13 @@ class HiMaXBi:
                 self._standard_spec_an(False, latest_eRASS, table_name,
                                        f'individual {self._period_names[epoch_counter][len(period):]}',
                                        file_list_xspec, skip_varabs, absorption, rebin, rebin_params,
-                                       rescale_F, rescale_chi, abund, 'e{self._ownership}')
+                                       rescale_F, rescale_chi, abund, 'e{self._ownership}',
+                                       varabs_starting_pars, plot_command)
 
     def _standard_spec_an(self, separate, latest_eRASS, table_name, mode,
                           file_list, skip_varabs, absorption, rebin,
-                          rebin_params, rescale_F, rescale_chi, abund, period):
+                          rebin_params, rescale_F, rescale_chi, abund, period,
+                          varabs_starting_pars, plot_command):
         bands = {}
         if separate:
             list_visibles = range(1, len(file_list.split(sep=' ')) + 1)
@@ -1505,7 +1519,8 @@ class HiMaXBi:
                            separate, visible, rebin,
                            [rebin_params[0], rebin_params[1], rescale_F[0],
                             rescale_F[1], rescale_chi[0], rescale_chi[1]],
-                           abund, energy_bin[0], energy_bin[1])
+                           abund, energy_bin[0], energy_bin[1],
+                           varabs_starting_pars, plot_command)
 
                 for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
                     for extension in ['.log', '.ps', '.qdp', '.pco']:

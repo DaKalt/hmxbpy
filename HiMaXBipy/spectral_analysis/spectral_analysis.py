@@ -6,7 +6,7 @@ def lum(flux, distance):
 
 
 def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
-                  separate, visible=0):
+                  separate, plot_command, visible=0):
     Plot_.commands = ()
     Plot_.device = f'{product_dir}/working/xspec_{part}.ps/cps'
     Plot_.xAxis = "keV"
@@ -72,12 +72,13 @@ def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
     if separate:
         Plot_.addCommand(f'color off {off}')
     Plot_.device = f'{product_dir}/working/xspec_{part}.ps/cps'
-    Plot_("ldata", "delchi")
+    Plot_(plot_command[0], plot_command[1])
 
 
 def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
                table, Z, distance, skip_varabs, epoch, absorption, separate,
-               visible, rebin, rescale_params, abund, Emin, Emax):
+               visible, rebin, rescale_params, abund, Emin, Emax,
+               varabs_starting_pars, plot_command):
     #!/usr/bin/env python3
     # -*- coding: utf-8 -*-
     """
@@ -96,9 +97,11 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
     # galactic absorption in the direction of MC in units of 10^22cm^-2
     AllModels_(1).TBabs.nH.values = absorption
     AllModels_(1).TBabs.nH.frozen = True
+    AllModels_(1).powerlaw.PhoIndex.values = varabs_starting_pars[0]
     if AllData_.nGroups > 1:
         for i in range(2, AllData_.nGroups + 1):
             AllModels_(i).powerlaw.norm.untie()
+            AllModels_(i).powerlaw.PhoIndex.values = varabs_starting_pars[0]
 
     Fit_.query = "yes"
     Fit_.statMethod = "cstat"
@@ -116,7 +119,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
     part = "part1"
     spec_Plotting(Plot_, AllData_, product_dir, part,
-                  rebin, rescale_params, separate, visible)
+                  rebin, rescale_params, separate, plot_command, visible)
     # Plot_ting("part1")
 
     # ______________________________________________________________________________
@@ -129,6 +132,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
         AllModels_(1).TBabs.nH.values = absorption
         AllModels_(1).TBabs.nH.frozen = True
         AllModels_(1).powerlaw.PhoIndex.values = Model_tbabs['PhoIndex']
+        AllModels_(1).powerlaw.PhoIndex.values = varabs_starting_pars[0]
         for i in range(1, AllData_.nGroups + 1):
             AllModels_(i).TBvarabs.C.values = Z
             AllModels_(i).TBvarabs.N.values = Z
@@ -146,6 +150,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
             AllModels_(i).TBvarabs.Fe.values = Z
             AllModels_(i).TBvarabs.Co.values = Z
             AllModels_(i).TBvarabs.Ni.values = Z
+            AllModels_(i).TBvarabs.nH.values = varabs_starting_pars[1]
+            AllModels_(i).powerlaw.PhoIndex.values = varabs_starting_pars[0]
         if AllData_.nGroups > 1:
             for i in range(2, AllData_.nGroups + 1):
                 AllModels_(i).powerlaw.norm.untie()
@@ -172,7 +178,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
         part = "part2"
         spec_Plotting(Plot_, AllData_, product_dir, part,
-                      rebin, rescale_params, separate, visible)
+                      rebin, rescale_params, separate, plot_command, visible)
         # Plot_ting("part2")
 
     # ______________________________________________________________________________
@@ -191,12 +197,14 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
     AllModels_(1).powerlaw.PhoIndex.values = Model_tbabs['PhoIndex']
     AllModels_(1).powerlaw.norm.values = Model_tbabs['m1_norm']
     AllModels_(1).powerlaw.norm.frozen = True
+    AllModels_(1).powerlaw.PhoIndex.values = varabs_starting_pars[0]
     if AllData_.nGroups > 1:
         for i in range(2, AllData_.nGroups + 1):
             AllModels_(i).powerlaw.norm.untie()
             AllModels_(i).powerlaw.norm.values = Model_tbabs[f'm{i}_norm']
             AllModels_(i).powerlaw.norm.frozen = True
             AllModels_(i).cflux.lg10Flux.untie()
+            AllModels_(i).powerlaw.PhoIndex.values = varabs_starting_pars[0]
     AllModels_(1).cflux.Emin.values = Emin
     AllModels_(1).cflux.Emax.values = Emax
 
@@ -225,7 +233,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
     part = "part3_1"
     spec_Plotting(Plot_, AllData_, product_dir, part,
-                  rebin, rescale_params, separate, visible)
+                  rebin, rescale_params, separate, plot_command, visible)
     # Plot_ting("part3.1")
 
     ##########################################
@@ -240,12 +248,14 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
     AllModels_(1).powerlaw.PhoIndex.values = Model_tbabs['PhoIndex']
     AllModels_(1).powerlaw.norm.values = Model_tbabs['m1_norm']
     AllModels_(1).powerlaw.norm.frozen = True
+    AllModels_(1).powerlaw.PhoIndex.values = varabs_starting_pars[0]
     if AllData_.nGroups > 1:
         for i in range(2, AllData_.nGroups + 1):
             AllModels_(i).powerlaw.norm.untie()
             AllModels_(i).powerlaw.norm.values = Model_tbabs[f'm{i}_norm']
             AllModels_(i).powerlaw.norm.frozen = True
             AllModels_(i).cflux.lg10Flux.untie()
+            AllModels_(i).powerlaw.PhoIndex.values = varabs_starting_pars[0]
     AllModels_(1).cflux.Emin.values = Emin
     AllModels_(1).cflux.Emax.values = Emax
 
@@ -272,7 +282,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
     part = "part3_2"
     spec_Plotting(Plot_, AllData_, product_dir, part,
-                  rebin, rescale_params, separate, visible)
+                  rebin, rescale_params, separate, plot_command, visible)
     # Plot_ting("part3.2")
 
     # writing table
@@ -308,6 +318,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
             AllModels_(i).TBvarabs.Fe.values = Z
             AllModels_(i).TBvarabs.Co.values = Z
             AllModels_(i).TBvarabs.Ni.values = Z
+            AllModels_(i).TBvarabs.nH.values = varabs_starting_pars[1]
+            AllModels_(i).powerlaw.PhoIndex.values = varabs_starting_pars[0]
         AllModels_(1).TBvarabs.nH.values = Model_tbvarabs['var_nH']
         AllModels_(1).powerlaw.norm.values = Model_tbvarabs['m1_norm']
         AllModels_(1).powerlaw.norm.frozen = True
@@ -335,7 +347,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
         print("Uncertainty Variable Absorption (LMC)")
         Fit_.error("5")
         print("Uncertainty Powerlaw Index")
-        Fit_.error("47")
+        # Fit_.error("47")
         Xset_.closeLog()
 
         # collecting table entries
@@ -350,7 +362,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
         part = "part3_3"
         spec_Plotting(Plot_, AllData_, product_dir, part,
-                      rebin, rescale_params, separate, visible)
+                      rebin, rescale_params, separate, plot_command, visible)
         # Plot_ting("part3.3")
 
     #######################################
@@ -381,6 +393,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
             AllModels_(i).TBvarabs.Fe.values = Z
             AllModels_(i).TBvarabs.Co.values = Z
             AllModels_(i).TBvarabs.Ni.values = Z
+            AllModels_(i).TBvarabs.nH.values = varabs_starting_pars[1]
+            AllModels_(i).powerlaw.PhoIndex.values = varabs_starting_pars[0]
         AllModels_(1).TBvarabs.nH.values = Model_tbvarabs['var_nH']
         AllModels_(1).powerlaw.norm.values = Model_tbvarabs['m1_norm']
         AllModels_(1).powerlaw.norm.frozen = True
@@ -408,7 +422,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
                 index = (i - 1) * 48 + 46
                 Fit_.error(f"{index}")
         print("Uncertainty Powerlaw Index")
-        Fit_.error("47")
+        # Fit_.error("47")
         Xset_.closeLog()
 
         # collecting table entries
@@ -419,7 +433,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
         part = "part3_4"
         spec_Plotting(Plot_, AllData_, product_dir, part,
-                      rebin, rescale_params, separate, visible)
+                      rebin, rescale_params, separate, plot_command, visible)
         # Plot_ting("part3.4")
 
         # writing table
