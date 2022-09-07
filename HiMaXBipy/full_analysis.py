@@ -55,6 +55,11 @@ class HiMaXBi:
 
         '''
         if type(src_name) == str:
+            if src_name.find('-') != -1 or src_name.find(" ") != -1:
+                warnings.WarningMessage(
+                    'There can be problems when using "-" or " " as part of the source name. All "-" and " " will be replaced by "_".')
+                src_name = src_name.replace('-', '_')
+                src_name = src_name.replace(' ', '_')
             self._src_name = src_name
         else:
             raise Exception('src_name needs to be of type string.')
@@ -1485,7 +1490,7 @@ class HiMaXBi:
 
                 if mode.find(' ') != -1:
                     epoch = f'{period}{mode.split()[1]} {mode.split()[0]}'
-                elif mode.find('_'):
+                elif mode.find('_') != -1:
                     epoch = f'merged {mode.split(sep="_")[1]}'
                 else:
                     epoch = f'{mode}'
