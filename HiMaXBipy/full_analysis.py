@@ -56,7 +56,7 @@ class HiMaXBi:
         '''
         if type(src_name) == str:
             if src_name.find('-') != -1 or src_name.find(" ") != -1:
-                warnings.WarningMessage(
+                warnings.warn(
                     'There can be problems when using "-" or " " as part of the source name. All "-" and " " will be replaced by "_".')
                 src_name = src_name.replace('-', '_')
                 src_name = src_name.replace(' ', '_')
@@ -77,6 +77,10 @@ class HiMaXBi:
         else:
             raise Exception('Not a valid path for a data directory.')
         self.data_files = ''
+
+        if self._working_dir.find("-") != -1 or self._data_dir.find("-") != -1:
+            warnings.warn(
+                'Working and Data directories with a "-" in their full path can cause problems during data analysis.')
 
         for subdir in ['/working', '/results', '/logfiles']:
             if not os.path.exists(self._working_dir + subdir):
@@ -1189,7 +1193,7 @@ class HiMaXBi:
             if fit_statistic == 'chi':
                 if self._grouping < 20:
                     self._grouping = 20
-                    warnings.WarningMessage(
+                    warnings.warn(
                         'Grouping set to 20 due to chi fit-statistic usage.')
         if type(colors) != list and type(colors) != np.ndarray:
             raise Exception('colors must be array-like')
