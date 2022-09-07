@@ -1013,7 +1013,8 @@ class HiMaXBi:
                      grouping=-1, fit_statistic='cstat', colors=[], markers=[],
                      title='', varabs_starting_pars=[1., 6 * 10**-2], separate=False,
                      plot_command=["ldata", "delchi"], return_array=False,
-                     conf_contours=False, abund='wilm', latest_eRASS=5):
+                     conf_contours=False, abund='wilm', latest_eRASS=5,
+                     skip_LC=False):
         '''Fit and plot spectrum in prefered mode.
 
         Parameters
@@ -1108,6 +1109,9 @@ class HiMaXBi:
             Sets the abundance table used. Default is 'wilm'
         latest_eRASS : int or str, optional
             Sets the number of latest eRASS in use. The default is 5.
+        skip_LC : bool, optional
+            If True force skips the analysis of a lightcurve. Reduces analysis
+            time but can cause unexpected errors. The default is False.
 
         '''
         # Checking if input is sensible
@@ -1133,6 +1137,8 @@ class HiMaXBi:
             raise Exception('return_array must be a bool.')
         if type(conf_contours) != bool:
             raise Exception('conf_contours must be a bool.')
+        if type(skip_LC) != bool:
+            raise Exception('skip_LC must be a bool.')
         if type(absorption) != str and type(absorption) != float:
             raise Exception('absorption must be a string or float.')
         else:
@@ -1254,7 +1260,7 @@ class HiMaXBi:
         if self._skytile == '' or self._filelist == '':
             raise Exception(
                 'Set the region name and list of eventfiles first with the functions set_filelist and set_region.')
-        if not self._LC_extracted:  # for debugging
+        if not self._LC_extracted and not skip_LC:  # for debugging
             self._extract_lc()
             #self._LC_extracted = True
             #self._find_obs_periods(60 * 60 * 24 * 30)
@@ -1359,7 +1365,7 @@ class HiMaXBi:
                 process.wait()  # Wait for process to complete.
 
                 self._extract_spectrum(f'{log_prefix}_simultaneous_e{self._ownership}{epoch}.log',
-                                       'simultaneous', f'{self._working_dir}/working/f{self._working_dir}/working/e{self._ownership}{epoch}_simultaneous.fits',
+                                       'simultaneous', f'{self._working_dir}/working/e{self._ownership}{epoch}_simultaneous.fits',
                                        f'e{self._ownership}{epoch}')
 
                 if epoch_counter == 0:
@@ -1464,7 +1470,7 @@ class HiMaXBi:
                 process.wait()  # Wait for process to complete.
 
                 self._extract_spectrum(f'{log_prefix}_individual_e{self._ownership}{epoch}.log',
-                                       'individual', f'{self._working_dir}/working/f{self._working_dir}/working/e{self._ownership}{epoch}_individual.fits',
+                                       'individual', f'{self._working_dir}/working/e{self._ownership}{epoch}_individual.fits',
                                        f'e{self._ownership}{epoch}')
 
                 file_list_xspec = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_e{self._ownership}{epoch}_eROSITA_individual_PATall_TMon020_SourceSpec_00001_g{self._grouping}.fits'
