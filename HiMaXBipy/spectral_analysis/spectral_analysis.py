@@ -90,7 +90,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
     # ______________________________________________________________________________
     # Part 1: Most general spectral Fit_ (only galactic absorption + powerlaw)
-    Xset_.openLog(f'{product_dir}xspec_part1.log')
+    Xset_.openLog(f'{product_dir}/working//working/xspec_part1.log')
     AllData_.show()
     Model_("tbabs*powerlaw")
     # galactic absorption in the direction of MC in units of 10^22cm^-2
@@ -122,7 +122,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
     # ______________________________________________________________________________
     # Part 2: Include possible variable absorption from Magellanic Clouds
     if not skip_varabs:
-        Xset_.openLog(f'{product_dir}xspec_part2.log')
+        Xset_.openLog(f'{product_dir}/working/xspec_part2.log')
         AllData_.show()
         Model_("tbabs*tbvarabs*powerlaw")
         # galactic absorption in the direction of MC in units of 10^22cm^-2
@@ -182,7 +182,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
     ########################################
     #Part 3.1: absorbed Flux without varabs#
     ########################################
-    Xset_.openLog(f'{product_dir}xspec_part3_1.log')
+    Xset_.openLog(f'{product_dir}/working/xspec_part3_1.log')
     AllData_.show()
     Model_("cflux*tbabs*powerlaw")
     # galactic absorption in the direction of MC in units of 10^22cm^-2
@@ -231,7 +231,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
     ##########################################
     #Part 3.2: unabsorbed Flux without varabs#
     ##########################################
-    Xset_.openLog(f'{product_dir}xspec_part3_2.log')
+    Xset_.openLog(f'{product_dir}/working/xspec_part3_2.log')
     AllData_.show()
     Model_("tbabs*cflux*powerlaw")
     # galactic absorption in the direction of MC in units of 10^22cm^-2
@@ -284,7 +284,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
     #Part 3.3: absorbed Flux with varabs#
     #####################################
     if not skip_varabs:
-        Xset_.openLog(f'{product_dir}xspec_part3_3.log')
+        Xset_.openLog(f'{product_dir}/working/xspec_part3_3.log')
         AllData_.show()
         Model_("cflux*tbabs*tbvarabs*powerlaw")
         # galactic absorption in the direction of MC in units of 10^22cm^-2
@@ -357,7 +357,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
     #Part 3.4: unabsorbed Flux with varabs#
     #######################################
     if not skip_varabs:
-        Xset_.openLog(f'{product_dir}xspec_part3_4.log')
+        Xset_.openLog(f'{product_dir}/working/xspec_part3_4.log')
         AllData_.show()
         Model_("tbabs*tbvarabs*cflux*powerlaw")
         # galactic absorption in the direction of MC in units of 10^22cm^-2

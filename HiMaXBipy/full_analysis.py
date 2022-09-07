@@ -363,7 +363,7 @@ class HiMaXBi:
                 with open(f'{self._working_dir}/logfiles/lightcurves/{logname}_{bin_e[0]}keV_{bin_e[1]}keV.log', 'w') as logfile:
                     for line in process.stdout.readlines():
                         # to fix the weird b'something' format
-                        logfile.writelines(str(line)[2:-1])
+                        logfile.write(str(line)[2:-3] + '\n')
         self._LC_extracted = True
         # one month gap minimum to sort out possible short gaps due to problems during observation
         self._find_obs_periods(60 * 60 * 24 * 30)
@@ -571,7 +571,7 @@ class HiMaXBi:
                        '/logfiles/lightcurves/' + f'{logname}', 'w')
         localtime = time.asctime(time.localtime(time.time()))
 
-        logfile.writelines(localtime + '\n')
+        logfile.write(localtime + '\n')
         user = getpass.getuser()
         plt.rc('text', usetex=True)
         plt.rc('font', family=label_style, size=label_size)
@@ -603,7 +603,7 @@ class HiMaXBi:
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                 ax = fig1.add_subplot(111)
 
-                logfile.writelines(f'Now working on {pfile}.fits')
+                logfile.write(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
 
                 if time_axis == 'mjd':
@@ -683,13 +683,13 @@ class HiMaXBi:
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
-                logfile.writelines(f'{pltfile} created')
+                logfile.write(f'{pltfile} created\n')
                 pltfile = outfile + ".eps"
                 plt.savefig(pltfile)
-                logfile.writelines(f'{pltfile} created')
+                logfile.write(f'{pltfile} created\n')
                 pltfile = outfile + ".png"
                 plt.savefig(pltfile)
-                logfile.writelines(f'{pltfile} created')
+                logfile.write(f'{pltfile} created\n')
 
         logfile.close()
 
@@ -861,7 +861,7 @@ class HiMaXBi:
 
             localtime = time.asctime(time.localtime(time.time()))
 
-            logfile.writelines(localtime + '\n')
+            logfile.write(localtime + '\n')
             user = getpass.getuser()
             plt.rc('text', usetex=True)
             plt.rc('font', family=label_style, size=label_size)
@@ -893,7 +893,7 @@ class HiMaXBi:
                     fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                     ax = fig1.add_subplot(111)
 
-                    logfile.writelines(f'Now working on {pfile}.fits')
+                    logfile.write(f'Now working on {pfile}.fits\n')
                     hdulist = fits.open(f'{pfile}.fits')
 
                     if time_axis == 'mjd':
@@ -971,13 +971,13 @@ class HiMaXBi:
 
                     pltfile = outfile + ".pdf"
                     plt.savefig(pltfile)
-                    logfile.writelines(f'{pltfile} created')
+                    logfile.write(f'{pltfile} created\n')
                     pltfile = outfile + ".eps"
                     plt.savefig(pltfile)
-                    logfile.writelines(f'{pltfile} created')
+                    logfile.write(f'{pltfile} created\n')
                     pltfile = outfile + ".png"
                     plt.savefig(pltfile)
-                    logfile.writelines(f'{pltfile} created')
+                    logfile.write(f'{pltfile} created\n')
 
         logfile.close()
 
@@ -1003,7 +1003,7 @@ class HiMaXBi:
         with open(logname, 'w') as logfile:
             for line in process.stdout.readlines():
                 # to fix weird b'something' format
-                logfile.writelines(str(line)[2:-1])
+                logfile.write(str(line)[2:-3] + '\n')
 
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='autosafe.log', Z=-1, distance=-1,
