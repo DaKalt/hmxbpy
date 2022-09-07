@@ -561,6 +561,8 @@ class HiMaXBi:
                     raise Exception(
                         'The third entry in each line of vlines needs to be a negative integer < -2.')
 
+        os.chdir(self._working_dir + '/working/')
+
         if lc_binning != -1:
             self.LC_prebinning(lc_binning=lc_binning)
         if np.array(E_bins).tolist() != []:
@@ -584,14 +586,14 @@ class HiMaXBi:
         for bin_e in self._energy_bins:
             for TM in TM_list:
                 if fileid == '':
-                    pfile = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
+                    pfile = f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
                     outfile = f'{self._working_dir}/results/lightcurves/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
                 else:
-                    pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
+                    pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
                     outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
-                                 f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                                 f'./{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
                                 ['@pfile', f'{pfile}.fits'],
                                 ['@selection', f'FRACEXP>{fracexp}']]
                 sh_file = self._working_dir + '/working/fselect_lc.sh'
@@ -845,6 +847,7 @@ class HiMaXBi:
             raise Exception('eRASSi must be sorted ascending.')
         if eRASSi != []:
             warnings.warn('Use of eRASSi is currently not supported.')
+        os.chdir(self._working_dir + '/working/')
 
         if lc_binning != -1:
             self.LC_prebinning(lc_binning=lc_binning)
@@ -877,11 +880,11 @@ class HiMaXBi:
                         pfile = f'{self._working_dir}/working/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
                         outfile = f'{self._working_dir}/results/lightcurves/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_LC_{naming}'
                     else:
-                        pfile = f'{self._working_dir}/working/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_{naming}'
+                        pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_{naming}'
                         outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_{naming}'
                     selection = f'FRACEXP>{fracexp} && TIME < {(period[1] - self._mjdref) * 24 * 3600} && TIME > {(period[0] - self._mjdref) * 24 * 3600}'
                     replacements = [['@esass_location', self._esass],
-                                    ['@infile', f'{self._working_dir}/working/{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                                    ['@infile', f'./{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
                                     ['@pfile', f'{pfile}.fits'],
                                     ['@selection', selection]]
                     sh_file = self._working_dir + '/working/fselect_lc.sh'
