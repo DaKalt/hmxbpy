@@ -90,7 +90,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
     # ______________________________________________________________________________
     # Part 1: Most general spectral Fit_ (only galactic absorption + powerlaw)
-    Xset_.openLog(f'{product_dir}/working//working/xspec_part1.log')
+    Xset_.openLog(f'{product_dir}/working/xspec_part1.log')
     AllData_.show()
     Model_("tbabs*powerlaw")
     # galactic absorption in the direction of MC in units of 10^22cm^-2
