@@ -52,7 +52,6 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     ttim = 0.
     istart = 0
     iend = -1  # kald:for intended functionality
-    narea = 0.
     counts = 0
     nrate = 0.
     nrate_e = 0.
@@ -236,6 +235,11 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     istart = 0
     istart_tmp = 0
     iend = -1  # kald: for intended functionality
+    ncount_e = 0.
+    nback_e = 0.
+    narea = 0.
+    ntime = 0.
+    nrat = []
     # mean_count = 0
     # sn = 2.0
     # xtime_tmp = 0.0

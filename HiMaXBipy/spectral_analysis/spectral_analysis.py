@@ -6,7 +6,7 @@ def lum(flux, distance):
 
 
 def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
-                  separate, plot_command, visible=0):
+                  separate, plot_command, title, colors, markers, visible=0):
     Plot_.commands = ()
     Plot_.device = f'{product_dir}/working/xspec_{part}.ps/cps'
     Plot_.xAxis = "keV"
@@ -17,7 +17,7 @@ def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
     if rebin:
         Plot_.setRebin(rescale_params[0], rescale_params[1])
         Plot_.addCommand(f'rescale y {rescale_params[2]} {rescale_params[3]}')
-    Plot_.addCommand('la t ')
+    Plot_.addCommand(f'la t {title}')
     Plot_.addCommand(r'cs 1.4')
     Plot_.addCommand(r'font RO')
     Plot_.addCommand(r'la y Counts s\u-1 \dkeV\u-1')
@@ -28,6 +28,14 @@ def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
             Plot_.addCommand(f'lw 5 on {2 * xi}')
             #Plot_.addCommand(f'Marker {5 + xi} on {2 * xi - 1}')
             #Plot_.addCommand(f'lw 5 on {2 * xi + AllData_.nGroups}')
+            if colors != []:
+                Plot_.addCommand(
+                    f'color {colors[xi]} on {2 * xi}')
+                Plot_.addCommand(
+                    f'color {colors[xi]} on {2 * xi - 1}')
+            if markers != []:
+                Plot_.addCommand(
+                    f'Marker {markers[xi]} on {2 * xi - 1}')
     else:
         for xi in range(1, AllData_.nGroups + 1):
             if xi == visible:
@@ -53,6 +61,12 @@ def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
         for xi in range(1, AllData_.nGroups + 1):
             #Plot_.addCommand(f'lw 3 on {2 * AllData_.nGroups + 2 * xi - 1}')
             #Plot_.addCommand(f'Marker {5 + xi} on {2 * AllData_.nGroups + 2 * xi - 1}')
+            if colors != []:
+                Plot_.addCommand(
+                    f'color {colors[xi]} on {2 * AllData_.nGroups + 2 * xi - 1}')
+            if markers != []:
+                Plot_.addCommand(
+                    f'Marker {markers[xi]} on {2 * AllData_.nGroups + 2 * xi - 1}')
             continue
     else:
         off = ''
@@ -78,7 +92,8 @@ def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
 def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
                table, Z, distance, skip_varabs, epoch, absorption, separate,
                visible, rebin, rescale_params, abund, Emin, Emax,
-               varabs_starting_pars, plot_command):
+               varabs_starting_pars, plot_command, title,  colors, markers,
+               fit_statistic):
     #!/usr/bin/env python3
     # -*- coding: utf-8 -*-
     """
@@ -104,7 +119,7 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
             AllModels_(i).powerlaw.PhoIndex.values = varabs_starting_pars[0]
 
     Fit_.query = "yes"
-    Fit_.statMethod = "cstat"
+    Fit_.statMethod = fit_statistic
     Fit_.renorm()
     Fit_.perform()
     print("Uncertainty Powerlaw Index")
@@ -119,7 +134,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
     part = "part1"
     spec_Plotting(Plot_, AllData_, product_dir, part,
-                  rebin, rescale_params, separate, plot_command, visible)
+                  rebin, rescale_params, separate, plot_command, title,
+                  colors, markers, visible)
     # Plot_ting("part1")
 
     # ______________________________________________________________________________
@@ -178,7 +194,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
         part = "part2"
         spec_Plotting(Plot_, AllData_, product_dir, part,
-                      rebin, rescale_params, separate, plot_command, visible)
+                      rebin, rescale_params, separate, plot_command, title,
+                      colors, markers, visible)
         # Plot_ting("part2")
 
     # ______________________________________________________________________________
@@ -233,7 +250,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
     part = "part3_1"
     spec_Plotting(Plot_, AllData_, product_dir, part,
-                  rebin, rescale_params, separate, plot_command, visible)
+                  rebin, rescale_params, separate, plot_command, title,
+                  colors, markers, visible)
     # Plot_ting("part3.1")
 
     ##########################################
@@ -282,7 +300,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
     part = "part3_2"
     spec_Plotting(Plot_, AllData_, product_dir, part,
-                  rebin, rescale_params, separate, plot_command, visible)
+                  rebin, rescale_params, separate, plot_command, title,
+                  colors, markers, visible)
     # Plot_ting("part3.2")
 
     # writing table
@@ -362,7 +381,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
         part = "part3_3"
         spec_Plotting(Plot_, AllData_, product_dir, part,
-                      rebin, rescale_params, separate, plot_command, visible)
+                      rebin, rescale_params, separate, plot_command, title,
+                      colors, markers, visible)
         # Plot_ting("part3.3")
 
     #######################################
@@ -433,7 +453,8 @@ def spec_model(Xset_, AllModels_, AllData_, Model_, Fit_, Plot_, product_dir,
 
         part = "part3_4"
         spec_Plotting(Plot_, AllData_, product_dir, part,
-                      rebin, rescale_params, separate, plot_command, visible)
+                      rebin, rescale_params, separate, plot_command, title,
+                      colors, markers, visible)
         # Plot_ting("part3.4")
 
         # writing table

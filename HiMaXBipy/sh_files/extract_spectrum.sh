@@ -38,5 +38,5 @@ for i in 0 1 2 3 4 6; do
   grppha ./${src}_${region}_${epoch}_eROSITA_${mode}_PAT${PAT}_TMon${i}20_SourceSpec_00001.fits ${product_dir}/${src}_${region}_${epoch}_eROSITA_${mode}_PAT${PAT}_TMon${i}20_SourceSpec_00001_g${group}.fits comm="group min ${group} & exit" clobber=yes
 done
 for i in 0 5 7; do
-  grppha ./${src}_${region}_${epoch}_eROSITA_${mode}_PAT${PAT}_TMoff${i}20_SourceSpec_00001.fits ${product_dir}/${src}_${region}_${epoch}_eROSITA_${mode}_PAT${PAT}_TMoffS${i}20_SourceSpec_00001_g${group}.fits comm="group min ${group} & exit" clobber=yes
+  grppha ./${src}_${region}_${epoch}_eROSITA_${mode}_PAT${PAT}_TMoff${i}20_SourceSpec_00001.fits ${product_dir}/${src}_${region}_${epoch}_eROSITA_${mode}_PAT${PAT}_TMoff${i}20_SourceSpec_00001_g${group}.fits comm="group min ${group} & exit" clobber=yes
 done
