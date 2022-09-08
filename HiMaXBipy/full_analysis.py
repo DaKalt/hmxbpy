@@ -1537,7 +1537,7 @@ class HiMaXBi:
                 else:
                     parts = ['1', '2', '3_1', '3_2', '3_3', '3_4']
 
-                for part in ['1', '2', '3_1', '3_2', '3_3', '3_4']:
+                for part in parts:
                     for extension in ['.log', '.ps', '.qdp', '.pco']:
                         if separate:
                             os.rename(f'{self._working_dir}/working/xspec_part{part}{extension}',
