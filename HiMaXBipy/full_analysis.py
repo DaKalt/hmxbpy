@@ -1329,7 +1329,7 @@ class HiMaXBi:
             period = f'e{self._ownership}'
         file_list_xspec = ''
         for epoch_counter in range(len(self._period_names)):
-            if period != 'epoch' and (skip_eRASS == self._period_names[epoch_counter][-1]).any():
+            if period != 'epoch' and (skip_eRASS == int(self._period_names[epoch_counter][-1])).any():
                 continue
             replacements = [['@esass_location', self._esass],
                             ['@infiles', self._filelist],
@@ -1364,7 +1364,7 @@ class HiMaXBi:
         if self._create_epochs:
             file_list_xspec = ''
             for epoch_counter in range(len(self._ero_starttimes)):
-                if (skip_eRASS == self._period_names[epoch_counter][-1]).any():
+                if (skip_eRASS == int(self._period_names[epoch_counter][-1])).any():
                     continue
                 if epoch_counter == 0:
                     epoch = '0_1'
@@ -1451,7 +1451,7 @@ class HiMaXBi:
         else:
             period = f'e{self._ownership}'
         for epoch_counter in range(len(self._period_names)):
-            if period != 'epoch' and (skip_eRASS == self._period_names[epoch_counter][-1]).any():
+            if period != 'epoch' and (skip_eRASS == int(self._period_names[epoch_counter][-1])).any():
                 continue
             replacements = [['@esass_location', self._esass],
                             ['@infiles', self._filelist],
@@ -1481,7 +1481,7 @@ class HiMaXBi:
 
         if self._create_epochs:
             for epoch_counter in range(len(self._ero_starttimes)):
-                if (skip_eRASS == self._period_names[epoch_counter][-1]).any():
+                if (skip_eRASS == int(self._period_names[epoch_counter][-1])).any():
                     continue
                 if epoch_counter == 0:
                     epoch = '0_1'
