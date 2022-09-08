@@ -52,6 +52,16 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     ttim = 0.
     istart = 0
     iend = -1  # kald:for intended functionality
+    narea = 0.
+    counts = 0
+    nrate = 0.
+    nrate_e = 0.
+    nexp = 0.
+    bkg = 0.
+    ncount_e = 0.
+    nback_e = 0.
+    narea = 0.
+    ntime = 0.
 
     for i in range(nrow):
         tmp = time0[i] - start_bin
