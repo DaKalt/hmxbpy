@@ -224,6 +224,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     tback_e = 0.
     ttim = 0.
     istart = 0
+    istart_tmp = 0
     iend = -1  # kald: for intended functionality
     # mean_count = 0
     # sn = 2.0
