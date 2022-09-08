@@ -1284,7 +1284,7 @@ class HiMaXBi:
         if mode == 'all':
             self._plot_spectra_simultaneous(table_name, log_prefix, skip_varabs, absorption,
                                             separate, rebin, rebin_params, rescale_F, rescale_chi, abund, skip_eRASS,
-                                            varabs_starting_pars, plot_command, model_file, skip_eRASS,
+                                            varabs_starting_pars, plot_command, model_file,
                                             title, save_settings, log_suffix,
                                             colors, markers, fit_statistic)
             print('First done.')
@@ -1295,7 +1295,7 @@ class HiMaXBi:
                                       colors, markers, fit_statistic)
             self._plot_spectra_individual(table_name, log_prefix, skip_eRASS,
                                           skip_varabs, absorption, rebin, rebin_params, rescale_F, rescale_chi, abund,
-                                          varabs_starting_pars, plot_command, model_file, skip_eRASS,
+                                          varabs_starting_pars, plot_command, model_file,
                                           title, save_settings, log_suffix,
                                           colors, markers, fit_statistic)
         elif mode == 'individual':
