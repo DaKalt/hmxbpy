@@ -12,7 +12,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     farea = hdulist[1].data.field('FRACAREA')
     back = hdulist[1].data.field('BACK_COUNTS')
     backrat = hdulist[1].data.field('BACKRATIO')
-    delta = delt[0]
+    # delta = delt[0]
     # most representative value of background ratio
     backrat_med = np.median(backrat)
 
@@ -33,8 +33,8 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     # calculate new rate by error propagation assuming there are enough counts in each bin to assume Gaussian statistics usinf infirmation on total counts background exposure and backrat
     uplimit = []
 
-    rate = []
-    rate_e = []
+    # rate = []
+    # rate_e = []
     xtime = []
     xtime_d = []
     yrate = []
@@ -186,7 +186,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     farea = hdulist[1].data.field('FRACAREA')
     back = hdulist[1].data.field('BACK_COUNTS')
     backrat = hdulist[1].data.field('BACKRATIO')
-    delta = delt[0]
+    # delta = delt[0]
     backrat_med = np.median(backrat)
 
     nrow = len(time)
@@ -204,8 +204,8 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     logfile.write(f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
     # calculate new rate by error propagation assuming there are enough counts in each bin to assume Gaussian statistics usinf infirmation on total counts background exposure and backrat
-    rate = []
-    rate_e = []
+    # rate = []
+    # rate_e = []
     xtime = []
     xtime_d = []
     yrate = []
@@ -220,18 +220,18 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     texp = 0.
     trate_e = 0.
     tcount_e = 0.
-    tcount_e_c = 0.
+    # tcount_e_c = 0.
     tback_e = 0.
     ttim = 0.
     istart = 0
     iend = -1  # kald: for intended functionality
-    mean_count = 0
-    sn = 2.0
-    xtime_tmp = 0.0
-    xtime_d_start_tmp = 0.0
+    # mean_count = 0
+    # sn = 2.0
+    # xtime_tmp = 0.0
+    # xtime_d_start_tmp = 0.0
     logfile.write(f'Minimum number of counts is {mincounts}\n')
     for i in range(nrow):
-        tmp = time0[i] - start_bin
+        # tmp = time0[i] - start_bin
         tcounts = tcounts + cnts[i]
         tcounts_c = tcounts_c + cnts[i]
         texp = texp + fexp[i]
@@ -240,24 +240,24 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         netcounts = (tcounts - tback*backrat_med)
         trate = (tcounts - tback*backrat_med)/(texp*delt[0])
         tcount_e = tcounts**0.5
-        tcount_e_c = tcounts_c**0.5
+        # tcount_e_c = tcounts_c**0.5
         tback_e = tback**0.5
-        if tcounts_c > 0:
-            sn = tcounts_c/tcount_e_c
-        else:
-            sn = 0.0
+        # if tcounts_c > 0:
+        #     sn = tcounts_c/tcount_e_c
+        # else:
+        #     sn = 0.0
         trate_e = (tcount_e**2) + ((tback_e**2)*(backrat_med**2))
         netcounts_e = trate_e**0.5
         trate_ee = trate_e**0.5/(texp*delt[0])
         if tcounts_c > mincounts:
             tcounts_c = 0
-            tcount_e_c = 0.0
+            # tcount_e_c = 0.0
             iend += 1  # kald: in this case one more bin needs to be included compared to the usual lightcurves, else <10 countsfor all newly defined bins
             # without the +1 before but this way sections are directly connected #kald
             xtime.append(0.5*(time0[istart]+time0[iend+1]))
             xtime_d.append(0.5*(time0[iend+1]-time0[istart]))
-            xtime_tmp = 0.5*(time0[istart]+time0[iend])
-            xtime_d_start_tmp = time0[istart]
+            # xtime_tmp = 0.5*(time0[istart]+time0[iend])
+            # xtime_d_start_tmp = time0[istart]
             end_bin = time0[iend]
             counts = 0
             nrate = 0.
@@ -269,7 +269,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
             narea = 0.
             ntime = 0.
             nrat = []
-            nrat_med = 0.
+            # nrat_med = 0.
             for j in range(istart, iend + 1):
                 nexp = nexp + fexp[j]
                 counts = counts + cnts[j]
@@ -283,7 +283,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
                 nrat.append(backrat[j])
             yrate.append(nrate)
             yrate_e.append(nrate_e**0.5/(nexp*delt[0]))
-            nrat_med = np.median(nrat)
+            # nrat_med = np.median(nrat)
 
             logfile.write(
                 f'bin number, Start,end time of bin, duration of bin, counts , rate, error,fracexp, fractime, fracarea, loop start, loop end {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate} {nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} {istart} {iend}\n')
@@ -295,9 +295,9 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         else:
             iend += 1
     end_bin = time0[iend]
-    ycount_mean = 0
-    yerror_mean = 0.0
-    xtime_mean = 0.0
+    # ycount_mean = 0
+    # yerror_mean = 0.0
+    # xtime_mean = 0.0
     counts = 0
     nrate = 0.
     nrate_e = 0.
@@ -322,7 +322,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         xtime.append(0.5*(time0[istart]+time0[iend]))
         xtime_d.append(0.5*(time0[iend]-time0[istart]))
     else:
-        logfile.write(f'averaging {yrate[-1]} {nrate}\n')
+        logfile.write('averaging\n')
         for j in range(istart_tmp, iend + 1):
             nexp = nexp + fexp[j]
             counts = counts + cnts[j]
@@ -334,14 +334,24 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
             narea = narea + farea[j]
             ntime = ntime + ftim[j]
             nrat.append(backrat[j])
-        yrate[-1] = nrate
-        yrate_e[-1] = nrate_e**0.5/(nexp*delt[0])
+        if len(yrate) > 0:
+            yrate[-1] = nrate
+            yrate_e[-1] = nrate_e**0.5/(nexp*delt[0])
 
-        xtime_mean = (0.5*(time0[istart]+time0[iend]))
-        xtime[-1] = (time0[istart_tmp] + time0[iend]) * \
-            0.5  # changed to used istart_tmp #kald
-        # taken out xerrer as a variable #kald
-        xtime_d[-1] = 0.5*(time0[iend]-time0[istart_tmp])
+            #xtime_mean = (0.5*(time0[istart]+time0[iend]))
+            xtime[-1] = (time0[istart_tmp] + time0[iend]) * \
+                0.5  # changed to used istart_tmp #kald
+            # taken out xerrer as a variable #kald
+            xtime_d[-1] = 0.5*(time0[iend]-time0[istart_tmp])
+        else:
+            yrate.append(nrate)
+            yrate_e.append(nrate_e**0.5/(nexp*delt[0]))
+
+            #xtime_mean = (0.5*(time0[istart]+time0[iend]))
+            xtime.append((time0[istart_tmp] + time0[iend]) *
+                         0.5)  # changed to used istart_tmp #kald
+            # taken out xerrer as a variable #kald
+            xtime_d.append(0.5*(time0[iend]-time0[istart_tmp]))
 
     # start of first bin at 0:
     mjd = np.array(xtime) / 3600. / 24. + start_time / \
