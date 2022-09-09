@@ -24,6 +24,10 @@ from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
+def mk_tex_style(self):
+    install_tex_sty()
+
+
 class HiMaXBi:
     _skytile = ''
     _filelist = ''
@@ -107,9 +111,6 @@ class HiMaXBi:
         if self._working_dir.find("-") != -1 or self._data_dir.find("-") != -1:
             raise Exception(
                 'Working and Data directories with a "-" in their full path cause problems during data analysis.')
-
-    def mk_tex_style(self):
-        install_tex_sty()
 
     def _replace_in_sh(self, path, replacements):
         '''
