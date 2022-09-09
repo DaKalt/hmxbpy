@@ -64,8 +64,8 @@ class HiMaXBi:
         else:
             raise Exception('src_name needs to be of type string.')
 
-        working_dir = os.path.expanduser(working_dir)
-        data_dir = os.path.expanduser(data_dir)
+        working_dir = os.path.abspath(os.path.expanduser(working_dir))
+        data_dir = os.path.abspath(os.path.expanduser(data_dir))
 
         if os.path.exists(working_dir) and type(working_dir) == str:
             self._working_dir_full = os.path.abspath(working_dir)
