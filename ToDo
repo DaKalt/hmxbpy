@@ -1,7 +1,6 @@
 Include:
   - Cutout creation (with healpy or ligo.skymaps for correct projection) --> make bands a parameter
   - Cut away dataless parts from LC (especially full LC; probably matplotlib has a command?)
-  - make additional models possible (import .xcm file?)
   - variability analysis
   - add bxa (in addition to cstat) and possibly 3ml
   - return spectrum data points as array (for plotting with plt)
