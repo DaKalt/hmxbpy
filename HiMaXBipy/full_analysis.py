@@ -24,7 +24,7 @@ from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
-def mk_tex_style(self):
+def mk_tex_style():
     install_tex_sty()
 
 
