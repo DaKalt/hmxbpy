@@ -92,7 +92,7 @@ class HiMaXBi:
                 shutil.copy(self._sh_dir_ + '/' + filename,
                             self._working_dir_full + '/working')
 
-        os.chdir(self._working_dir_full + '/working/')
+        os.chdir(working_dir + '/working/')
 
         self._working_dir = os.path.relpath(working_dir)
         self._data_dir = os.path.relpath(data_dir)
