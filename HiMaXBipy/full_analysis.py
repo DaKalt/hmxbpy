@@ -19,13 +19,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
-from HiMaXBipy.io.package_data import get_path_of_data_dir, install_tex_sty
+from HiMaXBipy.io.package_data import get_path_of_data_dir
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
-
-
-def mk_tex_style():
-    install_tex_sty()
 
 
 class HiMaXBi:
