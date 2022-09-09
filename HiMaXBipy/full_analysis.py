@@ -1611,7 +1611,7 @@ class HiMaXBi:
                             os.rename(f'./xspec_part{part}{extension}',
                                       f'{self._working_dir}/results/spectra/xspec_part{part}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV{log_suffix}')
 
-                if mode.find(' ') != -1:
+                if mode.find(' ') == -1:
                     xcm_name = f'{table_name}_{mode}_{energy_bin[0]}keV_{energy_bin[1]}keV.xcm'
                 else:
                     xcm_name = f'{table_name}_{mode.split()[0]}_{energy_bin[0]}keV_{energy_bin[1]}keV_{period}{mode.split()[1]}.xcm'
