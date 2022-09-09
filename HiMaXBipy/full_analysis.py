@@ -38,16 +38,18 @@ class HiMaXBi:
     _distance = 50.
     _Z = 0.49
 
-    def __init__(self, src_name, working_dir, data_dir):
+    def __init__(self, src_name, working_dir, data_dir, fix_path = True):
         '''
         Parameters
         ----------
         src_name : str
             Sets the name of the source used for naming files.
-        working_dir : TYPE
+        working_dir : str
             Sets the working directory to which resulting files will be saved.
-        data_dir : TYPE
+        data_dir : str
             Sets directory from where to use data files.
+        fix_path : bool
+            If set true, replaces '*/galaxy' by 'data40s/galaxy' in paths
 
         Returns
         -------
@@ -67,6 +69,10 @@ class HiMaXBi:
         working_dir = os.path.abspath(os.path.expanduser(working_dir))
         data_dir = os.path.abspath(os.path.expanduser(data_dir))
 
+        if fix_path:
+            working_dir = 'data40s/' + working_dir[working_dir.find('galaxy'):]
+            data_dir = 'data40s/' + data_dir[data_dir.find('galaxy'):]
+        
         if os.path.exists(working_dir) and type(working_dir) == str:
             self._working_dir_full = os.path.abspath(working_dir)
         else:
