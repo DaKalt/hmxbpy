@@ -10,6 +10,7 @@ If the style is missing (matplotlib will cause an error, stating that the style 
 in the home directory running the following commands in python:
 
 from HiMaXBipy.io.package_data import install_tex_sty
+
 install_tex_sty()
 
 (Latex needs to look for styles in ~/texmf, but it usually does.)
