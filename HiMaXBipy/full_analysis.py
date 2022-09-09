@@ -94,8 +94,8 @@ class HiMaXBi:
 
         os.chdir(self._working_dir_full + '/working/')
 
-        self._working_dir = os.path.relpath(self._working_dir_full)
-        self._data_dir = os.path.relpath(self._data_dir_full)
+        self._working_dir = os.path.relpath(working_dir)
+        self._data_dir = os.path.relpath(data_dir)
 
         if self._working_dir.find("-") != -1 or self._data_dir.find("-") != -1:
             raise Exception(
