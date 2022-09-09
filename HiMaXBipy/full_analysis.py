@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
-from HiMaXBipy.io.package_data import get_path_of_data_dir
+from HiMaXBipy.io.package_data import get_path_of_data_dir, install_tex_sty
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
@@ -38,7 +38,7 @@ class HiMaXBi:
     _distance = 50.
     _Z = 0.49
 
-    def __init__(self, src_name, working_dir, data_dir, fix_path = True):
+    def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
         Parameters
         ----------
@@ -70,9 +70,10 @@ class HiMaXBi:
         data_dir = os.path.abspath(os.path.expanduser(data_dir))
 
         if fix_path:
-            working_dir = '/data40s/' + working_dir[working_dir.find('galaxy'):]
+            working_dir = '/data40s/' + \
+                working_dir[working_dir.find('galaxy'):]
             data_dir = '/data40s/' + data_dir[data_dir.find('galaxy'):]
-        
+
         if os.path.exists(working_dir) and type(working_dir) == str:
             self._working_dir_full = os.path.abspath(working_dir)
         else:
@@ -106,6 +107,9 @@ class HiMaXBi:
         if self._working_dir.find("-") != -1 or self._data_dir.find("-") != -1:
             raise Exception(
                 'Working and Data directories with a "-" in their full path cause problems during data analysis.')
+
+    def mk_tex_style(self):
+        install_tex_sty()
 
     def _replace_in_sh(self, path, replacements):
         '''
