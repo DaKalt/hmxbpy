@@ -469,5 +469,7 @@ def format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y):
 
 
 def get_boundaries(in_bounds):
-    out_bounds = np.average(np.array(in_bounds), axis=0)
+    out_bounds = np.zeros(4)
+    out_bounds[0:2] = np.max(np.array(in_bounds), axis=0)[0:2]
+    out_bounds[2:4] = np.min(np.array(in_bounds), axis=0)[2:4]
     return out_bounds[0], out_bounds[1], out_bounds[2], out_bounds[3]
