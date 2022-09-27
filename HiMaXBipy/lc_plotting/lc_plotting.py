@@ -943,11 +943,15 @@ def format_axis_broken(fig, axs, obs_periods, pymin, pymax, ticknumber_x,
         tick_size_x = round_to_1(
             (obs_periods[i][1] - obs_periods[i][0]) / ticknumber_x)
         xticks = []
+        # centre_x = np.round(
+        #     (obs_periods[i][1] + obs_periods[i][0]) / 2., -int(np.log10(tick_size_x)))
         centre_x = np.round(
-            (obs_periods[i][1] + obs_periods[i][0]) / 2., -int(np.log10(tick_size_x)))
+            (obs_periods[i][1] + obs_periods[i][0]) / 2.)
         for i in range(-int(ticknumber_x), int(ticknumber_x)):
             if i * tick_size_x + centre_x > obs_periods[i][0] and i * tick_size_x + centre_x < obs_periods[i][1]:
                 xticks.append(i * tick_size_x + centre_x)
+        if len(xticks) <= 1:
+            xticks = [centre_x - tick_size_x / 2, centre_x + tick_size_x / 2]
         ax.set_xticks(xticks)
 
     # Set common x/y lim for ax in the same col/row
