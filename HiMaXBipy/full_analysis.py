@@ -775,6 +775,12 @@ class HiMaXBi:
         lc_binning : str or float, optional
             Sets initial lc binsize in seconds. The default is -1
             (meaning the current value is not changeds)
+        d : str or float, optional
+            Size of gap markers. The default is '0.015'.
+        tilt : str, int or float, optional
+            Tild of gap markers. The default is '45'.
+        diag_color : str, optional
+            Color of gap markers. The default is 'k'.
 
         '''
         if type(logname) != str:
@@ -847,6 +853,12 @@ class HiMaXBi:
                 elif line[2] >= -1:
                     raise Exception(
                         'The third entry in each line of vlines needs to be a negative integer < -2.')
+        if type(tilt) != float and type(tilt) != int and type(tilt) != str:
+            raise Exception('tilt must be a float, str or int.')
+        if type(d) != float and type(d) != str:
+            raise Exception('d must be a float or str.')
+        if type(diag_color) != str:
+            raise Exception('diag_color must be a str.')
 
         os.chdir(self._working_dir_full + '/working/')
 
