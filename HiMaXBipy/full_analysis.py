@@ -16,11 +16,12 @@ import warnings
 
 from astropy.io import fits
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 import numpy as np
 from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir
-from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis
+from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis, plot_lc_UL_broken, plot_lc_mincounts_broken, format_axis_broken
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
@@ -691,6 +692,305 @@ class HiMaXBi:
                         ax.vlines((np.array(self._ero_starttimes) - self._mjdref) *
                                   3600 * 24, -5, 5, colors='grey',
                                   linestyle='dotted', zorder=-4)
+
+                fig1.tight_layout()
+
+                pltfile = outfile + ".pdf"
+                plt.savefig(pltfile)
+                logfile.write(f'{pltfile} created\n')
+                pltfile = outfile + ".eps"
+                plt.savefig(pltfile)
+                logfile.write(f'{pltfile} created\n')
+                pltfile = outfile + ".png"
+                plt.savefig(pltfile)
+                logfile.write(f'{pltfile} created\n')
+
+        logfile.close()
+
+    def plot_lc_broken(self, fracexp='0.15', mincounts='10', mode='ul',
+                       show_eRASS=True, logname='lc_full_broken_autosave.log',
+                       time_axis='mjd', print_name=False, print_datetime=False,
+                       label_style='serif', label_size=12, figsize=[8, 5.5],
+                       colors=[], fileid='', toplab='', separate_TM=False,
+                       vlines=[], ticknumber_y=5.0, ticknumber_x=3.0, E_bins=[],
+                       lc_binning=-1, d=0.015, tilt=45, diag_color="k"):
+        '''Function to create full lightcurve with gaps cut out.
+
+        Parameters
+        ----------
+        fracexp : str or float, optional
+            Fractional exposure lower limit for times taken into account for
+            LC (noise reduction). The default is '0.15'.
+        mincounts : str, float or int, optional
+            Minimum number of counts for counts per bin to not be noted as an
+            upper limit as well as minimum number of counts per bin for mode
+            mincounts/mincounts_ul. The default is '10'.
+        mode : str, optional
+            Type of LC to be produced. Either 'ul', 'mincounts' or
+            'mincounts_ul'. The default is 'ul'.
+        show_eRASS : bool, optional
+            True to show start/end dates of eRASSi as vertical lines. The
+            default is True.
+        logname : str, optional
+            Name of the logfile. The default is 'lc_full_broken_autosave.log'.
+        time_axis : str, optional
+            Defines the unit of time axis. Either 'mjd' or 's'. The default is
+            'mjd'.
+        print_name : bool, optional
+            Print name of person who runs the skript. The default is False.
+        print_datetime : bool, optional
+            Print date-time when skript was run. The default is False.
+        label_style : str, optional
+            Sets fontstyle of plots. Any possible style available for
+            matplotlib.pyplot.rc. The default is 'serif'.
+        label_size : float or int, optional
+            Sets fontsize. The default is 12.
+        figsize : array-like (2,), optional
+            Sets width and height of figure. The default is [8, 5.5].
+        colors : array of str (1,) or (2,), optional
+            Sets colors of plots. Any color available to matplotlib possible.
+            For mode 'ul' and 'mincounts' the first entry is used, for mode
+            'mincounts_ul' the first entry sets color for 'ul' part, and the
+            second for 'mincounts' part. The default is [].
+        fileid : str, optional
+            Name of outputfile without filespecific ending. The default is ''.
+        toplab : str, optional
+            Sets label of the plot. The default is ''.
+        separate_TM : bool, optional
+            Create LC for each TM. The default is False.
+        vlines : array of mjd-color-zorder combinations (n, 3), optional
+            Adds additional vertical lines in the plot at given MJD with given
+            color. The zorder entries need to be distinct negative
+            integers < -2. The default is [].
+        ticknumber_y : float or int, optional
+            Sets the approximate number of tickmarks along the y axis.
+            The default is 5.0.
+        ticknumber_x : float or int, optional
+            Sets the approximate number of tickmarks along the x axis in each
+            section.
+            The default is 8.0.
+        E_bins : array-like (n,2), optional
+            Sets energy bins that should be analysed. For each bin E_min and
+            E_max must be given in keV. The default is [[0.2, 8.0]]
+        lc_binning : str or float, optional
+            Sets initial lc binsize in seconds. The default is -1
+            (meaning the current value is not changeds)
+
+        '''
+        if type(logname) != str:
+            raise Exception('logname must be a string.')
+        if type(mincounts) != str and type(mincounts) != float and type(mincounts) != int:
+            raise Exception('mincounts must be a string, float or int.')
+        else:
+            try:
+                mincounts = float(mincounts)
+            except ValueError:
+                raise Exception('mincounts must be a number.')
+        if type(mode) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if mode != 'ul' and mode != 'mincounts' and mode != 'mincounts_ul':
+                raise Exception(
+                    'mode must be \'ul\', \'mincounts\' or \'mincounts_ul\'')
+        if type(fracexp) != str and type(fracexp) != float:
+            raise Exception('mincounts must be a string or float.')
+        else:
+            try:
+                fracexp = float(fracexp)
+            except ValueError:
+                raise Exception('fracexp must be a number.')
+        if type(show_eRASS) != bool:
+            raise Exception('show_eRASS must be a bool.')
+        if type(print_name) != bool:
+            raise Exception('print_name must be a bool.')
+        if type(print_datetime) != bool:
+            raise Exception('print_datetime must be a bool.')
+        if type(separate_TM) != bool:
+            raise Exception('separate_TM must be a bool.')
+        if type(time_axis) != str:
+            raise Exception('time_axis must be a string.')
+        else:
+            if time_axis != 'mjd' and time_axis != 's':
+                raise Exception('time_axis must be \'mjd\' or \'s\'')
+        if type(label_style) != str:
+            raise Exception('label_style must be a string.')
+        if type(label_size) != float and type(label_size) != int:
+            raise Exception('label_size must be a float or int.')
+        if (type(figsize) != list and type(figsize) != np.ndarray) or np.shape(figsize) != (2,):
+            raise Exception('figsize must be (2,) array-like.')
+        if type(ticknumber_x) != float and type(ticknumber_x) != int:
+            raise Exception('ticknumber_x must be a float or int.')
+        if type(ticknumber_y) != float and type(ticknumber_y) != int:
+            raise Exception('ticknumber_y must be a float or int.')
+        if colors != []:
+            if (type(colors) != list and type(colors) != np.ndarray) or (np.shape(colors) != (2,) and np.shape(colors) != (1,)):
+                raise Exception('colors must be (2,) or (1,) array-like.')
+        if type(fileid) != str:
+            raise Exception('fileid must be a string.')
+        if type(toplab) != str:
+            raise Exception('toplab must be a string.')
+        if type(vlines) != list and type(vlines) != np.ndarray:
+            raise Exception('vlines must be array-like')
+        else:
+            for line in vlines:
+                if len(line) != 3:
+                    raise Exception('Each line in vlines needs 3 entries.')
+                if type(line[0]) != float and type(line[0]) != int:
+                    raise Exception(
+                        'The first entry in each line of vlines needs to be the MJD given as float or int.')
+                if type(line[1]) != str:
+                    raise Exception(
+                        'The second entry in each line of vlines needs to be a matplotlib color given as a string.')
+                if type(line[2]) != int:
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a negative integer < -2.')
+                elif line[2] >= -1:
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a negative integer < -2.')
+
+        os.chdir(self._working_dir_full + '/working/')
+
+        if lc_binning != -1:
+            self.LC_prebinning(lc_binning=lc_binning)
+        if np.array(E_bins).tolist() != []:
+            self.set_Ebins(bins=E_bins)
+        if not self._LC_extracted:
+            self._extract_lc()
+        logfile = open(self._working_dir +
+                       '/logfiles/lightcurves/' + f'{logname}', 'w')
+        localtime = time.asctime(time.localtime(time.time()))
+
+        logfile.write(localtime + '\n')
+        user = getpass.getuser()
+        plt.rc('text', usetex=True)
+        plt.rc('font', family=label_style, size=label_size)
+
+        if separate_TM:
+            TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
+        else:
+            TM_list = [0]
+
+        for bin_e in self._energy_bins:
+            for TM in TM_list:
+                if fileid == '':
+                    pfile = f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_brokenLC'
+                    outfile = f'{self._working_dir}/results/lightcurves/{self._src_name}_{self._skytile}_LC_TM{TM}20_fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_brokenLC'
+                else:
+                    pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_brokenLC'
+                    outfile = f'{self._working_dir}/results/lightcurves/{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_brokenLC'
+                replacements = [['@esass_location', self._esass],
+                                ['@infile',
+                                 f'./{self._src_name}_{self._skytile}_eROSITA_PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_{TM}20_LightCurve_00001.fits'],
+                                ['@pfile', f'{pfile}.fits'],
+                                ['@selection', f'FRACEXP>{fracexp}']]
+                sh_file = self._working_dir_full + '/working/fselect_lc.sh'
+                sh_file = self._replace_in_sh(sh_file, replacements)
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
+
+                fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
+
+                width_ratios = [i[1] - i[0] for i in self._obs_periods]
+                height_ratios = [1]
+
+                ncols, nrows = len(width_ratios), len(height_ratios)
+
+                gs = gridspec.GridSpec(ncols=ncols,
+                                       nrows=nrows,
+                                       height_ratios=height_ratios,
+                                       width_ratios=width_ratios)
+                big_ax = plt.Subplot(fig1, gridspec.GridSpec(1, 1)[0])
+
+                [sp.set_visible(False) for sp in big_ax.spines.values()]
+                big_ax.set_xticks([])
+                big_ax.set_yticks([])
+                big_ax.patch.set_facecolor("none")
+
+                axs = []
+                for igs in gs:
+                    ax = plt.Subplot(fig1, igs)
+                    fig1.add_subplot(ax)
+                    axs.append(ax)
+                fig1.add_subplot(big_ax)
+
+                logfile.write(f'Now working on {pfile}.fits\n')
+                hdulist = fits.open(f'{pfile}.fits')
+
+                if time_axis == 'mjd':
+                    xflag = 2
+                elif time_axis == 's':
+                    xflag = 1
+
+                if colors == []:
+                    colors = ['lightblue', 'black']
+
+                if mode == 'ul':
+                    pxmin, pxmax, pymin, pymax = plot_lc_UL_broken(
+                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[1])
+                elif mode == 'mincounts':
+                    pxmin, pxmax, pymin, pymax = plot_lc_mincounts_broken(
+                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[1])
+                elif mode == 'mincounts_ul':
+                    pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL_broken(
+                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        colors=colors[0])
+                    pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts_broken(
+                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[1])
+                    pxmin, pxmax, pymin, pymax = get_boundaries(
+                        [[pxmin1, pxmax1, pymin1, pymax1],
+                         [pxmin2, pxmax2, pymin2, pymax2]])
+
+                format_axis_broken(fig1, axs, pxmin, self._obs_periods, pymax,
+                                   ticknumber_x, ticknumber_y, ncols, nrows,
+                                   d, tilt, diag_color)
+
+                hdulist.close()
+
+                # plot time in s from beginning (xflag=1) or in MJD
+                if time_axis == 's':
+                    big_ax.set_xlabel(r'Time (s)')  # , fontsize=12)
+                elif time_axis == 'mjd':
+                    big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
+
+                big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
+
+                if print_name:
+                    # user name and time
+                    big_ax.text(1.015, 0.0, user + ' - ' + localtime, rotation=90,
+                                fontsize=8, verticalalignment='bottom',
+                                horizontalalignment='left', transform=big_ax.transAxes)
+                # eROSITA label
+                    big_ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10,
+                                verticalalignment='bottom',
+                                horizontalalignment='left', transform=big_ax.transAxes)
+                    big_ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10,
+                                verticalalignment='bottom',
+                                horizontalalignment='right', transform=big_ax.transAxes)
+                # label plot:
+                    big_ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
+                                verticalalignment='bottom',
+                                horizontalalignment='center', transform=big_ax.transAxes)
+
+                for ax in axs:
+                    for i in range(len(vlines)):
+                        ax.vlines(vlines[i][0], -5, 5, colors=vlines[i]
+                                  [1], linestyle='dotted', zorder=vlines[i][2])
+                    if show_eRASS:
+                        if time_axis == 'mjd':
+                            ax.vlines(self._ero_starttimes, -5, 5,
+                                      colors='grey', linestyle='dotted', zorder=-2)
+                        elif time_axis == 's':
+                            ax.vlines((np.array(self._ero_starttimes) - self._mjdref) *
+                                      3600 * 24, -5, 5, colors='grey',
+                                      linestyle='dotted', zorder=-4)
 
                 fig1.tight_layout()
 
