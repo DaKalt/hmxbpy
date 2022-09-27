@@ -960,7 +960,7 @@ class HiMaXBi:
                         [[pxmin1, pxmax1, pymin1, pymax1],
                          [pxmin2, pxmax2, pymin2, pymax2]])
 
-                format_axis_broken(fig1, axs, pxmin, self._obs_periods, pymax,
+                format_axis_broken(fig1, axs, self._obs_periods, pymin, pymax,
                                    ticknumber_x, ticknumber_y, ncols, nrows,
                                    d, tilt, diag_color)
 
