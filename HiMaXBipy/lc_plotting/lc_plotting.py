@@ -940,7 +940,7 @@ def format_axis_broken(fig, axs, obs_periods, pymin, pymax, ticknumber_x,
                 yticks.append(i * tick_size_y)
         ax.set_yticks(yticks)
 
-        tick_size_x = round_to_1(
+        tick_size_x = np.round(
             (obs_periods[i][1] - obs_periods[i][0]) / ticknumber_x)
         xticks = []
         # centre_x = np.round(
@@ -961,6 +961,7 @@ def format_axis_broken(fig, axs, obs_periods, pymin, pymax, ticknumber_x,
             ax.set_xlim(obs_periods[i % ncols])
             ax.get_shared_x_axes().join(ax, last_row[i % ncols])
     standardize_ticks(axs)
+    fig.tight_layout()
     draw_diags(fig, d, tilt, diag_color, axs, despine)
     set_spines(axs, despine)
 
@@ -1075,26 +1076,26 @@ def standardize_ticks(axs, xbase=None, ybase=None):
                 for ax in axs
                 if ax.get_subplotspec().is_last_row()
             )
-    if ybase is None:
-        if axs[0].yaxis.get_scale() == "log":
-            ybase = max(
-                ax.yaxis.get_ticklocs()[1] / ax.yaxis.get_ticklocs()[0]
-                for ax in axs
-                if ax.get_subplotspec().is_first_col()
-            )
-        else:
-            ybase = max(
-                ax.yaxis.get_ticklocs()[1] - ax.yaxis.get_ticklocs()[0]
-                for ax in axs
-                if ax.get_subplotspec().is_first_col()
-            )
+    # if ybase is None:
+    #     if axs[0].yaxis.get_scale() == "log":
+    #         ybase = max(
+    #             ax.yaxis.get_ticklocs()[1] / ax.yaxis.get_ticklocs()[0]
+    #             for ax in axs
+    #             if ax.get_subplotspec().is_first_col()
+    #         )
+    #     else:
+    #         ybase = max(
+    #             ax.yaxis.get_ticklocs()[1] - ax.yaxis.get_ticklocs()[0]
+    #             for ax in axs
+    #             if ax.get_subplotspec().is_first_col()
+    #         )
 
     for ax in axs:
-        if ax.get_subplotspec().is_first_col():
-            if ax.yaxis.get_scale() == "log":
-                ax.yaxis.set_major_locator(ticker.LogLocator(ybase))
-            else:
-                ax.yaxis.set_major_locator(ticker.MultipleLocator(ybase))
+        # if ax.get_subplotspec().is_first_col():
+        #     if ax.yaxis.get_scale() == "log":
+        #         ax.yaxis.set_major_locator(ticker.LogLocator(ybase))
+        #     else:
+        #         ax.yaxis.set_major_locator(ticker.MultipleLocator(ybase))
         if ax.get_subplotspec().is_last_row():
             if ax.xaxis.get_scale() == "log":
                 ax.xaxis.set_major_locator(ticker.LogLocator(xbase))
