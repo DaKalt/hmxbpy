@@ -1004,7 +1004,7 @@ class HiMaXBi:
                                       3600 * 24, -5, 5, colors='grey',
                                       linestyle='dotted', zorder=-4)
 
-                fig1.tight_layout()
+                # fig1.tight_layout()
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
