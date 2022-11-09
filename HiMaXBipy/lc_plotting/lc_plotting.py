@@ -1644,7 +1644,8 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
                     transform=ax.transAxes, **kwargs)
             ax.spines.right.set_visible(False)
             ax.spines.left.set_visible(False)
-            ax.tick_params(right=False, labelright=False, right=False, labelright=False)
+            ax.tick_params(left=False, labelleft=False,
+                           right=False, labelright=False)
 
         tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
         yticks = []
