@@ -776,7 +776,7 @@ class HiMaXBi:
         lc_binning : str or float, optional
             Sets initial lc binsize in seconds. The default is -1
             (meaning the current value is not changeds)
-        d : str or float, optional
+        d : str, int or float, optional
             Size of gap markers in pt. The default is '12'.
         tilt : str, int or float, optional
             Tild of gap markers. The default is '45'.
@@ -858,7 +858,7 @@ class HiMaXBi:
                         'The third entry in each line of vlines needs to be a negative integer < -2.')
         if type(tilt) != float and type(tilt) != int and type(tilt) != str:
             raise Exception('tilt must be a float, str or int.')
-        if type(d) != float and type(d) != str:
+        if type(d) != float and type(d) != str and type(d) != int:
             raise Exception('d must be a float or str.')
         if type(diag_color) != str:
             raise Exception('diag_color must be a str.')
