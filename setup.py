@@ -3,6 +3,7 @@ from setuptools import setup
 
 import os
 
+
 def find_sh_files(directory):
 
     paths = []
@@ -15,6 +16,7 @@ def find_sh_files(directory):
 
     return paths
 
+
 sh_files = find_sh_files('HiMaXBipy/sh_files/')
 
 setup(
@@ -22,13 +24,13 @@ setup(
     name="HiMaXBipy",
     packages=[
         'HiMaXBipy',
-	'HiMaXBipy/io',
-	'HiMaXBipy/lc_plotting',
-	'HiMaXBipy/sh_files',
-	'HiMaXBipy/spectral_analysis',
+        'HiMaXBipy/io',
+        'HiMaXBipy/lc_plotting',
+        'HiMaXBipy/sh_files',
+        'HiMaXBipy/spectral_analysis',
 
     ],
-    version='v1.0.7',
+    version='v1.0.8',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',
@@ -40,7 +42,7 @@ setup(
     requires=[
         'numpy',
         'matplotlib',
-	'astropy',
-	'xspec'
+        'astropy',
+        'xspec'
     ],
 )

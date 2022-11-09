@@ -21,7 +21,7 @@ import numpy as np
 from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir
-from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis, plot_lc_UL_broken, plot_lc_mincounts_broken, format_axis_broken
+from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis, plot_lc_UL_broken_new, plot_lc_mincounts_broken_new, format_axis_broken_new
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
@@ -436,7 +436,7 @@ class HiMaXBi:
     def plot_lc_full(self, fracexp='0.15', mincounts='10', mode='ul',
                      show_eRASS=True, logname='lc_full_autosave.log',
                      time_axis='mjd', print_name=False, print_datetime=False,
-                     label_style='serif', label_size=12, figsize=[8, 5.5],
+                     label_style='serif', label_size=12, figsize=[8, 2.75],
                      colors=[], fileid='', toplab='', separate_TM=False,
                      vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, E_bins=[],
                      lc_binning=-1):
@@ -472,7 +472,7 @@ class HiMaXBi:
         label_size : float or int, optional
             Sets fontsize. The default is 12.
         figsize : array-like (2,), optional
-            Sets width and height of figure. The default is [8, 5.5].
+            Sets width and height of figure. The default is [8, 2.75].
         colors : array of str (1,) or (2,), optional
             Sets colors of plots. Any color available to matplotlib possible.
             For mode 'ul' and 'mincounts' the first entry is used, for mode
@@ -642,7 +642,7 @@ class HiMaXBi:
                     pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(
                         hdulist=hdulist, ax=ax, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        colors=colors[0])
+                        color=colors[0])
                     pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(
                         hdulist=hdulist, ax=ax, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
@@ -710,10 +710,11 @@ class HiMaXBi:
     def plot_lc_broken(self, fracexp='0.15', mincounts='10', mode='ul',
                        show_eRASS=True, logname='lc_full_broken_autosave.log',
                        time_axis='mjd', print_name=False, print_datetime=False,
-                       label_style='serif', label_size=12, figsize=[8, 5.5],
+                       label_style='serif', label_size=12, figsize=[8, 2.75],
                        colors=[], fileid='', toplab='', separate_TM=False,
                        vlines=[], ticknumber_y=5.0, ticknumber_x=3.0, E_bins=[],
-                       lc_binning=-1, d=0.015, tilt=45, diag_color="k"):
+                       lc_binning=-1, d=12, tilt=45, diag_color="k",
+                       short_time=True):
         '''Function to create full lightcurve with gaps cut out.
 
         Parameters
@@ -746,7 +747,7 @@ class HiMaXBi:
         label_size : float or int, optional
             Sets fontsize. The default is 12.
         figsize : array-like (2,), optional
-            Sets width and height of figure. The default is [8, 5.5].
+            Sets width and height of figure. The default is [8, 2.75].
         colors : array of str (1,) or (2,), optional
             Sets colors of plots. Any color available to matplotlib possible.
             For mode 'ul' and 'mincounts' the first entry is used, for mode
@@ -776,11 +777,13 @@ class HiMaXBi:
             Sets initial lc binsize in seconds. The default is -1
             (meaning the current value is not changeds)
         d : str or float, optional
-            Size of gap markers. The default is '0.015'.
+            Size of gap markers in pt. The default is '12'.
         tilt : str, int or float, optional
             Tild of gap markers. The default is '45'.
         diag_color : str, optional
             Color of gap markers. The default is 'k'.
+        short_time : bool, optional
+            Shorten time stamps in x-axis by subtracting value of lowest enrty. The default is True.
 
         '''
         if type(logname) != str:
@@ -912,11 +915,9 @@ class HiMaXBi:
                                        nrows=nrows,
                                        height_ratios=height_ratios,
                                        width_ratios=width_ratios)
-                big_ax = plt.Subplot(fig1, gridspec.GridSpec(1, 1)[0])
 
-                [sp.set_visible(False) for sp in big_ax.spines.values()]
-                big_ax.set_xticks([])
-                big_ax.set_yticks([])
+                big_ax = plt.Subplot(fig1, gridspec.GridSpec(1, 1)[0])
+                big_ax.set_frame_on(False)
                 big_ax.patch.set_facecolor("none")
 
                 axs = []
@@ -938,39 +939,48 @@ class HiMaXBi:
                     colors = ['lightblue', 'black']
 
                 if mode == 'ul':
-                    pxmin, pxmax, pymin, pymax = plot_lc_UL_broken(
+                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_UL_broken_new(
                         hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        color=colors[1])
+                        color=colors[1], obs_periods=self._obs_periods, short_time=short_time)
                 elif mode == 'mincounts':
-                    pxmin, pxmax, pymin, pymax = plot_lc_mincounts_broken(
+                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_new(
                         hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        color=colors[1])
+                        color=colors[1], obs_periods=self._obs_periods, short_time=short_time)
                 elif mode == 'mincounts_ul':
-                    pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL_broken(
+                    pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_broken_new(
                         hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        colors=colors[0])
-                    pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts_broken(
+                        color=colors[0], obs_periods=self._obs_periods, short_time=short_time)
+                    pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_broken_new(
                         hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        color=colors[1])
-                    pxmin, pxmax, pymin, pymax = get_boundaries(
+                        color=colors[1], obs_periods=self._obs_periods, short_time=short_time,
+                        time_rel=time_rel)
+                    pxmin, pxmax, pymin, pymax = get_boundaries_broken(
                         [[pxmin1, pxmax1, pymin1, pymax1],
                          [pxmin2, pxmax2, pymin2, pymax2]])
 
-                format_axis_broken(fig1, axs, self._obs_periods, pymin, pymax,
-                                   ticknumber_x, ticknumber_y, ncols, nrows,
-                                   d, tilt, diag_color)
+                format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
+                                       ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
+                                       diag_color, big_ax)
 
                 hdulist.close()
 
                 # plot time in s from beginning (xflag=1) or in MJD
-                if time_axis == 's':
-                    big_ax.set_xlabel(r'Time (s)')  # , fontsize=12)
-                elif time_axis == 'mjd':
-                    big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
+                if short_time:
+                    if time_axis == 's':
+                        # , fontsize=12)
+                        big_ax.set_xlabel(f'Time - {time_rel} (s)')
+                    elif time_axis == 'mjd':
+                        # , fontsize=12)
+                        big_ax.set_xlabel(r'MJD  - {time_rel} (days)')
+                else:
+                    if time_axis == 's':
+                        big_ax.set_xlabel(r'Time (s)')  # , fontsize=12)
+                    elif time_axis == 'mjd':
+                        big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
 
                 big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
 
@@ -1004,7 +1014,7 @@ class HiMaXBi:
                                       3600 * 24, -5, 5, colors='grey',
                                       linestyle='dotted', zorder=-4)
 
-                # fig1.tight_layout()
+                fig1.tight_layout()
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
@@ -1021,7 +1031,7 @@ class HiMaXBi:
     def plot_lc_parts(self, fracexp='0.15', mincounts='10', mode='mincounts_ul',
                       show_eRASS=True, logname='lc_parts_autosave.log',
                       time_axis='mjd', print_name=False, print_datetime=False,
-                      label_style='serif', label_size=12, figsize=[8, 5.5],
+                      label_style='serif', label_size=12, figsize=[4, 2.75],
                       colors=[], fileid='', toplab='', separate_TM=False,
                       vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, eRASSi=[],
                       E_bins=[], lc_binning=-1):
@@ -1057,7 +1067,7 @@ class HiMaXBi:
         label_size : float or int, optional
             Sets fontsize. The default is 12.
         figsize : array-like (2,), optional
-            Sets width and height of figure. The default is [8, 5.5].
+            Sets width and height of figure. The default is [4, 2.75].
         colors : array of str (1,) or (2,), optional
             Sets colors of plots. Any color available to matplotlib possible.
             For mode 'ul' and 'mincounts' the first entry is used, for mode
