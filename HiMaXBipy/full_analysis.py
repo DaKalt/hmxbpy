@@ -32,7 +32,7 @@ class HiMaXBi:
     _LC_prebinning = '1.0'
     _LC_extracted = False
     _mjdref = 51543.875
-    _ero_starttimes = [58828, 59011, 59198, 59381, 59567]
+    _ero_starttimes = np.array([58828, 59011, 59198, 59381, 59567])
     _energy_bins = [[0.2, 8.0]]
     _grouping = '1'
     _ownership = 'x'

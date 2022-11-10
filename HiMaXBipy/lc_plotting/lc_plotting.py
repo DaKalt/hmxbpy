@@ -1649,9 +1649,9 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
 
         tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
         yticks = []
-        for i in range(-int(ticknumber_y), int(ticknumber_y)):
-            if i * tick_size_y > pymin and i * tick_size_y < pymax:
-                yticks.append(i * tick_size_y)
+        for j in range(-int(ticknumber_y), int(ticknumber_y)):
+            if j * tick_size_y > pymin and j * tick_size_y < pymax:
+                yticks.append(j * tick_size_y)
         ax.set_yticks(yticks)
 
         tick_size_x = np.round(
@@ -1659,9 +1659,9 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
         xticks = []
         centre_x = np.round(
             (pxmaxs[i] + pxmins[i]) / 2.)
-        for i in range(-int(ticknumber_x), int(ticknumber_x)):
-            if i * tick_size_x + centre_x > pxmins[i] and i * tick_size_x + centre_x < pxmaxs[i]:
-                xticks.append(i * tick_size_x + centre_x)
+        for j in range(-int(ticknumber_x), int(ticknumber_x)):
+            if j * tick_size_x + centre_x > pxmins[i] and j * tick_size_x + centre_x < pxmaxs[i]:
+                xticks.append(j * tick_size_x + centre_x)
         if len(xticks) <= 1:
             xticks = [centre_x - tick_size_x / 2, centre_x + tick_size_x / 2]
         ax.set_xticks(xticks)
@@ -1677,8 +1677,8 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     end_x = axs[-1].xaxis.get_ticklabels()[-1].get_text()
 
     big_ax.tick_params(left=False, bottom=False, right=False, top=False)
-    big_ax.set_xticklabels([start_x, end_x], alpha=0.0)
-    big_ax.set_yticklabels([longest_y, longest_y], alpha=0.0)
+    big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
+    big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
 
     # for i, ax in enumerate(axs):
     #     if obs_periods is not None:
