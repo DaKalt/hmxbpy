@@ -1346,7 +1346,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts
             xtime = xtime - time_rel
             mjd = mjd - time_rel
             xmin = xmin - time_rel
-            xmax = xmin - time_rel
+            xmax = xmax - time_rel
 
         yrate = np.array(yrate)
         yrate_e = np.array(yrate_e)
@@ -1580,7 +1580,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts, color
             xtime = xtime - time_rel
             mjd = mjd - time_rel
             xmin = xmin - time_rel
-            xmax = xmin - time_rel
+            xmax = xmax - time_rel
 
         ymin = min(yrate - yrate_e)
         ymax = max(yrate + yrate_e * np.logical_not(uplimit))
