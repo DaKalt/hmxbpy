@@ -962,9 +962,11 @@ class HiMaXBi:
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods, short_time=short_time,
                         time_rel=time_rel)
+                    print([[pxmin1, pxmax1, pymin1, pymax1], [pxmin2, pxmax2, pymin2, pymax2]])
                     pxmin, pxmax, pymin, pymax = get_boundaries_broken(
                         [[pxmin1, pxmax1, pymin1, pymax1],
                          [pxmin2, pxmax2, pymin2, pymax2]])
+                    print(pxmin, pxmax, pymin, pymax)
 
                 hdulist.close()
 
@@ -1186,7 +1188,7 @@ class HiMaXBi:
         os.chdir(self._working_dir_full + '/working/')
 
         if lc_binning != -1:
-            self.LC_prebinning(lc_binning=lc_binning)
+            self.set_LC_binning(lc_binning=lc_binning)
         if np.array(E_bins).tolist() != []:
             self.set_Ebins(bins=E_bins)
         if not self._LC_extracted:
