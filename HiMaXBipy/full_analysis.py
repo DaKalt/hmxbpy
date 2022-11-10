@@ -962,6 +962,9 @@ class HiMaXBi:
                         [[pxmin1, pxmax1, pymin1, pymax1],
                          [pxmin2, pxmax2, pymin2, pymax2]])
 
+                print(pxmin)
+                print(pymin)
+                print(pymax)
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                        ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
                                        diag_color, big_ax)
