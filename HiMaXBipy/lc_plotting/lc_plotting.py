@@ -1575,7 +1575,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts, color
             xmax = max(mjd)
 
         if short_time:
-            if i_ax == 0:
+            if i_ax == 0 and time_rel == 0:
                 time_rel = int(np.round(xmin))
             xtime = xtime - time_rel
             mjd = mjd - time_rel
@@ -1607,9 +1607,6 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts, color
 
 def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
                            ticknumber_y, ncols, nrows, d, tilt, diag_color, big_ax):
-    big_ax.set_xticks([0, 1])
-    big_ax.set_yticks([0, 1])
-
     # proportion of vertical to horizontal extent of the slanted line
     d = np.tan(tilt)
     kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
@@ -1617,7 +1614,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
 
     fig.subplots_adjust(wspace=0.05)
 
-    for i, ax in enumerate(axs):
+    for i_ax, ax in enumerate(axs):
         loc = plticker.MultipleLocator(base=1.0)
         ax.yaxis.set_major_locator(loc)
         x_formatter = plticker.ScalarFormatter(useOffset=False)
@@ -1631,11 +1628,11 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
         ax.tick_params(axis='y', which='minor', direction='in',
                        right='on', length=3)  # , labelsize=0)
 
-        if i == 0:
+        if i_ax == 0:
             ax.plot([1, 1], [0, 1], transform=ax.transAxes, **kwargs)
             ax.spines.right.set_visible(False)
             ax.tick_params(right=False, labelright=False)
-        elif i == len(axs) - 1:
+        elif i_ax == len(axs) - 1:
             ax.plot([0, 0], [0, 1], transform=ax.transAxes, **kwargs)
             ax.spines.left.set_visible(False)
             ax.tick_params(left=False, labelleft=False)
@@ -1655,18 +1652,18 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
         ax.set_yticks(yticks)
 
         tick_size_x = np.round(
-            (pxmaxs[i] - pxmins[i]) / ticknumber_x)
+            (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
         xticks = []
         centre_x = np.round(
-            (pxmaxs[i] + pxmins[i]) / 2.)
+            (pxmaxs[i_ax] + pxmins[i_ax]) / 2.)
         for j in range(-int(ticknumber_x), int(ticknumber_x)):
-            if j * tick_size_x + centre_x > pxmins[i] and j * tick_size_x + centre_x < pxmaxs[i]:
+            if j * tick_size_x + centre_x > pxmins[i_ax] and j * tick_size_x + centre_x < pxmaxs[i_ax]:
                 xticks.append(j * tick_size_x + centre_x)
         if len(xticks) <= 1:
             xticks = [centre_x - tick_size_x / 2, centre_x + tick_size_x / 2]
         ax.set_xticks(xticks)
 
-        ax.set_xbound([pxmins[i], pxmaxs[i]])
+        ax.set_xbound([pxmins[i_ax], pxmaxs[i_ax]])
         ax.set_ybound([pymin, pymax])
 
     longest_y = ''
@@ -1676,6 +1673,8 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     start_x = axs[0].xaxis.get_ticklabels()[0].get_text()
     end_x = axs[-1].xaxis.get_ticklabels()[-1].get_text()
 
+    big_ax.set_xticks([0, 1])
+    big_ax.set_yticks([0, 1])
     big_ax.tick_params(left=False, bottom=False, right=False, top=False)
     big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
     big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)

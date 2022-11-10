@@ -918,7 +918,7 @@ class HiMaXBi:
 
                 big_ax = plt.Subplot(fig1, gridspec.GridSpec(1, 1)[0])
                 big_ax.set_frame_on(False)
-                big_ax.patch.set_facecolor("none")
+                # big_ax.patch.set_facecolor("none")
 
                 axs = []
                 for igs in gs:
@@ -975,7 +975,7 @@ class HiMaXBi:
                         big_ax.set_xlabel(f'Time - {time_rel} (s)')
                     elif time_axis == 'mjd':
                         # , fontsize=12)
-                        big_ax.set_xlabel(r'MJD  - {time_rel} (days)')
+                        big_ax.set_xlabel(f'MJD  - {time_rel} (days)')
                 else:
                     if time_axis == 's':
                         big_ax.set_xlabel(r'Time (s)')  # , fontsize=12)
