@@ -707,7 +707,7 @@ class HiMaXBi:
 
         logfile.close()
 
-    def plot_lc_broken(self, fracexp='0.15', mincounts='10', mode='ul',
+    def plot_lc_broken(self, fracexp='0.15', mincounts='10', mode='mincounts_ul',
                        show_eRASS=True, logname='lc_full_broken_autosave.log',
                        time_axis='mjd', print_name=False, print_datetime=False,
                        label_style='serif', label_size=12, figsize=[8, 2.75],
@@ -728,7 +728,7 @@ class HiMaXBi:
             mincounts/mincounts_ul. The default is '10'.
         mode : str, optional
             Type of LC to be produced. Either 'ul', 'mincounts' or
-            'mincounts_ul'. The default is 'ul'.
+            'mincounts_ul'. The default is 'mincounts_ul'.
         show_eRASS : bool, optional
             True to show start/end dates of eRASSi as vertical lines. The
             default is True.
@@ -943,11 +943,15 @@ class HiMaXBi:
                         hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods, short_time=short_time)
+                    pymin = min(pymin)
+                    pymax = max(pymax)
                 elif mode == 'mincounts':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_new(
                         hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods, short_time=short_time)
+                    pymin = min(pymin)
+                    pymax = max(pymax)
                 elif mode == 'mincounts_ul':
                     pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_broken_new(
                         hdulist=hdulist, axs=axs, logfile=logfile,
