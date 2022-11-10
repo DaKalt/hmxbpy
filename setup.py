@@ -30,7 +30,7 @@ setup(
         'HiMaXBipy/spectral_analysis',
 
     ],
-    version='v1.0.13',
+    version='v1.0.14',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',

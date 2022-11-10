@@ -966,13 +966,6 @@ class HiMaXBi:
                         [[pxmin1, pxmax1, pymin1, pymax1],
                          [pxmin2, pxmax2, pymin2, pymax2]])
 
-                print(pxmin)
-                print(pymin)
-                print(pymax)
-                format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
-                                       ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
-                                       diag_color, big_ax)
-
                 hdulist.close()
 
                 # plot time in s from beginning (xflag=1) or in MJD
@@ -1010,17 +1003,20 @@ class HiMaXBi:
 
                 for ax in axs:
                     for i in range(len(vlines)):
-                        ax.vlines(vlines[i][0], -5, 5, colors=vlines[i]
+                        ax.vlines(vlines[i][0] - time_rel, -5, 5, colors=vlines[i]
                                   [1], linestyle='dotted', zorder=vlines[i][2])
                     if show_eRASS:
                         if time_axis == 'mjd':
-                            ax.vlines(self._ero_starttimes, -5, 5,
+                            ax.vlines(self._ero_starttimes - time_rel, -5, 5,
                                       colors='grey', linestyle='dotted', zorder=-2)
                         elif time_axis == 's':
                             ax.vlines((np.array(self._ero_starttimes) - self._mjdref) *
-                                      3600 * 24, -5, 5, colors='grey',
+                                      3600 * 24 - time_rel, -5, 5, colors='grey',
                                       linestyle='dotted', zorder=-4)
 
+                format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
+                                       ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
+                                       diag_color, big_ax)
                 fig1.tight_layout()
 
                 pltfile = outfile + ".pdf"
@@ -1270,9 +1266,6 @@ class HiMaXBi:
                             [[pxmin1, pxmax1, pymin1, pymax1],
                              [pxmin2, pxmax2, pymin2, pymax2]])
 
-                    format_axis(ax, pxmin, pxmax, pymin, pymax,
-                                ticknumber_x, ticknumber_y)
-
                     # plot time in s from beginning (xflag=1) or in MJD
                     if time_axis == 's':
                         ax.set_xlabel(r'Time (s)')  # , fontsize=12)
@@ -1309,6 +1302,9 @@ class HiMaXBi:
                             ax.vlines((np.array(self._ero_starttimes) - self._mjdref) *
                                       3600 * 24, -5, 5, colors='grey',
                                       linestyle='dotted', zorder=-4)
+
+                    format_axis(ax, pxmin, pxmax, pymin, pymax,
+                                ticknumber_x, ticknumber_y)
 
                     fig1.tight_layout()
 
