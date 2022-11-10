@@ -21,7 +21,7 @@ import numpy as np
 from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir
-from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, format_axis, plot_lc_UL_broken_new, plot_lc_mincounts_broken_new, format_axis_broken_new
+from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts, get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new, plot_lc_mincounts_broken_new, format_axis_broken_new
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
