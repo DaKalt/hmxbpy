@@ -1681,6 +1681,12 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
     big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
 
+    print([start_x, end_x], [longest_y, longest_y])
+
+    fig.set_tight_layout(True)
+    fig.set_tight_layout(True)
+    fig.subplots_adjust(wspace=0.05)
+
     # for i, ax in enumerate(axs):
     #     if obs_periods is not None:
     #         ax.set_xlim(obs_periods[i % ncols])
