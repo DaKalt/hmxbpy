@@ -1018,6 +1018,8 @@ class HiMaXBi:
                                        ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
                                        diag_color, big_ax)
 
+                self._axes = axs
+
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
                 logfile.write(f'{pltfile} created\n')
