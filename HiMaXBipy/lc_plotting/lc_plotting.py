@@ -1071,7 +1071,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
             longest_y = ''
             for entry in yticks:
                 if len(str(entry)) > len(longest_y):
-                    longest_y = entry
+                    longest_y = str(entry)
 
         tick_size_x = np.round(
             (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
