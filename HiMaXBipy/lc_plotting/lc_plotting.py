@@ -1612,7 +1612,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
                   linestyle="none", color=diag_color, mec=diag_color, mew=1, clip_on=False)
 
-    fig.subplots_adjust(wspace=0.05)
+    # fig.subplots_adjust(wspace=0.05)
 
     for i_ax, ax in enumerate(axs):
         loc = plticker.MultipleLocator(base=1.0)
@@ -1673,6 +1673,8 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     start_x = axs[0].xaxis.get_ticklabels()[0].get_text()
     end_x = axs[-1].xaxis.get_ticklabels()[-1].get_text()
 
+    big_ax.set_xbound([0, 1])
+    big_ax.set_ybound([0, 1])
     big_ax.set_xticks([0, 1])
     big_ax.set_yticks([0, 1])
     big_ax.tick_params(left=False, bottom=False, right=False, top=False)

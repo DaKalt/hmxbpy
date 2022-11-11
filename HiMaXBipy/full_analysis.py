@@ -962,7 +962,8 @@ class HiMaXBi:
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods, short_time=short_time,
                         time_rel=time_rel)
-                    print([[pxmin1, pxmax1, pymin1, pymax1], [pxmin2, pxmax2, pymin2, pymax2]])
+                    print([[pxmin1, pxmax1, pymin1, pymax1],
+                          [pxmin2, pxmax2, pymin2, pymax2]])
                     pxmin, pxmax, pymin, pymax = get_boundaries_broken(
                         [[pxmin1, pxmax1, pymin1, pymax1],
                          [pxmin2, pxmax2, pymin2, pymax2]])
@@ -1019,7 +1020,10 @@ class HiMaXBi:
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                        ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
                                        diag_color, big_ax)
-                fig1.tight_layout()
+
+                fig1.set_tight_layout(True)
+                fig1.set_tight_layout(True)
+                fig1.subplots_adjust(wspace=0.05)
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
