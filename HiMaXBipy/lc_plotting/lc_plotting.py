@@ -180,7 +180,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
 
     if xflag == 1:
         ax.errorbar(xtime, yrate, xerr=xtime_d, yerr=yrate_e,
-                    uplims=uplimit, linestyle='None', color=color, fmt='o', zorder = 1)
+                    uplims=uplimit, linestyle='None', color=color, fmt='o', zorder=1)
     else:
         ax.errorbar(mjd, yrate, xerr=mjd_d, yerr=yrate_e,
                     uplims=uplimit, linestyle='None', color=color, fmt='o', zorder=1)
@@ -408,7 +408,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
 
     if xflag == 1:
         ax.errorbar(xtime, yrate, xerr=xtime_d, yerr=yrate_e,
-                    linestyle='None', color=color, fmt='o', zorder = 2)
+                    linestyle='None', color=color, fmt='o', zorder=2)
     else:
         ax.errorbar(mjd, yrate, xerr=mjd_d, yerr=yrate_e,
                     linestyle='None', color=color, fmt='o', zorder=2)
@@ -1088,7 +1088,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
             longest_y = entry.get_text()
     start_x = axs[0].xaxis.get_ticklabels()[0].get_text()
     end_x = axs[-1].xaxis.get_ticklabels()[-1].get_text()
-    print(axs[-1].xaxis.get_ticklabels()[-1])
+    print(axs[-1].xaxis.get_ticklabels())
 
     big_ax.set_xbound([0, 1])
     big_ax.set_ybound([0, 1])
@@ -1101,7 +1101,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     print([start_x, end_x], [longest_y, longest_y])
 
     fig.set_tight_layout(True)
-    fig.set_tight_layout(True)
+    fig.set_tight_layout(False)
     fig.subplots_adjust(wspace=0.05)
 
     # for i, ax in enumerate(axs):
