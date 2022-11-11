@@ -1019,27 +1019,9 @@ class HiMaXBi:
                                        ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
                                        diag_color, big_ax)
 
-                longest_y = ''
-                for entry in axs[0].yaxis.get_ticklabels():
-                    if len(entry.get_text()) > len(longest_y):
-                        longest_y = entry.get_text()
-                start_x = axs[0].xaxis.get_ticklabels()[0].get_text()
-                end_x = axs[-1].xaxis.get_ticklabels()[-1].get_text()
-
-                big_ax.set_xbound([0., 1.])
-                big_ax.set_ybound([0., 1.])
-                big_ax.set_xticks([0, 1])
-                big_ax.set_yticks([0, 1])
-                big_ax.tick_params(left=False, bottom=False,
-                                   right=False, top=False)
-                big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
-                big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
-
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
                 fig1.subplots_adjust(wspace=0.05)
-
-                self._axes = axs
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)

@@ -1060,12 +1060,18 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
             ax.tick_params(left=False, labelleft=False,
                            right=False, labelright=False)
 
-        tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
-        yticks = []
-        for j in range(-int(ticknumber_y), int(ticknumber_y)):
-            if j * tick_size_y > pymin and j * tick_size_y < pymax:
-                yticks.append(j * tick_size_y)
-        ax.set_yticks(yticks)
+        if i_ax == 0:
+            tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
+            yticks = []
+            for j in range(-int(ticknumber_y), int(ticknumber_y)):
+                if j * tick_size_y > pymin and j * tick_size_y < pymax:
+                    yticks.append(j * tick_size_y)
+            ax.set_yticks(yticks)
+
+            longest_y = ''
+            for entry in yticks:
+                if len(str(entry)) > len(longest_y):
+                    longest_y = entry
 
         tick_size_x = np.round(
             (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
@@ -1078,31 +1084,22 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
         if len(xticks) <= 1:
             xticks = [centre_x - tick_size_x / 2, centre_x + tick_size_x / 2]
         ax.set_xticks(xticks)
+        if i_ax == 0:
+            start_x = xticks[0]
+        elif i_ax == len(axs) - 1:
+            end_x = xticks[-1]
 
-        ax.set_xbound([pxmins[i_ax], pxmaxs[i_ax]])
-        ax.set_ybound([pymin, pymax])
+        ax.set_xbound(lower=pxmins[i_ax], upper=pxmaxs[i_ax])
+        ax.set_ybound(lower=pymin, upper=pymax)
 
-    # longest_y = ''
-    # for entry in axs[0].yaxis.get_ticklabels():
-    #     if len(entry.get_text()) > len(longest_y):
-    #         longest_y = entry.get_text()
-    # start_x = axs[0].xaxis.get_ticklabels()[0].get_text()
-    # end_x = axs[-1].xaxis.get_ticklabels()[-1].get_text()
-    # print(axs[-1].xaxis.get_ticklabels())
-
-    # big_ax.set_xbound([0, 1])
-    # big_ax.set_ybound([0, 1])
-    # big_ax.set_xticks([0, 1])
-    # big_ax.set_yticks([0, 1])
-    # big_ax.tick_params(left=False, bottom=False, right=False, top=False)
-    # big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
-    # big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
-
-    # print([start_x, end_x], [longest_y, longest_y])
-
-    # fig.set_tight_layout(True)
-    # fig.set_tight_layout(False)
-    # fig.subplots_adjust(wspace=0.05)
+    big_ax.set_xbound(lower=0, upper=1)
+    big_ax.set_ybound(lower=0, upper=1)
+    big_ax.set_xticks([0, 1])
+    big_ax.set_yticks([0, 1])
+    big_ax.tick_params(left=False, bottom=False,
+                       right=False, top=False)
+    big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
+    big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
 
     # for i, ax in enumerate(axs):
     #     if obs_periods is not None:
