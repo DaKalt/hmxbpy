@@ -1088,6 +1088,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
             longest_y = entry.get_text()
     start_x = axs[0].xaxis.get_ticklabels()[0].get_text()
     end_x = axs[-1].xaxis.get_ticklabels()[-1].get_text()
+    print(axs[-1].xaxis.get_ticklabels()[-1])
 
     big_ax.set_xbound([0, 1])
     big_ax.set_ybound([0, 1])
