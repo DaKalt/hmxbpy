@@ -1015,9 +1015,92 @@ class HiMaXBi:
                                       3600 * 24 - time_rel, -5, 5, colors='grey',
                                       linestyle='dotted', zorder=-4)
 
-                format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
-                                       ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
-                                       diag_color, big_ax)
+                # format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
+                #                       ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
+                #                       diag_color, big_ax)
+
+                #######
+                d = np.tan(tilt)
+                kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
+                              linestyle="none", color=diag_color, mec=diag_color, mew=1, clip_on=False)
+
+                # fig.subplots_adjust(wspace=0.05)
+
+                for i_ax, ax in enumerate(axs):
+                    loc = plticker.MultipleLocator(base=1.0)
+                    ax.yaxis.set_major_locator(loc)
+                    x_formatter = plticker.ScalarFormatter(useOffset=False)
+                    ax.xaxis.set_major_formatter(x_formatter)
+                    ax.tick_params(axis='x', which='major', direction='in',
+                                   top='on',   pad=5, length=5)  # , labelsize=10)
+                    ax.tick_params(axis='x', which='minor', direction='in',
+                                   top='on',   length=3)  # , labelsize=0)
+                    ax.tick_params(axis='y', which='major', direction='in',
+                                   right='on', length=5)  # , labelsize=10)
+                    ax.tick_params(axis='y', which='minor', direction='in',
+                                   right='on', length=3)  # , labelsize=0)
+
+                    if i_ax == 0:
+                        ax.plot([1, 1], [0, 1],
+                                transform=ax.transAxes, **kwargs)
+                        ax.spines.right.set_visible(False)
+                        ax.tick_params(right=False, labelright=False)
+                    elif i_ax == len(axs) - 1:
+                        ax.plot([0, 0], [0, 1],
+                                transform=ax.transAxes, **kwargs)
+                        ax.spines.left.set_visible(False)
+                        ax.tick_params(left=False, labelleft=False)
+                    else:
+                        ax.plot([0, 0, 1, 1], [0, 1, 0, 1],
+                                transform=ax.transAxes, **kwargs)
+                        ax.spines.right.set_visible(False)
+                        ax.spines.left.set_visible(False)
+                        ax.tick_params(left=False, labelleft=False,
+                                       right=False, labelright=False)
+
+                    if i_ax == 0:
+                        tick_size_y = round_to_1(
+                            (pymax - pymin) / ticknumber_y)
+                        yticks = []
+                        for j in range(-int(ticknumber_y), int(ticknumber_y)):
+                            if j * tick_size_y > pymin and j * tick_size_y < pymax:
+                                yticks.append(j * tick_size_y)
+                        ax.set_yticks(yticks)
+
+                        longest_y = ''
+                        for entry in yticks:
+                            if len(str(entry)) > len(longest_y):
+                                longest_y = str(entry)
+
+                    tick_size_x = np.round(
+                        (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
+                    xticks = []
+                    centre_x = np.round(
+                        (pxmaxs[i_ax] + pxmins[i_ax]) / 2.)
+                    for j in range(-int(ticknumber_x), int(ticknumber_x)):
+                        if j * tick_size_x + centre_x > pxmins[i_ax] and j * tick_size_x + centre_x < pxmaxs[i_ax]:
+                            xticks.append(j * tick_size_x + centre_x)
+                    if len(xticks) <= 1:
+                        xticks = [centre_x - tick_size_x /
+                                  2, centre_x + tick_size_x / 2]
+                    ax.set_xticks(xticks)
+                    if i_ax == 0:
+                        start_x = xticks[0]
+                    elif i_ax == len(axs) - 1:
+                        end_x = xticks[-1]
+
+                    ax.set_xbound(lower=pxmins[i_ax], upper=pxmaxs[i_ax])
+                    ax.set_ybound(lower=pymin, upper=pymax)
+
+                big_ax.set_xbound(lower=0, upper=1)
+                big_ax.set_ybound(lower=0, upper=1)
+                big_ax.set_xticks([0, 1])
+                big_ax.set_yticks([0, 1])
+                big_ax.tick_params(left=False, bottom=False,
+                                   right=False, top=False)
+                big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
+                big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
+                #######
 
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
