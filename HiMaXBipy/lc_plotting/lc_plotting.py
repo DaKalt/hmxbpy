@@ -1080,9 +1080,11 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
             (pxmaxs[i_ax] + pxmins[i_ax]) / 2.)
         for j in range(-int(ticknumber_x), int(ticknumber_x) + 1):
             if j * tick_size_x + centre_x - np.round(tick_size_x / 2) > pxmins[i_ax] and j * tick_size_x + centre_x - np.round(tick_size_x / 2) < pxmaxs[i_ax]:
-                xticks.append(j * tick_size_x + centre_x - np.round(tick_size_x / 2))
+                xticks.append(j * tick_size_x + centre_x -
+                              np.round(tick_size_x / 2))
         if len(xticks) <= 1:
-            xticks = [centre_x - np.round(tick_size_x / 2), centre_x + np.round(tick_size_x / 2)]
+            xticks = [
+                centre_x - np.round(tick_size_x / 2), centre_x + np.round(tick_size_x / 2)]
         ax.set_xticks(xticks)
         if i_ax == 0:
             start_x = xticks[0]
@@ -1091,11 +1093,6 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
 
         ax.set_xbound(lower=pxmins[i_ax], upper=pxmaxs[i_ax])
         ax.set_ybound(lower=pymin, upper=pymax)
-
-    big_ax.set_xbound(lower=0, upper=1)
-    big_ax.set_ybound(lower=0, upper=1)
-    big_ax.set_xticks([0, 1])
-    big_ax.set_yticks([0, 1])
 
     big_ax.tick_params(left=True, bottom=True,
                        right=True, top=True)
@@ -1111,6 +1108,11 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
                        right='on', length=0)  # , labelsize=10)
     big_ax.tick_params(axis='y', which='minor', direction='in',
                        right='on', length=0)
+
+    big_ax.set_xbound(lower=0, upper=1)
+    big_ax.set_ybound(lower=0, upper=1)
+    big_ax.set_xticks([0, 1])
+    big_ax.set_yticks([0, 1])
 
     big_ax.set_xticklabels([start_x, end_x], alpha=0)
     big_ax.set_yticklabels([longest_y, longest_y], alpha=0)

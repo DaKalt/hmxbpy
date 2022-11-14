@@ -1033,8 +1033,9 @@ class HiMaXBi:
 
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
-                wspace = 8.0 / figsize[0] / 0.05
-                fig1.subplots_adjust(wspace = wspace, top = fig_borders[0], bottom = fig_borders[1], left = fig_borders[2], right = fig_borders[3])
+                wspace = 8.0 / figsize[0] * 0.05
+                fig1.subplots_adjust(
+                    wspace=wspace, top=fig_borders[0], bottom=fig_borders[1], left=fig_borders[2], right=fig_borders[3])
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
