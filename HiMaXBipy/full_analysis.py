@@ -488,10 +488,10 @@ class HiMaXBi:
             Adds additional vertical lines in the plot at given MJD with given
             color. The zorder entries need to be distinct negative
             integers < -2. The default is [].
-        ticknumber_y : float or int, optional
+        ticknumber_y : int, optional
             Sets the approximate number of tickmarks along the y axis.
             The default is 5.0.
-        ticknumber_x : float or int, optional
+        ticknumber_x : int, optional
             Sets the approximate number of tickmarks along the x axis.
             The default is 8.0.
         E_bins : array-like (n,2), optional
@@ -543,10 +543,10 @@ class HiMaXBi:
             raise Exception('label_size must be a float or int.')
         if (type(figsize) != list and type(figsize) != np.ndarray) or np.shape(figsize) != (2,):
             raise Exception('figsize must be (2,) array-like.')
-        if type(ticknumber_x) != float and type(ticknumber_x) != int:
-            raise Exception('ticknumber_x must be a float or int.')
-        if type(ticknumber_y) != float and type(ticknumber_y) != int:
-            raise Exception('ticknumber_y must be a float or int.')
+        if type(ticknumber_x) != int:
+            raise Exception('ticknumber_x must be an int.')
+        if type(ticknumber_y) != int:
+            raise Exception('ticknumber_y must be an int.')
         if colors != []:
             if (type(colors) != list and type(colors) != np.ndarray) or (np.shape(colors) != (2,) and np.shape(colors) != (1,)):
                 raise Exception('colors must be (2,) or (1,) array-like.')
@@ -712,7 +712,7 @@ class HiMaXBi:
                        time_axis='mjd', print_name=False, print_datetime=False,
                        label_style='serif', label_size=16, figsize=[16, 7],
                        colors=[], fileid='', toplab='', separate_TM=False,
-                       vlines=[], ticknumber_y=5.0, ticknumber_x=2.0, E_bins=[],
+                       vlines=[], ticknumber_y=5, ticknumber_x=3, E_bins=[],
                        lc_binning=-1, d=12, tilt=45, diag_color="k",
                        short_time=True, fig_borders=[0.97, 0.1, 0.05, 0.98]):
         '''Function to create full lightcurve with gaps cut out.
@@ -763,13 +763,13 @@ class HiMaXBi:
             Adds additional vertical lines in the plot at given MJD with given
             color. The zorder entries need to be distinct negative
             integers < -2. The default is [].
-        ticknumber_y : float or int, optional
+        ticknumber_y : int, optional
             Sets the approximate number of tickmarks along the y axis.
-            The default is 5.0.
-        ticknumber_x : float or int, optional
+            The default is 5.
+        ticknumber_x : int, optional
             Sets the approximate number of tickmarks along the x axis in each
             section.
-            The default is 8.0.
+            The default is 3.
         E_bins : array-like (n,2), optional
             Sets energy bins that should be analysed. For each bin E_min and
             E_max must be given in keV. The default is [[0.2, 8.0]]
@@ -828,10 +828,10 @@ class HiMaXBi:
             raise Exception('label_size must be a float or int.')
         if (type(figsize) != list and type(figsize) != np.ndarray) or np.shape(figsize) != (2,):
             raise Exception('figsize must be (2,) array-like.')
-        if type(ticknumber_x) != float and type(ticknumber_x) != int:
-            raise Exception('ticknumber_x must be a float or int.')
-        if type(ticknumber_y) != float and type(ticknumber_y) != int:
-            raise Exception('ticknumber_y must be a float or int.')
+        if type(ticknumber_x) != int:
+            raise Exception('ticknumber_x must be an int.')
+        if type(ticknumber_y) != int:
+            raise Exception('ticknumber_y must be an int.')
         if colors != []:
             if (type(colors) != list and type(colors) != np.ndarray) or (np.shape(colors) != (2,) and np.shape(colors) != (1,)):
                 raise Exception('colors must be (2,) or (1,) array-like.')
@@ -1104,10 +1104,10 @@ class HiMaXBi:
             Adds additional vertical lines in the plot at given MJD with given
             color. The zorder entries need to be distinct negative
             integers < -2. The default is [].
-        ticknumber_y : float or int, optional
+        ticknumber_y : int, optional
             Sets the approximate number of tickmarks along the y axis.
             The default is 5.0.
-        ticknumber_x : float or int, optional
+        ticknumber_x : int, optional
             Sets the approximate number of tickmarks along the x axis.
             The default is 8.0.
         eRASSi : array-like of ints
@@ -1162,10 +1162,10 @@ class HiMaXBi:
             raise Exception('label_size must be a float or int.')
         if (type(figsize) != list and type(figsize) != np.ndarray) or np.shape(figsize) != (2,):
             raise Exception('figsize must be (2,) array-like.')
-        if type(ticknumber_x) != float and type(ticknumber_x) != int:
-            raise Exception('ticknumber_x must be a float or int.')
-        if type(ticknumber_y) != float and type(ticknumber_y) != int:
-            raise Exception('ticknumber_y must be a float or int.')
+        if type(ticknumber_x) != int:
+            raise Exception('ticknumber_x must be an int.')
+        if type(ticknumber_y) != int:
+            raise Exception('ticknumber_y must be an int.')
         if colors != []:
             if (type(colors) != list and type(colors) != np.ndarray) or (np.shape(colors) != (2,) and np.shape(colors) != (1,)):
                 raise Exception('colors must be (2,) or (1,) array-like.')

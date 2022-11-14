@@ -1075,13 +1075,17 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
 
         tick_size_x = np.round(
             (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
+        if ticknumber_x % 2 == 0:
+            shift_x = np.round(tick_size_x / 2)
+        else:
+            shift_x = 0
+
         xticks = []
         centre_x = np.round(
             (pxmaxs[i_ax] + pxmins[i_ax]) / 2.)
         for j in range(-int(ticknumber_x), int(ticknumber_x) + 1):
-            if j * tick_size_x + centre_x - np.round(tick_size_x / 2) > pxmins[i_ax] and j * tick_size_x + centre_x - np.round(tick_size_x / 2) < pxmaxs[i_ax]:
-                xticks.append(j * tick_size_x + centre_x -
-                              np.round(tick_size_x / 2))
+            if j * tick_size_x + centre_x - shift_x > pxmins[i_ax] and j * tick_size_x + centre_x - shift_x < pxmaxs[i_ax]:
+                xticks.append(j * tick_size_x + centre_x - shift_x)
         if len(xticks) <= 1:
             xticks = [
                 centre_x - np.round(tick_size_x / 2), centre_x + np.round(tick_size_x / 2)]
@@ -1121,4 +1125,4 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     #     if obs_periods is not None:
     #         ax.set_xlim(obs_periods[i % ncols])
     #         ax.get_shared_x_axes().join(ax, last_row[i % ncols])
-    # standardize_ticks(axs) #not sure if necessary
+    standardize_ticks(axs)  # not sure if necessary
