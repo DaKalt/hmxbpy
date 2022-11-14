@@ -712,7 +712,7 @@ class HiMaXBi:
                        time_axis='mjd', print_name=False, print_datetime=False,
                        label_style='serif', label_size=12, figsize=[8, 2.75],
                        colors=[], fileid='', toplab='', separate_TM=False,
-                       vlines=[], ticknumber_y=5.0, ticknumber_x=3.0, E_bins=[],
+                       vlines=[], ticknumber_y=5.0, ticknumber_x=2.0, E_bins=[],
                        lc_binning=-1, d=12, tilt=45, diag_color="k",
                        short_time=True):
         '''Function to create full lightcurve with gaps cut out.
