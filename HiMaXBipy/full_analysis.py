@@ -926,7 +926,6 @@ class HiMaXBi:
                     fig1.add_subplot(ax)
                     axs.append(ax)
                 # fig1.add_subplot(big_ax)
-                big_ax = fig1.add_subplot(111)
 
                 logfile.write(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
