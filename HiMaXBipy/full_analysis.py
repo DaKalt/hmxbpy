@@ -436,7 +436,7 @@ class HiMaXBi:
     def plot_lc_full(self, fracexp='0.15', mincounts='10', mode='ul',
                      show_eRASS=True, logname='lc_full_autosave.log',
                      time_axis='mjd', print_name=False, print_datetime=False,
-                     label_style='serif', label_size=12, figsize=[8, 2.75],
+                     label_style='serif', label_size=12, figsize=[8, 3.5],
                      colors=[], fileid='', toplab='', separate_TM=False,
                      vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, E_bins=[],
                      lc_binning=-1):
@@ -710,7 +710,7 @@ class HiMaXBi:
     def plot_lc_broken(self, fracexp='0.15', mincounts='10', mode='mincounts_ul',
                        show_eRASS=True, logname='lc_full_broken_autosave.log',
                        time_axis='mjd', print_name=False, print_datetime=False,
-                       label_style='serif', label_size=12, figsize=[8, 2.75],
+                       label_style='serif', label_size=12, figsize=[8, 3.5],
                        colors=[], fileid='', toplab='', separate_TM=False,
                        vlines=[], ticknumber_y=5.0, ticknumber_x=2.0, E_bins=[],
                        lc_binning=-1, d=12, tilt=45, diag_color="k",
