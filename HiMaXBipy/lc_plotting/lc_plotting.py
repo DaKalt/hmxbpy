@@ -1036,7 +1036,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
         x_formatter = plticker.ScalarFormatter(useOffset=False)
         ax.xaxis.set_major_formatter(x_formatter)
         ax.tick_params(axis='x', which='major', direction='in',
-                       top='on',   pad=5, length=5)  # , labelsize=10)
+                       top='on',   pad=9, length=5)  # , labelsize=10)
         ax.tick_params(axis='x', which='minor', direction='in',
                        top='on',   length=3)  # , labelsize=0)
         ax.tick_params(axis='y', which='major', direction='in',
@@ -1096,10 +1096,24 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     big_ax.set_ybound(lower=0, upper=1)
     big_ax.set_xticks([0, 1])
     big_ax.set_yticks([0, 1])
-    big_ax.tick_params(left=False, bottom=False,
-                       right=False, top=False)
-    big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
-    big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
+
+    big_ax.tick_params(left=True, bottom=True,
+                       right=True, top=True)
+    loc = plticker.MultipleLocator(base=1.0)
+    big_ax.yaxis.set_major_locator(loc)
+    x_formatter = plticker.ScalarFormatter(useOffset=False)
+    big_ax.xaxis.set_major_formatter(x_formatter)
+    big_ax.tick_params(axis='x', which='major', direction='in',
+                       top='on',   pad=9, length=0)  # , labelsize=10)
+    big_ax.tick_params(axis='x', which='minor', direction='in',
+                       top='on',   length=0)  # , labelsize=0)
+    big_ax.tick_params(axis='y', which='major', direction='in',
+                       right='on', length=0)  # , labelsize=10)
+    big_ax.tick_params(axis='y', which='minor', direction='in',
+                       right='on', length=0)
+
+    big_ax.set_xticklabels([start_x, end_x], alpha=0)
+    big_ax.set_yticklabels([longest_y, longest_y], alpha=0)
 
     # for i, ax in enumerate(axs):
     #     if obs_periods is not None:

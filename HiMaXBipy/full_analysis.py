@@ -436,7 +436,7 @@ class HiMaXBi:
     def plot_lc_full(self, fracexp='0.15', mincounts='10', mode='ul',
                      show_eRASS=True, logname='lc_full_autosave.log',
                      time_axis='mjd', print_name=False, print_datetime=False,
-                     label_style='serif', label_size=12, figsize=[8, 3.5],
+                     label_style='serif', label_size=16, figsize=[16, 7],
                      colors=[], fileid='', toplab='', separate_TM=False,
                      vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, E_bins=[],
                      lc_binning=-1):
@@ -710,11 +710,11 @@ class HiMaXBi:
     def plot_lc_broken(self, fracexp='0.15', mincounts='10', mode='mincounts_ul',
                        show_eRASS=True, logname='lc_full_broken_autosave.log',
                        time_axis='mjd', print_name=False, print_datetime=False,
-                       label_style='serif', label_size=12, figsize=[8, 3.5],
+                       label_style='serif', label_size=16, figsize=[16, 7],
                        colors=[], fileid='', toplab='', separate_TM=False,
                        vlines=[], ticknumber_y=5.0, ticknumber_x=2.0, E_bins=[],
                        lc_binning=-1, d=12, tilt=45, diag_color="k",
-                       short_time=True):
+                       short_time=True, fig_borders=[0.97, 0.1, 0.05, 0.98]):
         '''Function to create full lightcurve with gaps cut out.
 
         Parameters
@@ -784,7 +784,8 @@ class HiMaXBi:
             Color of gap markers. The default is 'k'.
         short_time : bool, optional
             Shorten time stamps in x-axis by subtracting value of lowest enrty. The default is True.
-
+        fig_borders : array-like (n,1), optional
+            Sets the borders of the figure (top, bottom, left, right). The default is [0.97, 0.1, 0.05, 0.98].
         '''
         if type(logname) != str:
             raise Exception('logname must be a string.')
@@ -862,6 +863,15 @@ class HiMaXBi:
             raise Exception('d must be a float or str.')
         if type(diag_color) != str:
             raise Exception('diag_color must be a str.')
+        if type(fig_borders) != list and type(fig_borders) != np.ndarray:
+            raise Exception('fig_borders must be array-like')
+        else:
+            if len(fig_borders) != 4:
+                raise Exception('fig_borders needs exactly 4 entries')
+            for entry in fig_borders:
+                if type(entry) != float:
+                    raise Exception(
+                        'Entries in fig_borders need to be of type float.')
 
         os.chdir(self._working_dir_full + '/working/')
 
@@ -916,16 +926,15 @@ class HiMaXBi:
                                        height_ratios=height_ratios,
                                        width_ratios=width_ratios)
 
-                big_ax = plt.Subplot(fig1, gridspec.GridSpec(1, 1)[0])
+                big_ax = fig1.add_subplot(111)
                 big_ax.set_frame_on(False)
-                # big_ax.patch.set_facecolor("none")
+                big_ax.patch.set_facecolor("none")
 
                 axs = []
                 for igs in gs:
                     ax = plt.Subplot(fig1, igs)
                     fig1.add_subplot(ax)
                     axs.append(ax)
-                # fig1.add_subplot(big_ax)
 
                 logfile.write(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
@@ -1018,96 +1027,14 @@ class HiMaXBi:
                                        ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
                                        diag_color, big_ax)
 
-                # #######
-                # d = np.tan(tilt)
-                # kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
-                #               linestyle="none", color=diag_color, mec=diag_color, mew=1, clip_on=False)
-
-                # # fig.subplots_adjust(wspace=0.05)
-
-                # for i_ax, ax in enumerate(axs):
-                #     loc = plticker.MultipleLocator(base=1.0)
-                #     ax.yaxis.set_major_locator(loc)
-                #     x_formatter = plticker.ScalarFormatter(useOffset=False)
-                #     ax.xaxis.set_major_formatter(x_formatter)
-                #     ax.tick_params(axis='x', which='major', direction='in',
-                #                    top='on',   pad=5, length=5)  # , labelsize=10)
-                #     ax.tick_params(axis='x', which='minor', direction='in',
-                #                    top='on',   length=3)  # , labelsize=0)
-                #     ax.tick_params(axis='y', which='major', direction='in',
-                #                    right='on', length=5)  # , labelsize=10)
-                #     ax.tick_params(axis='y', which='minor', direction='in',
-                #                    right='on', length=3)  # , labelsize=0)
-
-                #     if i_ax == 0:
-                #         ax.plot([1, 1], [0, 1],
-                #                 transform=ax.transAxes, **kwargs)
-                #         ax.spines.right.set_visible(False)
-                #         ax.tick_params(right=False, labelright=False)
-                #     elif i_ax == len(axs) - 1:
-                #         ax.plot([0, 0], [0, 1],
-                #                 transform=ax.transAxes, **kwargs)
-                #         ax.spines.left.set_visible(False)
-                #         ax.tick_params(left=False, labelleft=False)
-                #     else:
-                #         ax.plot([0, 0, 1, 1], [0, 1, 0, 1],
-                #                 transform=ax.transAxes, **kwargs)
-                #         ax.spines.right.set_visible(False)
-                #         ax.spines.left.set_visible(False)
-                #         ax.tick_params(left=False, labelleft=False,
-                #                        right=False, labelright=False)
-
-                #     if i_ax == 0:
-                #         tick_size_y = round_to_1(
-                #             (pymax - pymin) / ticknumber_y)
-                #         yticks = []
-                #         for j in range(-int(ticknumber_y), int(ticknumber_y)):
-                #             if j * tick_size_y > pymin and j * tick_size_y < pymax:
-                #                 yticks.append(j * tick_size_y)
-                #         ax.set_yticks(yticks)
-
-                #         longest_y = ''
-                #         for entry in yticks:
-                #             if len(str(entry)) > len(longest_y):
-                #                 longest_y = str(entry)
-
-                #     tick_size_x = np.round(
-                #         (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
-                #     xticks = []
-                #     centre_x = np.round(
-                #         (pxmaxs[i_ax] + pxmins[i_ax]) / 2.)
-                #     for j in range(-int(ticknumber_x), int(ticknumber_x)):
-                #         if j * tick_size_x + centre_x > pxmins[i_ax] and j * tick_size_x + centre_x < pxmaxs[i_ax]:
-                #             xticks.append(j * tick_size_x + centre_x)
-                #     if len(xticks) <= 1:
-                #         xticks = [centre_x - tick_size_x /
-                #                   2, centre_x + tick_size_x / 2]
-                #     ax.set_xticks(xticks)
-                #     if i_ax == 0:
-                #         start_x = xticks[0]
-                #     elif i_ax == len(axs) - 1:
-                #         end_x = xticks[-1]
-
-                #     ax.set_xbound(lower=pxmins[i_ax], upper=pxmaxs[i_ax])
-                #     ax.set_ybound(lower=pymin, upper=pymax)
-
-                # big_ax.set_xbound(lower=0, upper=1)
-                # big_ax.set_ybound(lower=0, upper=1)
-                # big_ax.set_xticks([0, 1])
-                # big_ax.set_yticks([0, 1])
-                # big_ax.tick_params(left=False, bottom=False,
-                #                    right=False, top=False)
-                # big_ax.set_xticklabels([start_x, end_x], alpha=0.3)
-                # big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
-                # #######
-
-                self.fig = fig1
-                self.axes = axs
-                self.big_ax = big_ax
+                self._fig = fig1
+                self._axes = axs
+                self._big_ax = big_ax
 
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
-                fig1.subplots_adjust(wspace=0.05)
+                wspace = 8.0 / figsize[0] / 0.05
+                fig1.subplots_adjust(wspace = wspace, top = fig_borders[0], bottom = fig_borders[1], left = fig_borders[2], right = fig_borders[3])
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
@@ -1124,7 +1051,7 @@ class HiMaXBi:
     def plot_lc_parts(self, fracexp='0.15', mincounts='10', mode='mincounts_ul',
                       show_eRASS=True, logname='lc_parts_autosave.log',
                       time_axis='mjd', print_name=False, print_datetime=False,
-                      label_style='serif', label_size=12, figsize=[4, 2.75],
+                      label_style='serif', label_size=16, figsize=[8, 5.5],
                       colors=[], fileid='', toplab='', separate_TM=False,
                       vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, eRASSi=[],
                       E_bins=[], lc_binning=-1):
@@ -1160,7 +1087,7 @@ class HiMaXBi:
         label_size : float or int, optional
             Sets fontsize. The default is 12.
         figsize : array-like (2,), optional
-            Sets width and height of figure. The default is [4, 2.75].
+            Sets width and height of figure. The default is [8, 5.5].
         colors : array of str (1,) or (2,), optional
             Sets colors of plots. Any color available to matplotlib possible.
             For mode 'ul' and 'mincounts' the first entry is used, for mode
