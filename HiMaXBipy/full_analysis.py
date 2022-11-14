@@ -1101,6 +1101,10 @@ class HiMaXBi:
                 # big_ax.set_yticklabels([longest_y, longest_y], alpha=0.3)
                 # #######
 
+                self.fig = fig1
+                self.axes = axs
+                self.big_ax = big_ax
+
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
                 fig1.subplots_adjust(wspace=0.05)
