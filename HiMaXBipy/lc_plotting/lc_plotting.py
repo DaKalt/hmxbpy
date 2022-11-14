@@ -1078,11 +1078,11 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
         xticks = []
         centre_x = np.round(
             (pxmaxs[i_ax] + pxmins[i_ax]) / 2.)
-        for j in range(-int(ticknumber_x), int(ticknumber_x)):
-            if j * tick_size_x + centre_x > pxmins[i_ax] and j * tick_size_x + centre_x < pxmaxs[i_ax]:
-                xticks.append(j * tick_size_x + centre_x)
+        for j in range(-int(ticknumber_x), int(ticknumber_x) + 1):
+            if j * tick_size_x + centre_x - np.round(tick_size_x / 2) > pxmins[i_ax] and j * tick_size_x + centre_x - np.round(tick_size_x / 2) < pxmaxs[i_ax]:
+                xticks.append(j * tick_size_x + centre_x) - np.round(tick_size_x / 2)
         if len(xticks) <= 1:
-            xticks = [centre_x - tick_size_x / 2, centre_x + tick_size_x / 2]
+            xticks = [centre_x - np.round(tick_size_x / 2), centre_x + np.round(tick_size_x / 2)]
         ax.set_xticks(xticks)
         if i_ax == 0:
             start_x = xticks[0]
