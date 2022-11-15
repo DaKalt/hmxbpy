@@ -916,24 +916,15 @@ class HiMaXBi:
 
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
 
-                width_ratios = [i[1] - i[0] for i in self._obs_periods]
-                height_ratios = [1]
-
-                ncols, nrows = len(width_ratios), len(height_ratios)
-
-                gs = gridspec.GridSpec(ncols=ncols,
-                                       nrows=nrows,
-                                       height_ratios=height_ratios,
-                                       width_ratios=width_ratios)
+                ncols, nrows = len(self._obs_periods), 1
 
                 big_ax = fig1.add_subplot(111)
                 big_ax.set_frame_on(False)
                 big_ax.patch.set_facecolor("none")
 
                 axs = []
-                for igs in gs:
-                    ax = plt.Subplot(fig1, igs)
-                    fig1.add_subplot(ax)
+                for _ in self._obs_periods:
+                    ax = fig1.add_subplot(111)
                     axs.append(ax)
 
                 logfile.write(f'Now working on {pfile}.fits\n')
@@ -1027,11 +1018,24 @@ class HiMaXBi:
                                        ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
                                        diag_color, big_ax)
 
-                # fig1.set_tight_layout(True)
-                # fig1.set_tight_layout(False)
+                fig1.set_tight_layout(True)
+                fig1.set_tight_layout(False)
                 wspace = 8.0 / figsize[0] * 0.05
                 fig1.subplots_adjust(
                     wspace=wspace, top=fig_borders[0], bottom=fig_borders[1], left=fig_borders[2], right=fig_borders[3])
+
+                width_ratios = []
+                height_ratios = [1]
+                for i_ax in range(len(axs)):
+                    width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
+
+                gs = gridspec.GridSpec(ncols=ncols,
+                                       nrows=nrows,
+                                       height_ratios=height_ratios,
+                                       width_ratios=width_ratios)
+
+                for i_ax, ax in enumerate(axs):
+                    ax.set_position(gs[i_ax].get_position(fig1))
 
                 self._width_ratios = width_ratios
                 self._fig = fig1
