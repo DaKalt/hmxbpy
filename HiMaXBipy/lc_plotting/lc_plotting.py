@@ -65,6 +65,9 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     nback_e = 0.
     narea = 0.
     ntime = 0.
+    netcounts = -1.
+    netcounts_e = -1.
+    trate_ee = -1.
 
     for i in range(nrow):
         tmp = time0[i] - start_bin
@@ -175,7 +178,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         xmin = min(mjd)
         xmax = max(mjd)
 
-    ymin = min(yrate - yrate_e)
+    ymin = min(yrate + (-yrate_e))
     ymax = max(yrate + yrate_e * np.logical_not(uplimit))
     xm = (xmax-xmin)*0.05
     ym = (ymax-ymin)*0.05
@@ -253,6 +256,9 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     narea = 0.
     ntime = 0.
     nrat = []
+    netcounts = -1
+    netcounts_e = -1
+    trate_ee = -1
     # mean_count = 0
     # sn = 2.0
     # xtime_tmp = 0.0
@@ -416,7 +422,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     yrate = np.array(yrate)
     yrate_e = np.array(yrate_e)
 
-    ymin = min(yrate - yrate_e)
+    ymin = min(yrate + (-yrate_e))
     ymax = max(yrate + yrate_e)
     xm = (xmax-xmin)*0.05
     ym = (ymax-ymin)*0.05
@@ -438,8 +444,8 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     yrate = np.array(yrate)
     yrate_e = np.array(yrate_e)
 
-    i_max = np.argmax(yrate - yrate_e)
-    i_min = np.argmax(yrate_e - yrate)
+    i_max = np.argmax(yrate + (-yrate_e))
+    i_min = np.argmax(yrate_e + (-yrate))
 
     ampl_max2 = yrate[i_max] - yrate_e[i_max] - yrate[i_min] - yrate_e[i_min]
     ampl_max = yrate[i_max] - yrate[i_min]
@@ -593,6 +599,9 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         narea = 0.
         ntime = 0.
         nrat = []
+        netcounts = -1.
+        netcounts_e = -1.
+        trate_ee = -1.
         # mean_count = 0
         # sn = 2.0
         # xtime_tmp = 0.0
@@ -765,7 +774,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         yrate = np.array(yrate)
         yrate_e = np.array(yrate_e)
 
-        ymin = min(yrate - yrate_e)
+        ymin = min(yrate + (-yrate_e))
         ymax = max(yrate + yrate_e)
         xm = (xmax-xmin)*0.05
         ym = (ymax-ymin)*0.05
@@ -789,8 +798,8 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         yrate = np.array(yrate)
         yrate_e = np.array(yrate_e)
 
-        i_max = np.argmax(yrate - yrate_e)
-        i_min = np.argmax(yrate_e - yrate)
+        i_max = np.argmax(yrate + (-yrate_e))
+        i_min = np.argmax(yrate_e + (-yrate))
 
         ampl_max2 = yrate[i_max] - yrate_e[i_max] - \
             yrate[i_min] - yrate_e[i_min]
@@ -897,6 +906,9 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
         nback_e = 0.
         narea = 0.
         ntime = 0.
+        netcounts = -1.
+        netcounts_e = -1.
+        trate_ee = -1.
 
         for i in range(nrow):
             tmp = time0[i] - start_bin
@@ -1015,7 +1027,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
             xmin = xmin - time_rel
             xmax = xmax - time_rel
 
-        ymin = min(yrate - yrate_e)
+        ymin = min(yrate + (-yrate_e))
         ymax = max(yrate + yrate_e * np.logical_not(uplimit))
         xm = (xmax-xmin)*0.05
         ym = (ymax-ymin)*0.05
@@ -1049,7 +1061,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
     kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12, linestyle="none",
                   color=diag_color, mec=diag_color, mew=1, clip_on=False)
 
-    # fig.subplots_adjust(wspace=0.05)
+    start_x, end_x, longest_y = 0, 0, 0
 
     for i_ax, ax in enumerate(axs):
         loc = plticker.MultipleLocator(base=1.0)
