@@ -1987,4 +1987,5 @@ class HiMaXBi:
         '''
         self.plot_lc_full()
         self.plot_lc_parts()
+        self.plot_lc_broken()
         self.plot_spectra()

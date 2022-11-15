@@ -32,9 +32,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         f'Start of 1st bin : {start_time} {start_time0} MJD: {mjds}\n')
     logfile.write(f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
-    # calculate new rate by error propagation assuming there are enough
-    # counts in each bin to assume Gaussian statistics usinf
-    # infirmationon total counts background exposure and backrat
+    # calculate new rate by error propagation assuming there are enough counts in each bin to assume Gaussian statistics usinf infirmation on total counts background exposure and backrat
     uplimit = []
 
     # rate = []
@@ -111,12 +109,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
             else:
                 uplimit.append(0)
             logfile.write(
-                r'bin number, Start,end time of bin, duration of bin, ' +
-                r'counts, rate, error,fracexp, fractime, fracarea, loop ' +
-                f'start, loop end {nbin} {start_bin} {end_bin} ' +
-                f'{end_bin-start_bin} {counts} {nrate} ' +
-                f'{nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} ' +
-                f'{istart} {iend}\n')
+                f'bin number, Start,end time of bin, duration of bin, counts , rate, error,fracexp, fractime, fracarea, loop start, loop end {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate} {nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} {istart} {iend}\n')
             # start next bin
             nbin += 1
             istart = i
@@ -148,9 +141,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         uplimit.append(0)
 
     logfile.write(
-        f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
-        f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
-        f'{nexp} {istart} {iend}\n')
+        f'Start/end time of last bin {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} {nexp} {istart} {iend}\n')
     # start of first bin at 0:
     xtime = xtime-xtime[0]+xtime_d[0]
     logfile.write(f'{xtime} {xtime_d}\n')
@@ -188,11 +179,11 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     logfile.write(f"Plot limits: {pxmin} {pxmax} {pymin} {pymax}\n")
 
     if xflag == 1:
-        ax.errorbar(xtime, yrate, xerr=xtime_d, yerr=yrate_e, uplims=uplimit,
-                    linestyle='None', color=color, fmt='o', zorder=1)
+        ax.errorbar(xtime, yrate, xerr=xtime_d, yerr=yrate_e,
+                    uplims=uplimit, linestyle='None', color=color, fmt='o', zorder=1)
     else:
-        ax.errorbar(mjd, yrate, xerr=mjd_d, yerr=yrate_e, uplims=uplimit,
-                    linestyle='None', color=color, fmt='o', zorder=1)
+        ax.errorbar(mjd, yrate, xerr=mjd_d, yerr=yrate_e,
+                    uplims=uplimit, linestyle='None', color=color, fmt='o', zorder=1)
 
     return pxmin, pxmax, pymin, pymax
 
@@ -223,9 +214,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         f'Start of 1st bin : {start_time} {start_time0} MJD: {mjds}\n')
     logfile.write(f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
-    # calculate new rate by error propagation assuming there are enough
-    # counts in each bin to assume Gaussian statistics usinf infirmation
-    # on total counts background exposure and backrat
+    # calculate new rate by error propagation assuming there are enough counts in each bin to assume Gaussian statistics usinf infirmation on total counts background exposure and backrat
     # rate = []
     # rate_e = []
     xtime = []
@@ -280,11 +269,8 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         if tcounts_c > mincounts:
             tcounts_c = 0
             # tcount_e_c = 0.0
-            iend += 1  # kald: in this case one more bin needs to be
-            # included compared to the usual lightcurves, else <10
-            # countsfor all newly defined bins
-            # without the +1 before but this way sections are directly
-            # connected #kald
+            iend += 1  # kald: in this case one more bin needs to be included compared to the usual lightcurves, else <10 countsfor all newly defined bins
+            # without the +1 before but this way sections are directly connected #kald
             xtime.append(0.5*(time0[istart]+time0[iend+1]))
             xtime_d.append(0.5*(time0[iend+1]-time0[istart]))
             # xtime_tmp = 0.5*(time0[istart]+time0[iend])
@@ -317,12 +303,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
             # nrat_med = np.median(nrat)
 
             logfile.write(
-                r'bin number, Start,end time of bin, duration of bin, ' +
-                r'counts, rate, error,fracexp, fractime, fracarea, loop ' +
-                f'start, loop end {nbin} {start_bin} {end_bin} ' +
-                f'{end_bin-start_bin} {counts} {nrate} ' +
-                f'{nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} ' +
-                f'{istart} {iend}\n')
+                f'bin number, Start,end time of bin, duration of bin, counts , rate, error,fracexp, fractime, fracarea, loop start, loop end {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate} {nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} {istart} {iend}\n')
             # start next bin
             nbin += 1
             istart_tmp = istart
@@ -348,11 +329,8 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         nback_e = bkg**0.5
         nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
     logfile.write(
-        f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
-        f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
-        f'{nexp} {istart} {iend}\n')
-    if counts > mincounts:  # this was tcounts_c which should be 0 all
-        # the time at this point #kald
+        f'Start/end time of last bin {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} {nexp} {istart} {iend}\n')
+    if counts > mincounts:  # this was tcounts_c which should be 0 all the time at this point #kald
         logfile.write(f'Condition satisfied with {counts} {bkg}\n')
 
         yrate.append(nrate)
@@ -487,10 +465,58 @@ def format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y):
     xticks = []
     centre_x = np.round((pxmax + pxmin) / 2., -int(np.log10(tick_size_x)))
     for i in range(-int(ticknumber_x), int(ticknumber_x)):
-        if (i * tick_size_x + centre_x > pxmin and
-                i * tick_size_x + centre_x < pxmax):
+        if i * tick_size_x + centre_x > pxmin and i * tick_size_x + centre_x < pxmax:
             xticks.append(i * tick_size_x + centre_x)
     ax.set_xticks(xticks)
+
+
+def standardize_ticks(axs, xbase=None, ybase=None):
+    """Make all of the internal axes share tick bases
+    Parameters
+    ----------
+    xbase, ybase: (optional) None or float
+        If `xbase` or `ybase` is a float, manually set all tick locators to
+        this base. Otherwise, use the largest base across internal subplots
+        for that axis.
+    """
+    if xbase is None:
+        if axs[0].xaxis.get_scale() == "log":
+            xbase = max(
+                ax.xaxis.get_ticklocs()[1] / ax.xaxis.get_ticklocs()[0]
+                for ax in axs
+                if ax.get_subplotspec().is_last_row()
+            )
+        else:
+            xbase = max(
+                ax.xaxis.get_ticklocs()[1] - ax.xaxis.get_ticklocs()[0]
+                for ax in axs
+                if ax.get_subplotspec().is_last_row()
+            )
+    # if ybase is None:
+    #     if axs[0].yaxis.get_scale() == "log":
+    #         ybase = max(
+    #             ax.yaxis.get_ticklocs()[1] / ax.yaxis.get_ticklocs()[0]
+    #             for ax in axs
+    #             if ax.get_subplotspec().is_first_col()
+    #         )
+    #     else:
+    #         ybase = max(
+    #             ax.yaxis.get_ticklocs()[1] - ax.yaxis.get_ticklocs()[0]
+    #             for ax in axs
+    #             if ax.get_subplotspec().is_first_col()
+    #         )
+
+    for ax in axs:
+        # if ax.get_subplotspec().is_first_col():
+        #     if ax.yaxis.get_scale() == "log":
+        #         ax.yaxis.set_major_locator(ticker.LogLocator(ybase))
+        #     else:
+        #         ax.yaxis.set_major_locator(ticker.MultipleLocator(ybase))
+        if ax.get_subplotspec().is_last_row():
+            if ax.xaxis.get_scale() == "log":
+                ax.xaxis.set_major_locator(ticker.LogLocator(xbase))
+            else:
+                ax.xaxis.set_major_locator(ticker.MultipleLocator(xbase))
 
 
 def get_boundaries(in_bounds):
@@ -512,9 +538,7 @@ def get_boundaries_broken(in_bounds):
     return out_bounds[0], out_bounds[1], out_bounds[2], out_bounds[3]
 
 
-def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
-                                 mincounts, color, obs_periods, short_time,
-                                 time_rel=0):
+def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts, color, obs_periods, short_time, time_rel=0):
     pxmax = []
     pxmin = []
     pymax = []
@@ -522,29 +546,21 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
     for i_ax, ax in enumerate(axs):
         time_full = hdulist[1].data.field('TIME')
         time = hdulist[1].data.field('TIME')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         delt = hdulist[1].data.field('TIMEDEL')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         cnts = hdulist[1].data.field('COUNTS')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         fexp = hdulist[1].data.field('FRACEXP')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         ftim = hdulist[1].data.field('FRACTIME')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         farea = hdulist[1].data.field('FRACAREA')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         back = hdulist[1].data.field('BACK_COUNTS')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         backrat = hdulist[1].data.field('BACKRATIO')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         # delta = delt[0]
         backrat_med = np.median(backrat)
 
@@ -563,9 +579,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         logfile.write(
             f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
-        # calculate new rate by error propagation assuming there are
-        # enough counts in each bin to assume Gaussian statistics using
-        # infirmation on total counts background exposure and backrat
+        # calculate new rate by error propagation assuming there are enough counts in each bin to assume Gaussian statistics usinf infirmation on total counts background exposure and backrat
         # rate = []
         # rate_e = []
         xtime = []
@@ -620,11 +634,8 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
             if tcounts_c > mincounts:
                 tcounts_c = 0
                 # tcount_e_c = 0.0
-                iend += 1  # kald: in this case one more bin needs to be
-                # included compared to the usual lightcurves, else <10
-                # countsfor all newly defined bins
-                # without the +1 before but this way sections are
-                # directly connected #kald
+                iend += 1  # kald: in this case one more bin needs to be included compared to the usual lightcurves, else <10 countsfor all newly defined bins
+                # without the +1 before but this way sections are directly connected #kald
                 xtime.append(0.5*(time0[istart]+time0[iend+1]))
                 xtime_d.append(0.5*(time0[iend+1]-time0[istart]))
                 # xtime_tmp = 0.5*(time0[istart]+time0[iend])
@@ -648,8 +659,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
                     nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
                     ncount_e = counts**0.5
                     nback_e = bkg**0.5
-                    nrate_e = (ncount_e**2) + ((nback_e**2) *
-                                               (backrat_med**2))
+                    nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
                     narea = narea + farea[j]
                     ntime = ntime + ftim[j]
                     nrat.append(backrat[j])
@@ -658,12 +668,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
                 # nrat_med = np.median(nrat)
 
                 logfile.write(
-                    r'bin number, Start,end time of bin, duration of bin, ' +
-                    r'counts , rate, error, fracexp, fractime, fracarea, ' +
-                    f'loop start, loop end {nbin} {start_bin} {end_bin} ' +
-                    f'{end_bin-start_bin} {counts} {nrate} ' +
-                    f'{nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} ' +
-                    f'{istart} {iend}\n')
+                    f'bin number, Start,end time of bin, duration of bin, counts , rate, error,fracexp, fractime, fracarea, loop start, loop end {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate} {nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} {istart} {iend}\n')
                 # start next bin
                 nbin += 1
                 istart_tmp = istart
@@ -689,11 +694,8 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
             nback_e = bkg**0.5
             nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
         logfile.write(
-            f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
-            f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
-            f'{nexp} {istart} {iend}\n')
-        if counts > mincounts:  # this was tcounts_c which should be 0
-            # all the time at this point #kald
+            f'Start/end time of last bin {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} {nexp} {istart} {iend}\n')
+        if counts > mincounts:  # this was tcounts_c which should be 0 all the time at this point #kald
             logfile.write(f'Condition satisfied with {counts} {bkg}\n')
 
             yrate.append(nrate)
@@ -776,8 +778,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
 
         # Plot limits
         logfile.write(
-            f"Plot limits: {pxmin[i_ax]} {pxmax[i_ax]} {pymin[i_ax]} " +
-            f"{pymax[i_ax]}\n")
+            f"Plot limits: {pxmin[i_ax]} {pxmax[i_ax]} {pymin[i_ax]} {pymax[i_ax]}\n")
 
         if xflag == 1:
             ax.errorbar(xtime, yrate, xerr=xtime_d, yerr=yrate_e,
@@ -813,8 +814,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
     return pxmin, pxmax, pymin, pymax, time_rel
 
 
-def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
-                          color, obs_periods, short_time, time_rel=0):
+def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts, color, obs_periods, short_time, time_rel=0):
     pxmax = []
     pxmin = []
     pymax = []
@@ -822,29 +822,21 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
     for i_ax, ax in enumerate(axs):
         time_full = hdulist[1].data.field('TIME')
         time = hdulist[1].data.field('TIME')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         delt = hdulist[1].data.field('TIMEDEL')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         cnts = hdulist[1].data.field('COUNTS')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         fexp = hdulist[1].data.field('FRACEXP')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         ftim = hdulist[1].data.field('FRACTIME')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         farea = hdulist[1].data.field('FRACAREA')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         back = hdulist[1].data.field('BACK_COUNTS')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         backrat = hdulist[1].data.field('BACKRATIO')[(
-            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) *
-            (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
+            time_full/3600./24.+mjdref > obs_periods[i_ax][0]) * (time_full/3600./24.+mjdref < obs_periods[i_ax][1])]
         # delta = delt[0]
         # most representative value of background ratio
         backrat_med = np.median(backrat)
@@ -864,9 +856,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
         logfile.write(
             f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
-        # calculate new rate by error propagation assuming there are
-        # enough counts in each bin to assume Gaussian statistics using
-        # infirmation on total counts background exposure and backrat
+        # calculate new rate by error propagation assuming there are enough counts in each bin to assume Gaussian statistics usinf infirmation on total counts background exposure and backrat
         uplimit = []
 
         # rate = []
@@ -943,12 +933,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
                 else:
                     uplimit.append(0)
                 logfile.write(
-                    r'bin number, Start,end time of bin, duration of bin, ' +
-                    r'counts , rate, error,fracexp, fractime, fracarea, ' +
-                    f'loop start, loop end {nbin} {start_bin} {end_bin} ' +
-                    f'{end_bin-start_bin} {counts} {nrate} ' +
-                    f'{nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} ' +
-                    f'{istart} {iend}\n')
+                    f'bin number, Start,end time of bin, duration of bin, counts , rate, error,fracexp, fractime, fracarea, loop start, loop end {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate} {nrate_e**0.5/(nexp*delt[0])} {nexp} {ntime} {narea} {istart} {iend}\n')
                 # start next bin
                 nbin += 1
                 istart = i
@@ -980,9 +965,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
             uplimit.append(0)
 
         logfile.write(
-            f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
-            f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
-            f'{nexp} {istart} {iend}\n')
+            f'Start/end time of last bin {nbin} {start_bin} {end_bin} {end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} {nexp} {istart} {iend}\n')
         # start of first bin at 0:
         xtime = xtime-xtime[0]+xtime_d[0]
         logfile.write(f'{xtime} {xtime_d}\n')
@@ -1026,28 +1009,24 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
 
         # Plot limits
         logfile.write(
-            f"Plot limits: {pxmin[i_ax]} {pxmax[i_ax]} {pymin[i_ax]} " +
-            f"{pymax[i_ax]}\n")
+            f"Plot limits: {pxmin[i_ax]} {pxmax[i_ax]} {pymin[i_ax]} {pymax[i_ax]}\n")
 
         if xflag == 1:
             ax.errorbar(xtime, yrate, xerr=xtime_d, yerr=yrate_e,
-                        uplims=uplimit, linestyle='None', color=color, fmt='o',
-                        zorder=1)
+                        uplims=uplimit, linestyle='None', color=color, fmt='o', zorder=1)
         else:
             ax.errorbar(mjd, yrate, xerr=mjd_d, yerr=yrate_e,
-                        uplims=uplimit, linestyle='None', color=color, fmt='o',
-                        zorder=1)
+                        uplims=uplimit, linestyle='None', color=color, fmt='o', zorder=1)
 
     return pxmin, pxmax, pymin, pymax, time_rel
 
 
-def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
-                           ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
-                           diag_color, big_ax):
+def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
+                           ticknumber_y, ncols, nrows, d, tilt, diag_color, big_ax):
     # proportion of vertical to horizontal extent of the slanted line
     d = np.tan(tilt)
-    kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12, linestyle="none",
-                  color=diag_color, mec=diag_color, mew=1, clip_on=False)
+    kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
+                  linestyle="none", color=diag_color, mec=diag_color, mew=1, clip_on=False)
 
     # fig.subplots_adjust(wspace=0.05)
 
@@ -1105,12 +1084,11 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
         centre_x = np.round(
             (pxmaxs[i_ax] + pxmins[i_ax]) / 2.)
         for j in range(-int(ticknumber_x), int(ticknumber_x) + 1):
-            if (j * tick_size_x + centre_x - shift_x > pxmins[i_ax] and
-                    j * tick_size_x + centre_x - shift_x < pxmaxs[i_ax]):
+            if j * tick_size_x + centre_x - shift_x > pxmins[i_ax] and j * tick_size_x + centre_x - shift_x < pxmaxs[i_ax]:
                 xticks.append(j * tick_size_x + centre_x - shift_x)
         if len(xticks) <= 1:
-            xticks = [centre_x - np.round(tick_size_x / 2),
-                      centre_x + np.round(tick_size_x / 2)]
+            xticks = [
+                centre_x - np.round(tick_size_x / 2), centre_x + np.round(tick_size_x / 2)]
         ax.set_xticks(xticks)
         if i_ax == 0:
             start_x = xticks[0]
@@ -1142,3 +1120,9 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
 
     big_ax.set_xticklabels([start_x, end_x], alpha=0)
     big_ax.set_yticklabels([longest_y, longest_y], alpha=0)
+
+    # for i, ax in enumerate(axs):
+    #     if obs_periods is not None:
+    #         ax.set_xlim(obs_periods[i % ncols])
+    #         ax.get_shared_x_axes().join(ax, last_row[i % ncols])
+    # standardize_ticks(axs)  # not sure if necessary
