@@ -1027,15 +1027,16 @@ class HiMaXBi:
                                        ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
                                        diag_color, big_ax)
 
-                self._fig = fig1
-                self._axes = axs
-                self._big_ax = big_ax
-
-                fig1.set_tight_layout(True)
-                fig1.set_tight_layout(False)
+                # fig1.set_tight_layout(True)
+                # fig1.set_tight_layout(False)
                 wspace = 8.0 / figsize[0] * 0.05
                 fig1.subplots_adjust(
                     wspace=wspace, top=fig_borders[0], bottom=fig_borders[1], left=fig_borders[2], right=fig_borders[3])
+
+                self._width_ratios = width_ratios
+                self._fig = fig1
+                self._axes = axs
+                self._big_ax = big_ax
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)

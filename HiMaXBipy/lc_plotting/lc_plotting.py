@@ -1125,4 +1125,4 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax, ticknumber_x,
     #     if obs_periods is not None:
     #         ax.set_xlim(obs_periods[i % ncols])
     #         ax.get_shared_x_axes().join(ax, last_row[i % ncols])
-    standardize_ticks(axs)  # not sure if necessary
+    # standardize_ticks(axs)  # not sure if necessary
