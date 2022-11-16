@@ -168,7 +168,7 @@ class HiMaXBi:
                     raise Exception(
                         'The energies must be given in keV and must follow '
                         '0.2 <= E_min < E_max <= 8.0.')
-        self._energy_bins = np.array(bins, dtype = np.float64).tolist()
+        self._energy_bins = np.array(bins, dtype=np.float64).tolist()
         self._LC_extracted = False
 
     def set_distance(self, distance):
@@ -466,7 +466,7 @@ class HiMaXBi:
                      time_axis='mjd', print_name=False, print_datetime=False,
                      label_style='serif', label_size=16, figsize=[16, 7],
                      colors=[], fileid='', toplab='', separate_TM=False,
-                     vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, E_bins=[],
+                     vlines=[], ticknumber_y=5, ticknumber_x=8, E_bins=[],
                      lc_binning=-1):
         '''Function to create full lightcurve.
 
@@ -1155,7 +1155,7 @@ class HiMaXBi:
                       print_name=False, print_datetime=False,
                       label_style='serif', label_size=16, figsize=[8, 5.5],
                       colors=[], fileid='', toplab='', separate_TM=False,
-                      vlines=[], ticknumber_y=5.0, ticknumber_x=8.0, eRASSi=[],
+                      vlines=[], ticknumber_y=5, ticknumber_x=8, eRASSi=[],
                       E_bins=[], lc_binning=-1):
         '''Function to create lightcurve of eRASSi/epochs.
 
