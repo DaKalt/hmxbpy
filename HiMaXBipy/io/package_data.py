@@ -12,8 +12,8 @@ def round_to_1(x):
 
 
 def get_path_of_data_file(data_file):
-    file_path = pkg_resources.resource_filename(
-        "HiMaXBipy", 'sh_files/%s' % data_file)
+    file_path = pkg_resources.resource_filename("HiMaXBipy",
+                                                'sh_files/%s' % data_file)
 
     return file_path
 
@@ -25,8 +25,8 @@ def get_path_of_data_dir():
 
 
 def install_tex_sty():
-    file_path = pkg_resources.resource_filename(
-        "HiMaXBipy", 'tex_style/type1ec.sty')
+    file_path = pkg_resources.resource_filename("HiMaXBipy",
+                                                'tex_style/type1ec.sty')
     if not os.path.exists(os.path.expanduser('~/texmf')):
         os.mkdir(os.path.expanduser('~/texmf'))
         for subfolder in ['/bibtex', '/doc', '/tex']:
@@ -43,7 +43,8 @@ def install_tex_sty():
                 os.mkdir(os.path.expanduser('~/texmf/bibtex') + subfolder)
         else:
             for subfolder in ['/bib', '/bst']:
-                if not os.path.exists(os.path.expanduser('~/texmf/bibtex') + subfolder):
+                if (not os.path.exists(os.path.expanduser('~/texmf/bibtex')
+                                       + subfolder)):
                     os.mkdir(os.path.expanduser('~/texmf/bibtex') + subfolder)
         if not os.path.exists(os.path.expanduser('~/texmf/doc')):
             os.mkdir(os.path.expanduser('~/texmf/doc'))
@@ -56,7 +57,8 @@ def install_tex_sty():
         else:
             for subfolder in ['/context', '/generic', '/latex',
                               '/plain', '/xelatex', '/xetex']:
-                if not os.path.exists(os.path.expanduser('~/texmf/tex') + subfolder):
+                if (not os.path.exists(os.path.expanduser('~/texmf/tex')
+                                       + subfolder)):
                     os.mkdir(os.path.expanduser('~/texmf/tex') + subfolder)
     if not os.path.exists(os.path.expanduser('~/texmf/tex/latex/type1ec.sty')):
         shutil.copy(file_path, os.path.expanduser('~/texmf/tex/latex'))
