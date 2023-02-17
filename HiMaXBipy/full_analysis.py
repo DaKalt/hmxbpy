@@ -372,6 +372,8 @@ class HiMaXBi:
             raise Exception(
                 'Set the region name and list of eventfiles first with the '
                 'functions set_filelist and set_region.')
+        if not os.path.exists(self._esass):
+            raise Exception(f'File {self._esass} does not exist.')
         for bin_e in self._energy_bins:
             replacements = [['@source_name', self._src_name],
                             ['@main_name', self._working_dir],
