@@ -234,7 +234,6 @@ class HiMaXBi:
             full path of esass initialisation script.
 
         '''
-        print('enters function')
         if type(esass_location) != str:
             raise Exception('esass_location must be string.')
         if not os.path.exists(esass_location):
