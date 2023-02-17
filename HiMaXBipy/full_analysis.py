@@ -30,7 +30,7 @@ from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 class HiMaXBi:
     _skytile = ''
     _filelist = ''
-    _esass = '/home/erosita/sw/eSASSusers_211214/bin/esass-init.sh'
+    _esass = '/home/erosita/sw/eSASSusers_211214/bin/esass-init7.sh'
     _LC_prebinning = '1.0'
     _LC_extracted = False
     _mjdref = 51543.875
