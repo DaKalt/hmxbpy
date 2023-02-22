@@ -30,7 +30,7 @@ setup(
         'HiMaXBipy/spectral_analysis',
 
     ],
-    version='v1.0.47',
+    version='v1.0.48',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',
@@ -40,9 +40,9 @@ setup(
     include_package_data=True,
 
     requires=[
-        'numpy',
-        'matplotlib',
-        'astropy',
+        'numpy>=1.21.5',
+        'matplotlib>=3.5.1',
+        'astropy>=5.1',
         'xspec'
     ],
 )
