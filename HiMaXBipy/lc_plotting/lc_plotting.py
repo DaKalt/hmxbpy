@@ -286,7 +286,8 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         if tcounts_c > mincounts:
             tcounts_c = 0
             # tcount_e_c = 0.0
-            iend += 1  # kald: in this case one more bin needs to be
+            if iend < nrow - 1:
+                iend += 1  # kald: in this case one more bin needs to be
             # included compared to the usual lightcurves, else <10
             # countsfor all newly defined bins
             # without the +1 before but this way sections are directly
@@ -629,7 +630,8 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
             if tcounts_c > mincounts:
                 tcounts_c = 0
                 # tcount_e_c = 0.0
-                iend += 1  # kald: in this case one more bin needs to be
+                if iend < nrow - 1:
+                    iend += 1  # kald: in this case one more bin needs to be
                 # included compared to the usual lightcurves, else <10
                 # countsfor all newly defined bins
                 # without the +1 before but this way sections are

@@ -374,6 +374,11 @@ class HiMaXBi:
                 'functions set_filelist and set_region.')
         if not os.path.exists(self._esass):
             raise Exception(f'File {self._esass} does not exist.')
+        if not (os.path.exists(self._working_dir+'/src.reg')
+                or not os.path.exists(self._working_dir+'/bkg.reg')):
+            raise Exception(
+                'Source and background extraction regions have to be defined '
+                'before running the script.')
         for bin_e in self._energy_bins:
             replacements = [['@source_name', self._src_name],
                             ['@main_name', self._working_dir],
@@ -1959,7 +1964,7 @@ class HiMaXBi:
                                    'simultaneous', file_list_xspec,
                                    skip_varabs, absorption, rebin,
                                    rebin_params, rescale_F, rescale_chi, abund,
-                                   'e{self._ownership}', varabs_starting_pars,
+                                   f'e{self._ownership}', varabs_starting_pars,
                                    plot_command, model_file, title,
                                    save_settings, log_suffix, colors, markers,
                                    fit_statistic)
