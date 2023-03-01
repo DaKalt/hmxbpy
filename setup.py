@@ -41,7 +41,7 @@ setup(
 
     requires=[
         'xspec'
-    ]
+    ],
 
     install_requires=[
         'numpy>=1.21.5',
