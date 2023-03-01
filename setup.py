@@ -39,7 +39,7 @@ setup(
     package_data={'': sh_files, },
     include_package_data=True,
 
-    requires=[
+    install_requires=[
         'numpy>=1.21.5',
         'matplotlib>=3.5.1',
         'astropy>=5.1',
