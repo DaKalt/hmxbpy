@@ -333,8 +333,9 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
             # start next bin
             nbin += 1
             istart_tmp = istart
-            istart = i + 1  # was only i #kald
-            start_bin = time0[istart]
+            if i < nrow - 1:
+                istart = i + 1  # was only i #kald
+                start_bin = time0[istart]
         else:
             iend += 1
     end_bin = time0[iend]
@@ -678,8 +679,9 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
                 # start next bin
                 nbin += 1
                 istart_tmp = istart
-                istart = i + 1  # was only i #kald
-                start_bin = time0[istart]
+                if i < nrow - 1:
+                    istart = i + 1  # was only i #kald
+                    start_bin = time0[istart]
             else:
                 iend += 1
         end_bin = time0[iend]
@@ -965,9 +967,10 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
                     f'{istart} {iend}\n')
                 # start next bin
                 nbin += 1
-                istart = i
                 iend += 1
-                start_bin = time0[istart]
+                if i <= nrow - 1:
+                    istart = i
+                    start_bin = time0[istart]
             else:
                 iend += 1
         end_bin = time0[iend]
