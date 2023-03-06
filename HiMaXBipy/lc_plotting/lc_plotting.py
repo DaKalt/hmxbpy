@@ -107,6 +107,14 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
                 nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
                 narea = narea + farea[j]
                 ntime = ntime + ftim[j]
+            if istart == iend+1:
+                nexp = nexp + fexp[istart]
+                counts = counts + cnts[istart]
+                bkg = bkg + back[istart]
+                nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
+                ncount_e = counts**0.5
+                nback_e = bkg**0.5
+                nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
             yrate.append(nrate)
             yrate_e.append(nrate_e**0.5/(nexp*delt[0]))
             if counts < mincounts:
@@ -138,6 +146,14 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         nexp = nexp + fexp[j]
         counts = counts + cnts[j]
         bkg = bkg + back[j]
+        nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
+        ncount_e = counts**0.5
+        nback_e = bkg**0.5
+        nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
+    if istart == iend+1:
+        nexp = nexp + fexp[istart]
+        counts = counts + cnts[istart]
+        bkg = bkg + back[istart]
         nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
         ncount_e = counts**0.5
         nback_e = bkg**0.5
@@ -351,6 +367,14 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         nexp = nexp + fexp[j]
         counts = counts + cnts[j]
         bkg = bkg + back[j]
+        nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
+        ncount_e = counts**0.5
+        nback_e = bkg**0.5
+        nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
+    if istart == iend+1:
+        nexp = nexp + fexp[istart]
+        counts = counts + cnts[istart]
+        bkg = bkg + back[istart]
         nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
         ncount_e = counts**0.5
         nback_e = bkg**0.5
@@ -701,6 +725,14 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
             ncount_e = counts**0.5
             nback_e = bkg**0.5
             nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
+        if istart == iend+1:
+            nexp = nexp + fexp[istart]
+            counts = counts + cnts[istart]
+            bkg = bkg + back[istart]
+            nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
+            ncount_e = counts**0.5
+            nback_e = bkg**0.5
+            nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
         logfile.write(
             f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
             f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
@@ -952,6 +984,14 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
                     nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
                     narea = narea + farea[j]
                     ntime = ntime + ftim[j]
+                if istart == iend+1:
+                    nexp = nexp + fexp[istart]
+                    counts = counts + cnts[istart]
+                    bkg = bkg + back[istart]
+                    nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
+                    ncount_e = counts**0.5
+                    nback_e = bkg**0.5
+                    nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
                 yrate.append(nrate)
                 yrate_e.append(nrate_e**0.5/(nexp*delt[0]))
                 if counts < mincounts:
@@ -984,6 +1024,14 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
             nexp = nexp + fexp[j]
             counts = counts + cnts[j]
             bkg = bkg + back[j]
+            nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
+            ncount_e = counts**0.5
+            nback_e = bkg**0.5
+            nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
+        if istart == iend+1:
+            nexp = nexp + fexp[istart]
+            counts = counts + cnts[istart]
+            bkg = bkg + back[istart]
             nrate = (counts - bkg*backrat_med)/(nexp*delt[0])
             ncount_e = counts**0.5
             nback_e = bkg**0.5
