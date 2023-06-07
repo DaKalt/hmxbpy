@@ -1146,10 +1146,10 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
             ax.tick_params(left=False, labelleft=False,
                            right=False, labelright=False)
 
-        if i_ax == 0:
+        if i_ax == 0 or i_ax == len(axs) - 1:
             tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
             yticks = []
-            for j in range(-int(ticknumber_y), int(ticknumber_y)):
+            for j in range(-2*int(ticknumber_y), 2*int(ticknumber_y) + 1):
                 if j * tick_size_y > pymin and j * tick_size_y < pymax:
                     yticks.append(j * tick_size_y)
             ax.set_yticks(yticks)

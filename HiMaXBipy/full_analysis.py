@@ -740,16 +740,16 @@ class HiMaXBi:
                             transform=ax.transAxes)
 
                 for i in range(len(vlines)):
-                    ax.vlines(vlines[i][0], -5, 5, colors=vlines[i]
+                    ax.vlines(vlines[i][0], pymin, pymax, colors=vlines[i]
                               [1], linestyle='dotted', zorder=vlines[i][2])
                 if show_eRASS:
                     if time_axis == 'mjd':
-                        ax.vlines(self._ero_starttimes, -5, 5,
+                        ax.vlines(self._ero_starttimes, pymin, pymax,
                                   colors=['grey'], linestyle='dotted',
                                   zorder=-2)
                     elif time_axis == 's':
                         ax.vlines((np.array(self._ero_starttimes)
-                                   - self._mjdref) * 3600 * 24, -5, 5,
+                                   - self._mjdref) * 3600 * 24, pymin, pymax,
                                   colors=['grey'], linestyle='dotted',
                                   zorder=-4)
 
@@ -1101,18 +1101,18 @@ class HiMaXBi:
 
                 for ax in axs:
                     for i in range(len(vlines)):
-                        ax.vlines(vlines[i][0] - time_rel, -5, 5,
+                        ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
                                   colors=vlines[i][1], linestyle='dotted',
                                   zorder=vlines[i][2])
                     if show_eRASS:
                         if time_axis == 'mjd':
-                            ax.vlines(self._ero_starttimes - time_rel, -5, 5,
+                            ax.vlines(self._ero_starttimes - time_rel, pymin, pymax,
                                       colors='grey', linestyle='dotted',
                                       zorder=-2)
                         elif time_axis == 's':
                             ax.vlines((np.array(self._ero_starttimes)
                                        - self._mjdref) * 3600 * 24 - time_rel,
-                                      -5, 5, colors='grey',
+                                      pymin, pymax, colors='grey',
                                       linestyle='dotted', zorder=-4)
 
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
@@ -1454,16 +1454,16 @@ class HiMaXBi:
                                 transform=ax.transAxes)
 
                     for i in range(len(vlines)):
-                        ax.vlines(vlines[i][0], -5, 5, colors=vlines[i]
+                        ax.vlines(vlines[i][0], pymin, pymax, colors=vlines[i]
                                   [1], linestyle='dotted', zorder=vlines[i][2])
                     if show_eRASS:
                         if time_axis == 'mjd':
-                            ax.vlines(self._ero_starttimes, -5, 5,
+                            ax.vlines(self._ero_starttimes, pymin, pymax,
                                       colors=['grey'], linestyle='dotted',
                                       zorder=-2)
                         elif time_axis == 's':
                             ax.vlines((np.array(self._ero_starttimes)
-                                       - self._mjdref) * 3600 * 24, -5, 5,
+                                       - self._mjdref) * 3600 * 24, pymin, pymax,
                                       colors=['grey'], linestyle='dotted',
                                       zorder=-4)
 
