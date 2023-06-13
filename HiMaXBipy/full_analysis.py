@@ -468,7 +468,7 @@ class HiMaXBi:
                         self._period_names.append(
                             f'e{self._ownership}0{j + 1}')
 
-    def plot_lc_full(self, fracexp='0.15', mincounts='10', mode='ul',
+    def plot_lc_full(self, fracexp='0.15', mincounts='10', mode='mincounts_ul',
                      show_eRASS=True, logname='lc_full_autosave.log',
                      time_axis='mjd', print_name=False, print_datetime=False,
                      label_style='serif', label_size=16, figsize=[16, 7],
