@@ -31,22 +31,28 @@ srctool eventfiles="${sources}" \
 srctool eventfiles="${sources}" \
         srccoord="J2000;$ra,$dec" prefix="${product_dir}/${src}_${region}_eROSITA_PAT${PAT}_TMon_${binning}s_${emin}keV_${emax}keV_" suffix=".fits" todo="LC LCCORR" insts="1 2 3 4 6" \
         srcreg="${main_dir}/src.reg" backreg="${main_dir}/bkg.reg" exttype="POINT" lctype="REGULAR+" lcpars="${binning}" lcemin="0.2" lcemax="8" tstep=0.05 xgrid="0.5 1.0" \
-        gtitype="GTI" psftype="2D_PSF" clobber="yes"
+        gtitype="GTI" psftype="2D_PSF" clobber="yes" writeinsts="0"
 
-
-
-for j in 1 2 3 4 6
-do
+#full light curve, 1s bin, TM57
 srctool eventfiles="${sources}" \
-        srccoord="J2000;$ra,$dec" prefix="${product_dir}/${src}_${region}_eROSITA_PAT${PAT}_TMon_${binning}s_${emin}keV_${emax}keV_${j}20_" suffix=".fits" todo="LC LCCORR" insts="${j}" \
+        srccoord="J2000;$ra,$dec" prefix="${product_dir}/${src}_${region}_eROSITA_PAT${PAT}_TMoff_${binning}s_${emin}keV_${emax}keV_" suffix=".fits" todo="LC LCCORR" insts="5 7" \
         srcreg="${main_dir}/src.reg" backreg="${main_dir}/bkg.reg" exttype="POINT" lctype="REGULAR+" lcpars="${binning}" lcemin="0.2" lcemax="8" tstep=0.05 xgrid="0.5 1.0" \
-        gtitype="GTI" psftype="2D_PSF" clobber="yes"
-done
+        gtitype="GTI" psftype="2D_PSF" clobber="yes" writeinsts="0"
 
-for j in 5 7
-do
-srctool eventfiles="${sources}" \
-        srccoord="J2000;$ra,$dec" prefix="${product_dir}/${src}_${region}_eROSITA_PAT${PAT}_TMoff_${binning}s_${emin}keV_${emax}keV_${j}20_" suffix=".fits" todo="LC LCCORR" insts="${j}" \
-        srcreg="${main_dir}/src.reg" backreg="${main_dir}/bkg.reg" exttype="POINT" lctype="REGULAR+" lcpars="${binning}" lcemin="0.2" lcemax="8" tstep=0.05 xgrid="0.5 1.0" \
-        gtitype="GTI" psftype="2D_PSF" clobber="yes"
-done
+
+#all of this is done above anyways
+#for j in 1 2 3 4 6
+#do
+#srctool eventfiles="${sources}" \
+#        srccoord="J2000;$ra,$dec" prefix="${product_dir}/${src}_${region}_eROSITA_PAT${PAT}_TMon_${binning}s_${emin}keV_${emax}keV_${j}20_" suffix=".fits" todo="LC LCCORR" insts="${j}" \
+#        srcreg="${main_dir}/src.reg" backreg="${main_dir}/bkg.reg" exttype="POINT" lctype="REGULAR+" lcpars="${binning}" lcemin="0.2" lcemax="8" tstep=0.05 xgrid="0.5 1.0" \
+#        gtitype="GTI" psftype="2D_PSF" clobber="yes"
+#done
+#
+#for j in 5 7
+#do
+#srctool eventfiles="${sources}" \
+#        srccoord="J2000;$ra,$dec" prefix="${product_dir}/${src}_${region}_eROSITA_PAT${PAT}_TMoff_${binning}s_${emin}keV_${emax}keV_${j}20_" suffix=".fits" todo="LC LCCORR" insts="${j}" \
+#        srcreg="${main_dir}/src.reg" backreg="${main_dir}/bkg.reg" exttype="POINT" lctype="REGULAR+" lcpars="${binning}" lcemin="0.2" lcemax="8" tstep=0.05 xgrid="0.5 1.0" \
+#        gtitype="GTI" psftype="2D_PSF" clobber="yes"
+#done

@@ -1895,7 +1895,7 @@ class HiMaXBi:
 
             if mode == 'ul':
                 pxmin, pxmax, pymin, pymax, time_rel = plot_lc_UL_hr(
-                    hdulist1=hdulist1, hdulist2=hdulist2, axs=axs, logfile=logfile,
+                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs, logfile=logfile,
                     mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                     color=colors[1], obs_periods=self._obs_periods,
                     short_time=short_time)
@@ -1903,7 +1903,7 @@ class HiMaXBi:
                 pymax = max(pymax)
             elif mode == 'mincounts':
                 pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_hr(
-                    hdulist1=hdulist1, hdulist2=hdulist2, axs=axs,
+                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
                     logfile=logfile, mjdref=self._mjdref, xflag=xflag,
                     mincounts=mincounts, color=colors[1],
                     obs_periods=self._obs_periods, short_time=short_time)
@@ -1911,12 +1911,12 @@ class HiMaXBi:
                 pymax = max(pymax)
             elif mode == 'mincounts_ul':
                 pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_hr(
-                    hdulist1=hdulist1, hdulist2=hdulist2, axs=axs,
+                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
                     logfile=logfile, mjdref=self._mjdref, xflag=xflag,
                     mincounts=mincounts, color=colors[0],
                     obs_periods=self._obs_periods, short_time=short_time)
                 pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_hr(
-                    hdulist1=hdulist1, hdulist2=hdulist2, axs=axs,
+                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
                     logfile=logfile, mjdref=self._mjdref, xflag=xflag,
                     mincounts=mincounts, color=colors[1],
                     obs_periods=self._obs_periods, short_time=short_time,
@@ -1925,7 +1925,8 @@ class HiMaXBi:
                     [[pxmin1, pxmax1, pymin1, pymax1],
                         [pxmin2, pxmax2, pymin2, pymax2]])
 
-            hdulist.close()
+            hdulist1.close()
+            hdulist2.close()
 
             # plot time in s from beginning (xflag=1) or in MJD
             if short_time:
