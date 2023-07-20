@@ -1207,3 +1207,422 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
 
     big_ax.set_xticklabels([start_x, end_x], alpha=0)
     big_ax.set_yticklabels([longest_y, longest_y], alpha=0)
+
+
+def plot_lc_mincounts_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag,
+                         mincounts, color, obs_periods, short_time,
+                         time_rel=0):
+    return [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]
+
+
+def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
+                  color, obs_periods, short_time, time_rel=0):
+    pxmax = []
+    pxmin = []
+    pymax = []
+    pymin = []
+    for i_ax, ax in enumerate(axs):
+        time_full_1 = hdulist_1[1].data.field('TIME')
+        time_1 = hdulist_1[1].data.field('TIME')[(
+            time_full_1/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_1/3600./24.+mjdref < obs_periods[i_ax][1])]
+        delt_1 = hdulist_1[1].data.field('TIMEDEL')[(
+            time_full_1/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_1/3600./24.+mjdref < obs_periods[i_ax][1])]
+        cnts_1 = hdulist_1[1].data.field('COUNTS')[(
+            time_full_1/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_1/3600./24.+mjdref < obs_periods[i_ax][1])]
+        fexp_1 = hdulist_1[1].data.field('FRACEXP')[(
+            time_full_1/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_1/3600./24.+mjdref < obs_periods[i_ax][1])]
+        ftim_1 = hdulist_1[1].data.field('FRACTIME')[(
+            time_full_1/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_1/3600./24.+mjdref < obs_periods[i_ax][1])]
+        farea_1 = hdulist_1[1].data.field('FRACAREA')[(
+            time_full_1/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_1/3600./24.+mjdref < obs_periods[i_ax][1])]
+        back_1 = hdulist_1[1].data.field('BACK_COUNTS')[(
+            time_full_1/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_1/3600./24.+mjdref < obs_periods[i_ax][1])]
+        backrat_1 = hdulist_1[1].data.field('BACKRATIO')[(
+            time_full_1/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_1/3600./24.+mjdref < obs_periods[i_ax][1])]
+        # delta = delt[0]
+        # most representative value of background ratio
+        backrat_med_1 = np.median(backrat_1)
+
+        nrow_1 = len(time_1)
+        start_time_1 = time_1[0]
+        end_time_1 = time_1[-1]+delt_1[-1]
+        time0_1 = time_1 - start_time_1
+        start_time0_1 = time0_1[0]
+        end_time0_1 = time0_1[-1]+delt_1[-1]
+        mjds_1 = mjdref + start_time_1/24./3600.
+        mjde_1 = mjdref + end_time_1/24./3600.
+
+        # calculate new rate by error propagation assuming there are
+        # enough counts in each bin to assume Gaussian statistics using
+        # infirmation on total counts background exposure and backrat
+        uplimit_1 = []
+
+        # rate = []
+        # rate_e = []
+        xtime_1 = []
+        xtime_d_1 = []
+        yrate_1 = []
+        yrate_e_1 = []
+        start_bin_1 = time0_1[0]
+        end_bin_1 = start_bin_1 + delt_1[0]
+        nbin_1 = 1
+        tcounts_1 = 0
+        tback_1 = 0
+        trate_1 = 0.
+        texp_1 = 0.
+        trate_e_1 = 0.
+        tcount_e_1 = 0.
+        tback_e_1 = 0.
+        ttim_1 = 0.
+        istart_1 = 0
+        iend_1 = -1  # kald:for intended functionality
+        counts_1 = 0
+        nrate_1 = 0.
+        nrate_e_1 = 0.
+        nexp_1 = 0.
+        bkg_1 = 0.
+        ncount_e_1 = 0.
+        nback_e_1 = 0.
+        narea_1 = 0.
+        ntime_1 = 0.
+        netcounts_1 = -1.
+        netcounts_e_1 = -1.
+        trate_ee_1 = -1.
+
+        for i in range(nrow_1):
+            tmp_1 = time0_1[i] - start_bin_1
+            tcounts_1 = tcounts_1 + cnts_1[i]
+            texp_1 = texp_1 + fexp_1[i]
+            ttim_1 = ttim_1 + ftim_1[i]
+            tback_1 = tback_1 + back_1[i]
+            netcounts_1 = (tcounts_1 - tback_1*backrat_med_1)
+            trate_1 = (tcounts_1 - tback_1*backrat_med_1)/(texp_1*delt_1[0])
+            tcount_e_1 = tcounts_1**0.5
+            tback_e_1 = tback_1**0.5
+            trate_e_1 = (tcount_e_1**2) + ((tback_e_1**2)*(backrat_med_1**2))
+            netcounts_e_1 = trate_e_1**0.5
+            trate_ee_1 = trate_e_1**0.5/(texp_1*delt_1[0])
+            if tmp_1 > 3600.0:
+                # bin finished
+                xtime_1.append(0.5*(time0_1[istart_1]+time0_1[iend_1]))
+                xtime_d_1.append(0.5*(time0_1[iend_1]-time0_1[istart_1]))
+                end_bin_1 = time0_1[iend_1]
+                counts_1 = 0
+                nrate_1 = 0.
+                nrate_e_1 = 0.
+                nexp_1 = 0.
+                bkg_1 = 0.
+                ncount_e_1 = 0.
+                nback_e_1 = 0.
+                narea_1 = 0.
+                ntime_1 = 0.
+
+                for j in range(istart_1, (iend_1+1)):
+                    nexp_1 = nexp_1 + fexp_1[j]
+                    counts_1 = counts_1 + cnts_1[j]
+                    bkg_1 = bkg_1 + back_1[j]
+                    nrate_1 = (counts_1 - bkg_1*backrat_med_1) / \
+                        (nexp_1*delt_1[0])
+                    ncount_e_1 = counts_1**0.5
+                    nback_e_1 = bkg_1**0.5
+                    nrate_e_1 = (ncount_e_1**2) + \
+                        ((nback_e_1**2)*(backrat_med_1**2))
+                    narea_1 = narea_1 + farea_1[j]
+                    ntime_1 = ntime_1 + ftim_1[j]
+                if istart_1 == iend_1+1:
+                    nexp_1 = nexp_1 + fexp_1[istart_1]
+                    counts_1 = counts_1 + cnts_1[istart_1]
+                    bkg_1 = bkg_1 + back_1[istart_1]
+                    nrate_1 = (counts_1 - bkg_1*backrat_med_1) / \
+                        (nexp_1*delt_1[0])
+                    ncount_e_1 = counts_1**0.5
+                    nback_e_1 = bkg_1**0.5
+                    nrate_e_1 = (ncount_e_1**2) + \
+                        ((nback_e_1**2)*(backrat_med_1**2))
+                yrate_1.append(nrate_1)
+                yrate_e_1.append(nrate_e_1**0.5/(nexp_1*delt_1[0]))
+                if counts_1 < mincounts:
+                    uplimit_1.append(1)
+                else:
+                    uplimit_1.append(0)
+                # start next bin
+                nbin_1 += 1
+                iend_1 += 1
+                if i <= nrow_1 - 1:
+                    istart_1 = i
+                    start_bin_1 = time0_1[istart_1]
+            else:
+                iend_1 += 1
+        end_bin_1 = time0_1[iend_1]
+        xtime_1.append(0.5*(time0_1[istart_1]+time0_1[iend_1]))
+        xtime_d_1.append(0.5*(time0_1[iend_1]-time0_1[istart_1]))
+        counts_1 = 0
+        nrate_1 = 0.
+        nrate_e_1 = 0.
+        nexp_1 = 0.
+        for j in range(istart_1, (iend_1+1)):
+            nexp_1 = nexp_1 + fexp_1[j]
+            counts_1 = counts_1 + cnts_1[j]
+            bkg_1 = bkg_1 + back_1[j]
+            nrate_1 = (counts_1 - bkg_1*backrat_med_1)/(nexp_1*delt_1[0])
+            ncount_e_1 = counts_1**0.5
+            nback_e_1 = bkg_1**0.5
+            nrate_e_1 = (ncount_e_1**2) + ((nback_e_1**2)*(backrat_med_1**2))
+        if istart_1 == iend_1+1:
+            nexp_1 = nexp_1 + fexp_1[istart_1]
+            counts_1 = counts_1 + cnts_1[istart_1]
+            bkg_1 = bkg_1 + back_1[istart_1]
+            nrate_1 = (counts_1 - bkg_1*backrat_med_1)/(nexp_1*delt_1[0])
+            ncount_e_1 = counts_1**0.5
+            nback_e_1 = bkg_1**0.5
+            nrate_e_1 = (ncount_e_1**2) + ((nback_e_1**2)*(backrat_med_1**2))
+
+        yrate_1.append(nrate_1)
+        yrate_e_1.append(nrate_e_1**0.5/(nexp_1*delt_1[0]))
+        if counts_1 < mincounts:
+            uplimit_1.append(1)
+        else:
+            uplimit_1.append(0)
+
+        # start of first bin at 0:
+        xtime_1 = xtime_1-xtime_1[0]+xtime_d_1[0]
+        mjd_1 = np.array(xtime_1)/3600./24. + mjds_1
+        mjd_d_1 = np.array(xtime_d_1)/3600./24.
+
+        yrate_1 = np.array(yrate_1)
+        yrate_e_1 = np.array(yrate_e_1)
+
+        if xflag == 1:
+            xmin = min(xtime_1)
+            xmax = max(xtime_1)
+        else:
+            xmin = min(mjd_1)
+            xmax = max(mjd_1)
+
+        if short_time:
+            if i_ax == 0 and time_rel == 0:
+                time_rel = int(np.round(xmin))
+            xtime_1 = xtime_1 - time_rel
+            mjd_1 = mjd_1 - time_rel
+            xmin = xmin - time_rel
+            xmax = xmax - time_rel
+
+        time_full_2 = hdulist_2[1].data.field('TIME')
+        time_2 = hdulist_2[1].data.field('TIME')[(
+            time_full_2/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_2/3600./24.+mjdref < obs_periods[i_ax][1])]
+        delt_2 = hdulist_2[1].data.field('TIMEDEL')[(
+            time_full_2/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_2/3600./24.+mjdref < obs_periods[i_ax][1])]
+        cnts_2 = hdulist_2[1].data.field('COUNTS')[(
+            time_full_2/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_2/3600./24.+mjdref < obs_periods[i_ax][1])]
+        fexp_2 = hdulist_2[1].data.field('FRACEXP')[(
+            time_full_2/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_2/3600./24.+mjdref < obs_periods[i_ax][1])]
+        ftim_2 = hdulist_2[1].data.field('FRACTIME')[(
+            time_full_2/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_2/3600./24.+mjdref < obs_periods[i_ax][1])]
+        farea_2 = hdulist_2[1].data.field('FRACAREA')[(
+            time_full_2/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_2/3600./24.+mjdref < obs_periods[i_ax][1])]
+        back_2 = hdulist_2[1].data.field('BACK_COUNTS')[(
+            time_full_2/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_2/3600./24.+mjdref < obs_periods[i_ax][1])]
+        backrat_2 = hdulist_2[1].data.field('BACKRATIO')[(
+            time_full_2/3600./24.+mjdref > obs_periods[i_ax][0]) *
+            (time_full_2/3600./24.+mjdref < obs_periods[i_ax][1])]
+        # delta = delt[0]
+        # most representative value of background ratio
+        backrat_med_2 = np.median(backrat_2)
+
+        nrow_2 = len(time_2)
+        start_time_2 = time_2[0]
+        end_time_2 = time_2[-1]+delt_2[-1]
+        time0_2 = time_2 - start_time_2
+        start_time0_2 = time0_2[0]
+        end_time0_2 = time0_2[-1]+delt_2[-1]
+        mjds_2 = mjdref + start_time_2/24./3600.
+        mjde_2 = mjdref + end_time_2/24./3600.
+
+        # calculate new rate by error propagation assuming there are
+        # enough counts in each bin to assume Gaussian statistics using
+        # infirmation on total counts background exposure and backrat
+        uplimit_2 = []
+
+        # rate = []
+        # rate_e = []
+        xtime_2 = []
+        xtime_d_2 = []
+        yrate_2 = []
+        yrate_e_2 = []
+        start_bin_2 = time0_2[0]
+        end_bin_2 = start_bin_2 + delt_2[0]
+        nbin_2 = 1
+        tcounts_2 = 0
+        tback_2 = 0
+        trate_2 = 0.
+        texp_2 = 0.
+        trate_e_2 = 0.
+        tcount_e_2 = 0.
+        tback_e_2 = 0.
+        ttim_2 = 0.
+        istart_2 = 0
+        iend_2 = -1  # kald:for intended functionality
+        counts_2 = 0
+        nrate_2 = 0.
+        nrate_e_2 = 0.
+        nexp_2 = 0.
+        bkg_2 = 0.
+        ncount_e_2 = 0.
+        nback_e_2 = 0.
+        narea_2 = 0.
+        ntime_2 = 0.
+        netcounts_2 = -1.
+        netcounts_e_2 = -1.
+        trate_ee_2 = -1.
+
+        for i in range(nrow_2):
+            tmp_2 = time0_2[i] - start_bin_2
+            tcounts_2 = tcounts_2 + cnts_2[i]
+            texp_2 = texp_2 + fexp_2[i]
+            ttim_2 = ttim_2 + ftim_2[i]
+            tback_2 = tback_2 + back_2[i]
+            netcounts_2 = (tcounts_2 - tback_2*backrat_med_2)
+            trate_2 = (tcounts_2 - tback_2*backrat_med_2)/(texp_2*delt_2[0])
+            tcount_e_2 = tcounts_2**0.5
+            tback_e_2 = tback_2**0.5
+            trate_e_2 = (tcount_e_2**2) + ((tback_e_2**2)*(backrat_med_2**2))
+            netcounts_e_2 = trate_e_2**0.5
+            trate_ee_2 = trate_e_2**0.5/(texp_2*delt_2[0])
+            if tmp_2 > 3600.0:
+                # bin finished
+                xtime_2.append(0.5*(time0_2[istart_2]+time0_2[iend_2]))
+                xtime_d_2.append(0.5*(time0_2[iend_2]-time0_2[istart_2]))
+                end_bin_2 = time0_2[iend_2]
+                counts_2 = 0
+                nrate_2 = 0.
+                nrate_e_2 = 0.
+                nexp_2 = 0.
+                bkg_2 = 0.
+                ncount_e_2 = 0.
+                nback_e_2 = 0.
+                narea_2 = 0.
+                ntime_2 = 0.
+
+                for j in range(istart_2, (iend_2+1)):
+                    nexp_2 = nexp_2 + fexp_2[j]
+                    counts_2 = counts_2 + cnts_2[j]
+                    bkg_2 = bkg_2 + back_2[j]
+                    nrate_2 = (counts_2 - bkg_2*backrat_med_2) / \
+                        (nexp_2*delt_2[0])
+                    ncount_e_2 = counts_2**0.5
+                    nback_e_2 = bkg_2**0.5
+                    nrate_e_2 = (ncount_e_2**2) + \
+                        ((nback_e_2**2)*(backrat_med_2**2))
+                    narea_2 = narea_2 + farea_2[j]
+                    ntime_2 = ntime_2 + ftim_2[j]
+                if istart_2 == iend_2+1:
+                    nexp_2 = nexp_2 + fexp_2[istart_2]
+                    counts_2 = counts_2 + cnts_2[istart_2]
+                    bkg_2 = bkg_2 + back_2[istart_2]
+                    nrate_2 = (counts_2 - bkg_2*backrat_med_2) / \
+                        (nexp_2*delt_2[0])
+                    ncount_e_2 = counts_2**0.5
+                    nback_e_2 = bkg_2**0.5
+                    nrate_e_2 = (ncount_e_2**2) + \
+                        ((nback_e_2**2)*(backrat_med_2**2))
+                yrate_2.append(nrate_2)
+                yrate_e_2.append(nrate_e_2**0.5/(nexp_2*delt_2[0]))
+                if counts_2 < mincounts:
+                    uplimit_2.append(1)
+                else:
+                    uplimit_2.append(0)
+                # start next bin
+                nbin_2 += 1
+                iend_2 += 1
+                if i <= nrow_2 - 1:
+                    istart_2 = i
+                    start_bin_2 = time0_2[istart_2]
+            else:
+                iend_2 += 1
+        end_bin_2 = time0_2[iend_2]
+        xtime_2.append(0.5*(time0_2[istart_2]+time0_2[iend_2]))
+        xtime_d_2.append(0.5*(time0_2[iend_2]-time0_2[istart_2]))
+        counts_2 = 0
+        nrate_2 = 0.
+        nrate_e_2 = 0.
+        nexp_2 = 0.
+        for j in range(istart_2, (iend_2+1)):
+            nexp_2 = nexp_2 + fexp_2[j]
+            counts_2 = counts_2 + cnts_2[j]
+            bkg_2 = bkg_2 + back_2[j]
+            nrate_2 = (counts_2 - bkg_2*backrat_med_2)/(nexp_2*delt_2[0])
+            ncount_e_2 = counts_2**0.5
+            nback_e_2 = bkg_2**0.5
+            nrate_e_2 = (ncount_e_2**2) + ((nback_e_2**2)*(backrat_med_2**2))
+        if istart_2 == iend_2+1:
+            nexp_2 = nexp_2 + fexp_2[istart_2]
+            counts_2 = counts_2 + cnts_2[istart_2]
+            bkg_2 = bkg_2 + back_2[istart_2]
+            nrate_2 = (counts_2 - bkg_2*backrat_med_2)/(nexp_2*delt_2[0])
+            ncount_e_2 = counts_2**0.5
+            nback_e_2 = bkg_2**0.5
+            nrate_e_2 = (ncount_e_2**2) + ((nback_e_2**2)*(backrat_med_2**2))
+
+        yrate_2.append(nrate_2)
+        yrate_e_2.append(nrate_e_2**0.5/(nexp_2*delt_2[0]))
+        if counts_2 < mincounts:
+            uplimit_2.append(1)
+        else:
+            uplimit_2.append(0)
+
+        # start of first bin at 0:
+        xtime_2 = xtime_2-xtime_2[0]+xtime_d_2[0]
+        mjd_2 = np.array(xtime_2)/3600./24. + mjds_2
+        mjd_d_2 = np.array(xtime_d_2)/3600./24.
+
+        yrate_2 = np.array(yrate_2)
+        yrate_e_2 = np.array(yrate_e_2)
+
+        if short_time:
+            xtime_2 = xtime_2 - time_rel
+            mjd_2 = mjd_2 - time_rel
+
+        yrate = (yrate_1 + (-yrate_2)) / (yrate_1 + yrate_2)
+        yrate_e = np.sqrt((2*yrate_2/(yrate_1+yrate_2))**2 * (yrate_e_1)**2 +
+                          (2*yrate_1/(yrate_1+yrate_2))**2 * (yrate_e_2)**2)
+
+        ###########
+        ymin = min(yrate + (-yrate_e))
+        ymax = max(yrate + yrate_e * np.logical_not(uplimit_1))
+        xm = (xmax-xmin)*0.05
+        ym = (ymax-ymin)*0.05
+        pxmin.append(xmin - xm)
+        pxmax.append(xmax + xm)
+        pymin.append(ymin - ym)
+        pymax.append(ymax + ym)
+
+        # Plot limits
+        logfile.write(
+            f"Plot limits: {pxmin[i_ax]} {pxmax[i_ax]} {pymin[i_ax]} " +
+            f"{pymax[i_ax]}\n")
+
+        if xflag == 1:
+            ax.errorbar(xtime_1, yrate, xerr=xtime_d_1, yerr=yrate_e,
+                        uplims=uplimit_1, linestyle='None', color=color, fmt='o',
+                        zorder=1, lolims=uplimit_2)
+        else:
+            ax.errorbar(mjd_1, yrate, xerr=mjd_d_1, yerr=yrate_e,
+                        uplims=uplimit_1, linestyle='None', color=color, fmt='o',
+                        zorder=1, lolims=uplimit_2)
+
+    return pxmin, pxmax, pymin, pymax, time_rel
