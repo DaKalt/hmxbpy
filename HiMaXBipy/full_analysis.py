@@ -1734,18 +1734,18 @@ class HiMaXBi:
             if fileid == '':
                 outfile = (f'{self._working_dir}/results/lightcurves/'
                            f'{self._src_name}_{self._skytile}_LC_TM{TM}20_'
-                           f'fracexp{fracexp}_hr_brokenLC')
+                           f'fracexp{fracexp}_hrLC')
             else:
                 outfile = (f'{self._working_dir}/results/lightcurves/'
-                           f'{fileid}_hr_brokenLC')
+                           f'{fileid}_hrLC')
             fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
             for i, bin_e in enumerate(self._energy_bins_hr):
                 if fileid == '':
                     pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
                              f'fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                             'brokenLC')
+                             'hrLC')
                 else:
-                    pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_brokenLC'
+                    pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_hrLC'
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
                                  f'./{self._src_name}_{self._skytile}_eROSITA_'
