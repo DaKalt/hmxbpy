@@ -205,6 +205,7 @@ class HiMaXBi:
                         'The energies must be given in keV and must follow '
                         '0.2 <= E_min < E_max <= 8.0.')
         self._energy_bins_hr = np.array(bins, dtype=np.float64).tolist()
+        self._LC_extracted = False
 
     def set_distance(self, distance):
         '''Set distance to source in kpc. The default is 50.
@@ -414,7 +415,7 @@ class HiMaXBi:
             raise Exception(
                 'Source and background extraction regions have to be defined '
                 'before running the script.')
-        for bin_e in self._energy_bins:
+        for bin_e in self._energy_bins + self._energy_bins_hr:
             replacements = [['@source_name', self._src_name],
                             ['@main_name', self._working_dir],
                             ['@result_dir', '.'],
