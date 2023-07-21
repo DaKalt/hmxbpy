@@ -1915,7 +1915,6 @@ class HiMaXBi:
                     logfile=logfile, mjdref=self._mjdref, xflag=xflag,
                     mincounts=mincounts, color=colors[0],
                     obs_periods=self._obs_periods, short_time=short_time)
-                pxmin, pxmax, pymin, pymax = pxmin1, pxmax1, pymin1, pymax1
                 # pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_hr(
                 #     hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
                 #     logfile=logfile, mjdref=self._mjdref, xflag=xflag,
@@ -1925,6 +1924,8 @@ class HiMaXBi:
                 # pxmin, pxmax, pymin, pymax = get_boundaries_broken(
                 #     [[pxmin1, pxmax1, pymin1, pymax1],
                 #         [pxmin2, pxmax2, pymin2, pymax2]])
+                pxmin, pxmax, pymin, pymax = np.min(
+                    [pxmin1, pxmax1, pymin1, pymax1], axis=1)
 
             hdulist1.close()
             hdulist2.close()
