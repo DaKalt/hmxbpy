@@ -1768,7 +1768,7 @@ class HiMaXBi:
 
                 axs = []
                 for _ in self._obs_periods:
-                    ax = fig1.add_subplot(111)
+                    ax = fig1.add_subplot(130+1+i)
                     axs.append(ax)
 
                 logfile.write(f'Now working on {pfile}.fits\n')
@@ -1872,13 +1872,13 @@ class HiMaXBi:
 
             ncols, nrows = len(self._obs_periods), 1
 
-            big_ax = fig1.add_subplot(130+1+i)
+            big_ax = fig1.add_subplot(133)
             big_ax.set_frame_on(False)
             big_ax.patch.set_facecolor("none")
 
             axs = []
             for _ in self._obs_periods:
-                ax = fig1.add_subplot(111)
+                ax = fig1.add_subplot(133)
                 axs.append(ax)
 
             logfile.write(f'Now working on HR\n')
@@ -1915,15 +1915,16 @@ class HiMaXBi:
                     logfile=logfile, mjdref=self._mjdref, xflag=xflag,
                     mincounts=mincounts, color=colors[0],
                     obs_periods=self._obs_periods, short_time=short_time)
-                pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_hr(
-                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
-                    logfile=logfile, mjdref=self._mjdref, xflag=xflag,
-                    mincounts=mincounts, color=colors[1],
-                    obs_periods=self._obs_periods, short_time=short_time,
-                    time_rel=time_rel)
-                pxmin, pxmax, pymin, pymax = get_boundaries_broken(
-                    [[pxmin1, pxmax1, pymin1, pymax1],
-                        [pxmin2, pxmax2, pymin2, pymax2]])
+                pxmin, pxmax, pymin, pymax = pxmin1, pxmax1, pymin1, pymax1
+                # pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_hr(
+                #     hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
+                #     logfile=logfile, mjdref=self._mjdref, xflag=xflag,
+                #     mincounts=mincounts, color=colors[1],
+                #     obs_periods=self._obs_periods, short_time=short_time,
+                #     time_rel=time_rel)
+                # pxmin, pxmax, pymin, pymax = get_boundaries_broken(
+                #     [[pxmin1, pxmax1, pymin1, pymax1],
+                #         [pxmin2, pxmax2, pymin2, pymax2]])
 
             hdulist1.close()
             hdulist2.close()
