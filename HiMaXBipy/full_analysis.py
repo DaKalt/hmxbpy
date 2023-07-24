@@ -1941,8 +1941,8 @@ class HiMaXBi:
                 # pxmin, pxmax, pymin, pymax = get_boundaries_broken(
                 #     [[pxmin1, pxmax1, pymin1, pymax1],
                 #         [pxmin2, pxmax2, pymin2, pymax2]])
-                pxmin, pxmax, pymin, pymax = np.min(
-                    [pxmin1, pxmax1, pymin1, pymax1], axis=1)
+                pymin = min(pymin1)
+                pymax = max(pymax1)
 
             hdulist1.close()
             hdulist2.close()
