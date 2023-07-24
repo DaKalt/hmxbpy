@@ -1887,7 +1887,7 @@ class HiMaXBi:
                 self._axes = axs
                 self._big_ax = big_ax
 
-            ncols, nrows = len(self._obs_periods), 1
+            ncols, nrows = len(self._obs_periods), 3
 
             big_ax = fig1.add_subplot(133)
             big_ax.set_frame_on(False)

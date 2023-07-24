@@ -1599,7 +1599,7 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
             xtime_2 = xtime_2 - time_rel
             mjd_2 = mjd_2 - time_rel
 
-        filter = [yrate_1+yrate_2 != 0]
+        filter = (yrate_1+yrate_2 != 0)
         uplimit_1 = np.array(uplimit_1)
         uplimit_2 = np.array(uplimit_2)
 
