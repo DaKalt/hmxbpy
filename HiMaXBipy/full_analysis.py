@@ -1777,7 +1777,7 @@ class HiMaXBi:
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
 
-                ncols, nrows = len(self._obs_periods), 1
+                ncols, nrows = len(self._obs_periods), 3
 
                 big_ax = fig1.add_subplot(130+1+i)
                 big_ax.set_frame_on(False)
