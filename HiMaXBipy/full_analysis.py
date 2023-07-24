@@ -1850,10 +1850,10 @@ class HiMaXBi:
                 big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
 
                 for ax in axs:
-                    for i in range(len(vlines)):
-                        ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
-                                  colors=vlines[i][1], linestyle='dotted',
-                                  zorder=vlines[i][2])
+                    for k in range(len(vlines)):
+                        ax.vlines(vlines[k][0] - time_rel, pymin, pymax,
+                                  colors=vlines[k][1], linestyle='dotted',
+                                  zorder=vlines[k][2])
                     if show_eRASS:
                         if time_axis == 'mjd':
                             ax.vlines(self._ero_starttimes - time_rel, pymin, pymax,
@@ -1880,7 +1880,7 @@ class HiMaXBi:
                                        width_ratios=width_ratios)
 
                 for i_ax, ax in enumerate(axs):
-                    ax.set_position(gs[i_ax].get_position(fig1))
+                    ax.set_position(gs[i_ax + i*ncols].get_position(fig1))
 
                 self._width_ratios = width_ratios
                 self._fig = fig1
@@ -1986,10 +1986,10 @@ class HiMaXBi:
                             transform=big_ax.transAxes)
 
             for ax in axs:
-                for i in range(len(vlines)):
-                    ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
-                              colors=vlines[i][1], linestyle='dotted',
-                              zorder=vlines[i][2])
+                for k in range(len(vlines)):
+                    ax.vlines(vlines[k][0] - time_rel, pymin, pymax,
+                              colors=vlines[k][1], linestyle='dotted',
+                              zorder=vlines[k][2])
                 if show_eRASS:
                     if time_axis == 'mjd':
                         ax.vlines(self._ero_starttimes - time_rel, pymin, pymax,
@@ -2016,7 +2016,7 @@ class HiMaXBi:
                                    width_ratios=width_ratios)
 
             for i_ax, ax in enumerate(axs):
-                ax.set_position(gs[i_ax].get_position(fig1))
+                ax.set_position(gs[i_ax+2*ncols].get_position(fig1))
 
             self._width_ratios = width_ratios
             self._fig = fig1
