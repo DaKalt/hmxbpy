@@ -2018,6 +2018,8 @@ class HiMaXBi:
             for i_ax, ax in enumerate(axs):
                 ax.set_position(gs[i_ax+2*ncols].get_position(fig1))
 
+            self.gs = gs
+
             self._width_ratios = width_ratios
             self._fig = fig1
             self._axes = axs
