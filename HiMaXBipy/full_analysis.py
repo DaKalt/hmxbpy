@@ -42,6 +42,7 @@ class HiMaXBi:
     _ownership = 'x'
     _distance = 50.
     _Z = 0.49
+    _debugging = False
 
     def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
@@ -661,8 +662,12 @@ class HiMaXBi:
             self.set_LC_binning(lc_binning=lc_binning)
         if np.array(E_bins).tolist() != []:
             self.set_Ebins(bins=E_bins)
-        if not self._LC_extracted:
+        if not self._LC_extracted and not self._debugging:
             self._extract_lc()
+        if self._debugging:
+            self._LC_extracted = True
+            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._eRASS_vs_epoch()
         logfile = open(self._working_dir +
                        '/logfiles/lightcurves/' + f'{logname}', 'w')
         localtime = time.asctime(time.localtime(time.time()))
@@ -990,8 +995,12 @@ class HiMaXBi:
             self.set_LC_binning(lc_binning=lc_binning)
         if np.array(E_bins).tolist() != []:
             self.set_Ebins(bins=E_bins)
-        if not self._LC_extracted:
+        if not self._LC_extracted and not self._debugging:
             self._extract_lc()
+        if self._debugging:
+            self._LC_extracted = True
+            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._eRASS_vs_epoch()
         logfile = open(self._working_dir +
                        '/logfiles/lightcurves/' + f'{logname}', 'w')
         localtime = time.asctime(time.localtime(time.time()))
@@ -1363,8 +1372,12 @@ class HiMaXBi:
             self.set_LC_binning(lc_binning=lc_binning)
         if np.array(E_bins).tolist() != []:
             self.set_Ebins(bins=E_bins)
-        if not self._LC_extracted:
+        if not self._LC_extracted and not self._debugging:
             self._extract_lc()
+        if self._debugging:
+            self._LC_extracted = True
+            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._eRASS_vs_epoch()
 
         xflag = 0
         pxmin, pxmax, pymin, pymax = 0, 0, 0, 0
@@ -1708,8 +1721,12 @@ class HiMaXBi:
             self.set_LC_binning(lc_binning=lc_binning)
         if np.array(E_bins).tolist() != []:
             self.set_Ebins_HR(bins=E_bins)
-        if not self._LC_extracted:
+        if not self._LC_extracted and not self._debugging:
             self._extract_lc()
+        if self._debugging:
+            self._LC_extracted = True
+            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._eRASS_vs_epoch()
         logfile = open(self._working_dir +
                        '/logfiles/lightcurves/' + f'{logname}', 'w')
         localtime = time.asctime(time.localtime(time.time()))
@@ -2058,7 +2075,7 @@ class HiMaXBi:
                      title='', varabs_starting_pars=[1., 6 * 10**-2],
                      separate=False, plot_command=["ldata", "delchi"],
                      return_array=False, conf_contours=False, abund='wilm',
-                     skip_eRASS=[], skip_LC=False):
+                     skip_eRASS=[]):
         '''Fit and plot spectrum in prefered mode.
 
         Parameters
@@ -2162,10 +2179,6 @@ class HiMaXBi:
             Sets the abundance table used. Default is 'wilm'
         latest_eRASS : int or str, optional
             Sets the number of latest eRASS in use. The default is 5.
-        skip_LC : bool, optional
-            If True force skips the analysis of a lightcurve. Reduces
-            analysis time but can cause unexpected errors. The default
-            is False.
 
         '''
         # Checking if input is sensible
@@ -2328,9 +2341,9 @@ class HiMaXBi:
             raise Exception(
                 'Set the region name and list of eventfiles first with the '
                 'functions set_filelist and set_region.')
-        if not self._LC_extracted and not skip_LC:  # for debugging
+        if not self._LC_extracted and not self._debugging:  # for debugging
             self._extract_lc()
-        if skip_LC:
+        if self._debugging:
             self._LC_extracted = True
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()

@@ -1616,7 +1616,7 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
         xtime_2 = xtime_2[filter]
         xtime_d_2 = xtime_d_2[filter]
         mjd_2 = mjd_2[filter]
-        mjd_d_1 = mjd_d_1[filter]
+        mjd_d_2 = mjd_d_2[filter]
         uplimit_2 = uplimit_2[filter]
 
         yrate = (yrate_1 + (-yrate_2)) / (yrate_1 + yrate_2)
