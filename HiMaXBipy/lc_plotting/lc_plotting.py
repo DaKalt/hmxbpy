@@ -1396,6 +1396,7 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
         xtime_1 = xtime_1-xtime_1[0]+xtime_d_1[0]
         mjd_1 = np.array(xtime_1)/3600./24. + mjds_1
         mjd_d_1 = np.array(xtime_d_1)/3600./24.
+        xtime_d_1 = np.array(xtime_d_1)
 
         yrate_1 = np.array(yrate_1)
         yrate_e_1 = np.array(yrate_e_1)
@@ -1589,6 +1590,7 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
         xtime_2 = xtime_2-xtime_2[0]+xtime_d_2[0]
         mjd_2 = np.array(xtime_2)/3600./24. + mjds_2
         mjd_d_2 = np.array(xtime_d_2)/3600./24.
+        xtime_d_2 = np.array(xtime_d_2)
 
         yrate_2 = np.array(yrate_2)
         yrate_e_2 = np.array(yrate_e_2)
@@ -1604,13 +1606,17 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
         yrate_1 = yrate_1[filter]
         yrate_e_1 = yrate_e_1[filter]
         xtime_1 = xtime_1[filter]
+        xtime_d_1 = xtime_d_1[filter]
         mjd_1 = mjd_1[filter]
+        mjd_d_1 = mjd_d_1[filter]
         uplimit_1 = uplimit_1[filter]
 
         yrate_2 = yrate_2[filter]
         yrate_e_2 = yrate_e_2[filter]
         xtime_2 = xtime_2[filter]
+        xtime_d_2 = xtime_d_2[filter]
         mjd_2 = mjd_2[filter]
+        mjd_d_1 = mjd_d_1[filter]
         uplimit_2 = uplimit_2[filter]
 
         yrate = (yrate_1 + (-yrate_2)) / (yrate_1 + yrate_2)
