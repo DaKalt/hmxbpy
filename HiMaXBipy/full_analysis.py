@@ -1870,7 +1870,7 @@ class HiMaXBi:
                                        nrows, d, tilt, diag_color, big_ax)
 
                 width_ratios = []
-                height_ratios = [1]
+                height_ratios = [1/3, 1/3, 1/3]
                 for i_ax in range(len(axs)):
                     width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
 
