@@ -1779,13 +1779,13 @@ class HiMaXBi:
 
                 ncols, nrows = len(self._obs_periods), 3
 
-                big_ax = fig1.add_subplot(130+1+i)
+                big_ax = fig1.add_subplot(310+1+i)
                 big_ax.set_frame_on(False)
                 big_ax.patch.set_facecolor("none")
 
                 axs = []
                 for _ in self._obs_periods:
-                    ax = fig1.add_subplot(130+1+i)
+                    ax = fig1.add_subplot(310+1+i)
                     axs.append(ax)
 
                 logfile.write(f'Now working on {pfile}.fits\n')
@@ -1889,13 +1889,13 @@ class HiMaXBi:
 
             ncols, nrows = len(self._obs_periods), 3
 
-            big_ax = fig1.add_subplot(133)
+            big_ax = fig1.add_subplot(313)
             big_ax.set_frame_on(False)
             big_ax.patch.set_facecolor("none")
 
             axs = []
             for _ in self._obs_periods:
-                ax = fig1.add_subplot(133)
+                ax = fig1.add_subplot(313)
                 axs.append(ax)
 
             logfile.write(f'Now working on HR\n')
