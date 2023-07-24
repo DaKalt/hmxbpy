@@ -1785,7 +1785,7 @@ class HiMaXBi:
 
                 axs = []
                 for _ in self._obs_periods:
-                    ax = fig1.add_subplot(310+1+i)
+                    ax = fig1.add_subplot(111)
                     axs.append(ax)
 
                 logfile.write(f'Now working on {pfile}.fits\n')
@@ -1895,7 +1895,7 @@ class HiMaXBi:
 
             axs = []
             for _ in self._obs_periods:
-                ax = fig1.add_subplot(313)
+                ax = fig1.add_subplot(111)
                 axs.append(ax)
 
             logfile.write(f'Now working on HR\n')
@@ -2023,8 +2023,8 @@ class HiMaXBi:
             self._axes = axs
             self._big_ax = big_ax
 
-            #fig1.set_tight_layout(True)
-            #fig1.set_tight_layout(False)
+            # fig1.set_tight_layout(True)
+            # fig1.set_tight_layout(False)
             wspace = 8.0 / figsize[0] * 0.05
             fig1.subplots_adjust(
                 wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
