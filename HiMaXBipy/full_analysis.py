@@ -1940,7 +1940,7 @@ class HiMaXBi:
                 elif time_axis == 'mjd':
                     big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
 
-            big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
+            big_ax.set_ylabel(r'Hardness Ratio')  # , fontsize=12)
 
             if print_name:
                 # user name and time
