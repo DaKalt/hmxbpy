@@ -1599,25 +1599,30 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
             xtime_2 = xtime_2 - time_rel
             mjd_2 = mjd_2 - time_rel
 
-        filter = (yrate_1+yrate_2 != 0)
+        filter_1 = [entry in mjd_2 for entry in mjd_1][0]
+        filter_2 = [entry in mjd_1 for entry in mjd_2][0]
+
+        filter = (yrate_1[filter_1]+yrate_2[filter_2] != 0)
         uplimit_1 = np.array(uplimit_1)
         uplimit_2 = np.array(uplimit_2)
 
-        yrate_1 = yrate_1[filter]
-        yrate_e_1 = yrate_e_1[filter]
-        xtime_1 = xtime_1[filter]
-        xtime_d_1 = xtime_d_1[filter]
-        mjd_1 = mjd_1[filter]
-        mjd_d_1 = mjd_d_1[filter]
-        uplimit_1 = uplimit_1[filter]
+        yrate_1 = yrate_1[filter_1][filter]
+        yrate_e_1 = yrate_e_1[filter_1][filter]
+        xtime_1 = xtime_1[filter_1][filter]
+        xtime_d_1 = xtime_d_1[filter_1][filter]
+        mjd_1 = mjd_1[filter_1][filter]
+        mjd_d_1 = mjd_d_1[filter_1][filter]
+        uplimit_1 = uplimit_1[filter_1][filter]
 
-        yrate_2 = yrate_2[filter]
-        yrate_e_2 = yrate_e_2[filter]
-        xtime_2 = xtime_2[filter]
-        xtime_d_2 = xtime_d_2[filter]
-        mjd_2 = mjd_2[filter]
-        mjd_d_2 = mjd_d_2[filter]
-        uplimit_2 = uplimit_2[filter]
+        yrate_2 = yrate_2[filter_2][filter]
+        yrate_e_2 = yrate_e_2[filter_2][filter]
+        xtime_2 = xtime_2[filter_2][filter]
+        xtime_d_2 = xtime_d_2[filter_2][filter]
+        mjd_2 = mjd_2[filter_2][filter]
+        mjd_d_2 = mjd_d_2[filter_2][filter]
+        uplimit_2 = uplimit_2[filter_2][filter]
+        print(len(yrate_1))
+        print(len(filter_1))
 
         yrate = (yrate_1 + (-yrate_2)) / (yrate_1 + yrate_2)
         yrate_e = np.sqrt((2*yrate_2/(yrate_1+yrate_2))**2 * (yrate_e_1)**2 +
