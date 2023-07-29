@@ -1746,6 +1746,9 @@ class HiMaXBi:
         pymin = 0
         pymax = 0
         xflag = 0
+        axs_full = []
+        width_ratios = []
+        height_ratios = []
 
         for TM in TM_list:
             pfiles = []
@@ -1787,6 +1790,7 @@ class HiMaXBi:
                 for _ in self._obs_periods:
                     ax = fig1.add_subplot(111)
                     axs.append(ax)
+                    axs_full.append(ax)
 
                 logfile.write(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
@@ -1833,20 +1837,6 @@ class HiMaXBi:
 
                 hdulist.close()
 
-                # # plot time in s from beginning (xflag=1) or in MJD
-                # if short_time:
-                #     if time_axis == 's':
-                #         # , fontsize=12)
-                #         big_ax.set_xlabel(f'Time - {time_rel} (s)')
-                #     elif time_axis == 'mjd':
-                #         # , fontsize=12)
-                #         big_ax.set_xlabel(f'MJD  - {time_rel} (days)')
-                # else:
-                #     if time_axis == 's':
-                #         big_ax.set_xlabel(r'Time (s)')  # , fontsize=12)
-                #     elif time_axis == 'mjd':
-                #         big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
-
                 big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
 
                 for ax in axs:
@@ -1869,23 +1859,11 @@ class HiMaXBi:
                                        ticknumber_x, ticknumber_y, ncols,
                                        nrows, d, tilt, diag_color, big_ax)
 
-                width_ratios = []
-                height_ratios = [1/3, 1/3, 1/3]
-                for i_ax in range(len(axs)):
-                    width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
-
-                gs = gridspec.GridSpec(ncols=ncols,
-                                       nrows=nrows,
-                                       height_ratios=height_ratios,
-                                       width_ratios=width_ratios)
-
-                for i_ax, ax in enumerate(axs):
-                    ax.set_position(gs[i_ax + i*ncols].get_position(fig1))
-
-                self._width_ratios = width_ratios
-                self._fig = fig1
-                self._axes = axs
-                self._big_ax = big_ax
+                if i == 0:
+                    width_ratios = []
+                    height_ratios = [1/3, 1/3, 1/3]
+                    for i_ax in range(len(axs)):
+                        width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
 
             ncols, nrows = len(self._obs_periods), 3
 
@@ -1897,6 +1875,7 @@ class HiMaXBi:
             for _ in self._obs_periods:
                 ax = fig1.add_subplot(111)
                 axs.append(ax)
+                axs_full.append(ax)
 
             logfile.write(f'Now working on HR\n')
             hdulist1 = fits.open(f'{pfiles[0]}.fits')
@@ -2005,32 +1984,27 @@ class HiMaXBi:
                                    ticknumber_x, ticknumber_y, ncols,
                                    nrows, d, tilt, diag_color, big_ax)
 
-            width_ratios = []
-            height_ratios = [1./3, 1./3, 1./3]
-            for i_ax in range(len(axs)):
-                width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
-
             gs = gridspec.GridSpec(ncols=ncols,
                                    nrows=nrows,
                                    height_ratios=height_ratios,
                                    width_ratios=width_ratios)
 
-            for i_ax, ax in enumerate(axs):
-                ax.set_position(gs[i_ax+2*ncols].get_position(fig1))
+            fig1.set_tight_layout(True)
+            fig1.set_tight_layout(False)
+            wspace = 8.0 / figsize[0] * 0.05
+            fig1.subplots_adjust(
+                wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
+                left=fig_borders[2], right=fig_borders[3])
+
+            for i_ax, ax in enumerate(axs_full):
+                ax.set_position(gs[i_ax].get_position(fig1))
 
             self.gs = gs
 
             self._width_ratios = width_ratios
             self._fig = fig1
-            self._axes = axs
+            self._axes = axs_full
             self._big_ax = big_ax
-
-            # fig1.set_tight_layout(True)
-            # fig1.set_tight_layout(False)
-            wspace = 8.0 / figsize[0] * 0.05
-            fig1.subplots_adjust(
-                wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
-                left=fig_borders[2], right=fig_borders[3])
 
             pltfile = outfile + ".pdf"
             plt.savefig(pltfile)
