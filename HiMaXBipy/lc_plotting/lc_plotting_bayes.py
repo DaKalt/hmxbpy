@@ -2,6 +2,7 @@ from cmdstanpy import cmdstan_path, install_cmdstan, CmdStanModel
 import numpy as np
 
 from HiMaXBipy.io.package_data import round_to_1
+from HiMaXBipu.io.output_capture import Capturing
 
 # checking if cmdstan is already installed, otherwise installing it
 try:
@@ -11,7 +12,7 @@ except ValueError:
     install_cmdstan()
 
 
-def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
+def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                                 color, obs_periods, short_time, stan_model,
                                 quantiles, time_rel=0, fexp_cut=0.15,
                                 alpha_bg=0.5):
@@ -55,6 +56,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
     nrow = len(time)
     # rebinning in scans and getting sc and bg rates with uncertainties from
     # quantiles
+    output = []
     for i in range(nrow):
         if i == nrow - 1:
             iend = i + 1
@@ -91,7 +93,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
         data['frac_exp'] = fexp[istart:iend]
         data['bg'] = back[istart:iend]
         data['bg_area'] = backrat[istart:iend]
-        fit = model.sample(data=data, show_progress=False)
+        with Capturing(output) as output:
+            fit = model.sample(data=data, show_progress=False)
         sc_rate_lower.append(np.percentile(fit.stan_variables()['sc_rate'],
                                            quantiles[0]))
         sc_rate.append(np.percentile(fit.stan_variables()['sc_rate'],
@@ -105,6 +108,12 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
         bg_rate_upper.append(np.percentile(fit.stan_variables()['bg_rate'],
                                            quantiles[2]))
         istart = i + 1
+
+    for line in output:
+        if line.lower().find('error'):
+            print(line)
+    with open(logfile, 'w') as file:
+        file.writelines(output)
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')

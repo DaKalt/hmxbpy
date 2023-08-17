@@ -2028,7 +2028,7 @@ class HiMaXBi:
 
     def plot_lc_bayes_broken(self, fracexp='0.15', mincounts='10',
                              mode='scan', show_eRASS=True,
-                             logdir='', stan_model='',
+                             logfile='', stan_model='',
                              alpha_bg=0.5, quantiles=[],
                              time_axis='mjd', print_name=False,
                              print_datetime=False, label_style='serif',
@@ -2057,8 +2057,8 @@ class HiMaXBi:
         show_eRASS : bool, optional
             True to show start/end dates of eRASSi as vertical lines.
             The default is True.
-        logdir : str, optional
-            Name of the logfile directory. The default is ''.
+        logfile : str, optional
+            Name of the logfile. The default is ''.
         fexp_cut : float, optional
             Minimum value of fractional exposure for time bins to be
             used. The default is 0.15.
@@ -2130,7 +2130,7 @@ class HiMaXBi:
             Sets the borders of the figure (top, bottom, left, right).
             The default is [0.97, 0.1, 0.05, 0.98].
         '''
-        if type(logdir) != str:
+        if type(logfile) != str:
             raise Exception('logdir must be a string.')
         if (type(mincounts) != str and type(mincounts) != float
                 and type(mincounts) != int):
@@ -2268,11 +2268,9 @@ class HiMaXBi:
         xflag = 0
 
         for bin_e in self._energy_bins:
-            if logdir == '':
-                logdir = f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}'
-            logdir = self._working_dir_full + '/logfiles/' + logdir
-            if not os.path.exists(logdir):
-                os.mkdir(logdir)
+            if logfile == '':
+                logfile = f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}.log'
+            logfile = self._working_dir_full + '/logfiles/' + logfile
             for TM in TM_list:
                 if fileid == '':
                     pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
@@ -2326,7 +2324,7 @@ class HiMaXBi:
 
                 if mode == 'scan':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
-                        hdulist=hdulist, axs=axs, logdir=logdir,
+                        hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, color=colors[1],
                         obs_periods=self._obs_periods, short_time=short_time,
                         stan_model=stan_model, quantiles=quantiles,
