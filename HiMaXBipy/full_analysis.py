@@ -2143,10 +2143,10 @@ class HiMaXBi:
         if type(mode) != str:
             raise Exception('mode must be a string.')
         else:
-            if (mode != 'ul' and mode != 'mincounts'
-                    and mode != 'mincounts_ul'):
-                raise Exception('mode must be \'ul\', \'mincounts\' or '
-                                '\'mincounts_ul\'')
+            if (mode != 'scan' and mode != 'mincounts'
+                    and mode != 'mincounts_scan'):
+                raise Exception('mode must be \'scan\', \'mincounts\' or '
+                                '\'mincounts_scan\'')
         if type(fracexp) != str and type(fracexp) != float:
             raise Exception('mincounts must be a string or float.')
         else:
@@ -2276,16 +2276,17 @@ class HiMaXBi:
                 if fileid == '':
                     pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
                              f'fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                             'brokenLC')
+                             'brokenLC_bayes')
                     outfile = (f'{self._working_dir}/results/lightcurves/'
                                f'{self._src_name}_{self._skytile}_LC_TM{TM}20_'
                                f'fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                               'brokenLC')
+                               'brokenLC_bayes')
                 else:
-                    pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_brokenLC'
+                    pfile = (f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
+                             'brokenLC_bayes')
                     outfile = (f'{self._working_dir}/results/lightcurves/'
                                f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                               'brokenLC')
+                               'brokenLC_bayes')
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
                                  f'./{self._src_name}_{self._skytile}_eROSITA_'
