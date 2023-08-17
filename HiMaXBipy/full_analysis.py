@@ -114,7 +114,7 @@ class HiMaXBi:
 
         for (path, directories, filenames) in os.walk(self._stan_dir_):
             for filename in filenames:
-                shutil.copy(self._sh_dir_ + '/' + filename,
+                shutil.copy(self._stan_dir_ + '/' + filename,
                             self._working_dir_full + '/working')
 
         os.chdir(working_dir + '/working/')
