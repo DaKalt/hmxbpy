@@ -2271,7 +2271,8 @@ class HiMaXBi:
             if logdir == '':
                 logdir = f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}'
             logdir = self._working_dir_full + '/logfiles/' + logdir
-            os.mkdir(logdir)
+            if not os.path.exists(logdir):
+                os.mkdir(logdir)
             for TM in TM_list:
                 if fileid == '':
                     pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
