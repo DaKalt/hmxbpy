@@ -91,7 +91,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
         data['frac_exp'] = fexp[istart:iend]
         data['bg'] = back[istart:iend]
         data['bg_area'] = backrat[istart:iend]
-        fit = model.sample(data=data)
+        fit = model.sample(data=data, show_progress=False)
         sc_rate_lower.append(np.percentile(fit.stan_variables()['sc_rate'],
                                            quantiles[0]))
         sc_rate.append(np.percentile(fit.stan_variables()['sc_rate'],
@@ -119,6 +119,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
     bg_rate = np.array(bg_rate)
     bg_rate_lower = np.array(bg_rate_lower)
     bg_rate_upper = np.array(bg_rate_upper)
+
+    print(mjd)  # TODO: debugging
+    print(obs_periods)
 
     for i_ax, ax in enumerate(axs):
         ###########correct this part##############
