@@ -2,7 +2,7 @@ from cmdstanpy import cmdstan_path, install_cmdstan, CmdStanModel
 import numpy as np
 
 from HiMaXBipy.io.package_data import round_to_1
-from HiMaXBipu.io.output_capture import Capturing
+from HiMaXBipy.io.output_capture import Capturing
 
 # checking if cmdstan is already installed, otherwise installing it
 try:
