@@ -18,7 +18,7 @@ transformed parameters {
 }
 model {
     for (n in 1:N) {
-        sc[n] ~ poisson((sc_rate + bg_rate) / (dt[n]*frac_exp[n]));
-        bg[n] ~ poisson(bg_rate * bg_area[n] / (dt[n]*frac_exp[n]));
+        sc[n] ~ poisson((sc_rate + bg_rate) * (dt[n]*frac_exp[n]));
+        bg[n] ~ poisson(bg_rate / bg_area[n] * (dt[n]*frac_exp[n]));
     }
 }

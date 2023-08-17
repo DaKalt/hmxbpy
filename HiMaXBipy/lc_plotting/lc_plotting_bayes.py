@@ -41,6 +41,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
     back = np.array(hdulist[1].data.field('BACK_COUNTS'), dtype=int)[
         fexp_full > fexp_cut]
     backrat = hdulist[1].data.field('BACKRATIO')[fexp_full > fexp_cut]
+    for i, entry in enumerate(backrat):
+        if entry < 0.01:
+            backrat[i] = 0.01
 
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
