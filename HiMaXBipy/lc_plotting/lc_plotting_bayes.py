@@ -141,6 +141,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
             mjd_short = mjd - time_rel
             xmin = xmin - time_rel
             xmax = xmax - time_rel
+        else:
+            mjd_short = mjd.copy()
 
         xm = (xmax-xmin)*0.05
         pxmin.append(xmin - xm)
@@ -148,24 +150,24 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
 
         if xflag == 1:
             ax.errorbar(xtime, sc_rate, xerr=xtime_d,
-                        yerr=[sc_rate_upper + (-sc_rate),
-                              sc_rate + (-sc_rate_lower)],
+                        yerr=[sc_rate + (-sc_rate_lower),
+                              sc_rate_upper + (-sc_rate)],
                         linestyle='None', color=color, fmt='o',
                         zorder=1)
             ax.errorbar(xtime, bg_rate, xerr=xtime_d,
-                        yerr=[bg_rate_upper + (-bg_rate),
-                              bg_rate + (-bg_rate_lower)],
+                        yerr=[bg_rate + (-bg_rate_lower),
+                              bg_rate_upper + (-bg_rate)],
                         linestyle='None', color=color, fmt='x',
                         zorder=1, alpha=alpha_bg)
         else:
             ax.errorbar(mjd_short, sc_rate, xerr=mjd_d,
-                        yerr=[sc_rate_upper + (-sc_rate),
-                              sc_rate + (-sc_rate_lower)],
+                        yerr=[sc_rate + (-sc_rate_lower),
+                              sc_rate_upper + (-sc_rate)],
                         linestyle='None', color=color, fmt='o',
                         zorder=1)
             ax.errorbar(mjd_short, bg_rate, xerr=mjd_d,
-                        yerr=[bg_rate_upper + (-bg_rate),
-                              bg_rate + (-bg_rate_lower)],
+                        yerr=[bg_rate + (-bg_rate_lower),
+                              bg_rate_upper + (-bg_rate)],
                         linestyle='None', color=color, fmt='x',
                         zorder=1, alpha=alpha_bg)
 
