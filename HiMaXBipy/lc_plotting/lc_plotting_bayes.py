@@ -120,9 +120,6 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
     bg_rate_lower = np.array(bg_rate_lower)
     bg_rate_upper = np.array(bg_rate_upper)
 
-    print(mjd)  # TODO: debugging
-    print(obs_periods)
-
     for i_ax, ax in enumerate(axs):
         ###########correct this part##############
         if xflag == 1:
@@ -141,7 +138,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
             if i_ax == 0 and time_rel == 0:
                 time_rel = int(np.round(xmin))
             xtime = xtime - time_rel
-            mjd = mjd - time_rel
+            mjd_short = mjd - time_rel
             xmin = xmin - time_rel
             xmax = xmax - time_rel
 
@@ -161,12 +158,12 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
                         linestyle='None', color=color, fmt='x',
                         zorder=1, alpha=alpha_bg)
         else:
-            ax.errorbar(mjd, sc_rate, xerr=mjd_d,
+            ax.errorbar(mjd_short, sc_rate, xerr=mjd_d,
                         yerr=[sc_rate_upper + (-sc_rate),
                               sc_rate + (-sc_rate_lower)],
                         linestyle='None', color=color, fmt='o',
                         zorder=1)
-            ax.errorbar(mjd, bg_rate, xerr=mjd_d,
+            ax.errorbar(mjd_short, bg_rate, xerr=mjd_d,
                         yerr=[bg_rate_upper + (-bg_rate),
                               bg_rate + (-bg_rate_lower)],
                         linestyle='None', color=color, fmt='x',
