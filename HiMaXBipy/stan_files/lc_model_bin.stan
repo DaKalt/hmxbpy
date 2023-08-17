@@ -7,8 +7,8 @@ data {
     array[N] real<lower=0> bg_area;
 }
 parameters {
-    real<lower=-6,upper=6> log_cr_sc;
-    real<lower=-6,upper=6> log_cr_bg;
+    real<lower=-3,upper=4> log_cr_sc;
+    real<lower=-3,upper=4> log_cr_bg;
 }
 transformed parameters {
     real<lower=0> sc_rate;
