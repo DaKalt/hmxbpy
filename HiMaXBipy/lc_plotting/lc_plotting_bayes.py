@@ -128,15 +128,15 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
             xmin = min(xtime_part)
             xmax = max(xtime_part)
         else:
-            mjd_part = xtime[(mjd > obs_periods[i_ax][0]) *
-                             (mjd < obs_periods[i_ax][1])]
+            mjd_part = mjd[(mjd > obs_periods[i_ax][0]) *
+                           (mjd < obs_periods[i_ax][1])]
             xmin = min(mjd_part)
             xmax = max(mjd_part)
         ###########################################
 
         if short_time:
             if i_ax == 0 and time_rel == 0:
-                time_rel = int(np.round(xmin))
+                time_rel = int(xmin)
             xtime = xtime - time_rel
             mjd_short = mjd - time_rel
             xmin = xmin - time_rel
