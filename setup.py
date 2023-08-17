@@ -4,7 +4,7 @@ from setuptools import setup
 import os
 
 
-def find_sh_files(directory):
+def find_extra_files(directory):
 
     paths = []
 
@@ -17,7 +17,10 @@ def find_sh_files(directory):
     return paths
 
 
-sh_files = find_sh_files('HiMaXBipy/sh_files/')
+sh_files = find_extra_files('HiMaXBipy/sh_files/')
+tex_files = find_extra_files('HiMaXBipy/tex_style/')
+stan_files = find_extra_files('HiMaXBipy/stan_files/')
+extra_files = sh_files + tex_files + stan_files
 
 setup(
 
@@ -32,13 +35,13 @@ setup(
         'HiMaXBipy/tex_style'
 
     ],
-    version='v1.0.86',
+    version='v1.0.87',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',
     author_email='kald@mpe.mpg.de',
 
-    package_data={'': sh_files, },
+    package_data={'': extra_files, },
     include_package_data=True,
 
     requires=[
