@@ -35,9 +35,11 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
     time = hdulist[1].data.field('TIME')[fexp_full > fexp_cut]
     time_mjd = time / 3600. / 24. + mjdref
     delt = hdulist[1].data.field('TIMEDEL')[fexp_full > fexp_cut]
-    cnts = hdulist[1].data.field('COUNTS')[fexp_full > fexp_cut]
+    cnts = np.array(hdulist[1].data.field('COUNTS'),
+                    dtype=int)[fexp_full > fexp_cut]
     fexp = hdulist[1].data.field('FRACEXP')[fexp_full > fexp_cut]
-    back = hdulist[1].data.field('BACK_COUNTS')[fexp_full > fexp_cut]
+    back = np.array(hdulist[1].data.field('BACK_COUNTS'), dtype=int)[
+        fexp_full > fexp_cut]
     backrat = hdulist[1].data.field('BACKRATIO')[fexp_full > fexp_cut]
 
     # loading stan model
@@ -106,7 +108,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logdir, mjdref, xflag,
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)
-    mjd = xtime / 24. / 3600. + mjdref
+    mjd = xtime * (1. / 24. / 3600.) + mjdref
     mjd_d = xtime_d / 24. / 3600.
     sc_rate = np.array(sc_rate)
     sc_rate_lower = np.array(sc_rate_lower)
