@@ -18,13 +18,15 @@ from astropy.io import fits
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
+import scipy.stats
 from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
-from HiMaXBipy.io.package_data import get_path_of_data_dir
+from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
     plot_lc_mincounts_broken_new, format_axis_broken_new, plot_lc_UL_hr,\
     plot_lc_mincounts_hr
+from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
@@ -103,8 +105,14 @@ class HiMaXBi:
                     os.mkdir(self._working_dir_full + subdir + subsubdir)
 
         self._sh_dir_ = get_path_of_data_dir()
+        self._stan_dir_ = get_stan_dir()
 
         for (path, directories, filenames) in os.walk(self._sh_dir_):
+            for filename in filenames:
+                shutil.copy(self._sh_dir_ + '/' + filename,
+                            self._working_dir_full + '/working')
+
+        for (path, directories, filenames) in os.walk(self._stan_dir_):
             for filename in filenames:
                 shutil.copy(self._sh_dir_ + '/' + filename,
                             self._working_dir_full + '/working')
@@ -2017,6 +2025,425 @@ class HiMaXBi:
             logfile.write(f'{pltfile} created\n')
 
         logfile.close()
+
+    def plot_lc_bayes_broken(self, fracexp='0.15', mincounts='10',
+                             mode='scan', show_eRASS=True,
+                             logdir='', stan_model='',
+                             alpha_bg=0.5, quantiles=[],
+                             time_axis='mjd', print_name=False,
+                             print_datetime=False, label_style='serif',
+                             label_size=16, figsize=[16, 7],
+                             colors=[], fileid='', toplab='',
+                             separate_TM=False, vlines=[], ticknumber_y=5,
+                             ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
+                             tilt=45, diag_color="k", short_time=True,
+                             fig_borders=[0.97, 0.1, 0.05, 0.98]):
+        '''Function to create full lightcurve with bayesian estimates
+        for source and background countrates with time gaps cut out.
+
+        Parameters
+        ----------
+        fracexp : str or float, optional
+            Fractional exposure lower limit for times taken into account
+            for LC (noise reduction). The default is '0.15'.
+        mincounts : str, float or int, optional
+            Minimum number of counts for counts per bin to not be noted
+            as an upper limit as well as minimum number of counts per
+            bin for mode mincounts/mincounts_ul. The default is '10'.
+        mode : str, optional
+            Type of LC to be produced. Either 'scan', 'mincounts' or
+            'mincounts_scan'. The default is 'mincounts_scan'.
+            #TODO: make this the actual default
+        show_eRASS : bool, optional
+            True to show start/end dates of eRASSi as vertical lines.
+            The default is True.
+        logdir : str, optional
+            Name of the logfile directory. The default is ''.
+        fexp_cut : float, optional
+            Minimum value of fractional exposure for time bins to be
+            used. The default is 0.15.
+        stan_model : str, optional
+            Name of the .stan file to use as a model when fitting. If
+            the default is used a standard Poisson model is used. The
+            default is ''.
+        alpha_bg : float, optional
+            alpha value for plotting the estimated background countrate.
+            The default is 0.5.
+        quantiles : array-like (3,) or (0,) float or int, optional
+            Quantiles to plot as lower boundary, expected value and
+            upper boundary. If the default is used, 1 sigma percentiles
+            and the median are used. The default is [].
+        time_axis : str, optional
+            Defines the unit of time axis. Either 'mjd' or 's'. The
+            default is 'mjd'.
+        print_name : bool, optional
+            Print name of person who runs the skript. The default is
+            False.
+        print_datetime : bool, optional
+            Print date-time when skript was run. The default is False.
+        label_style : str, optional
+            Sets fontstyle of plots. Any possible style available for
+            matplotlib.pyplot.rc. The default is 'serif'.
+        label_size : float or int, optional
+            Sets fontsize. The default is 12.
+        figsize : array-like (2,), optional
+            Sets width and height of figure. The default is [8, 2.75].
+        colors : array of str (1,) or (2,), optional
+            Sets colors of plots. Any color available to matplotlib
+            possible. For mode 'ul' and 'mincounts' the first entry is
+            used, for mode 'mincounts_ul' the first entry sets color for
+            'ul' part, and the second for 'mincounts' part. The default
+            is [].
+        fileid : str, optional
+            Name of outputfile without filespecific ending. The default
+            is ''.
+        toplab : str, optional
+            Sets label of the plot. The default is ''.
+        separate_TM : bool, optional
+            Create LC for each TM. The default is False.
+        vlines : array of mjd-color-zorder combinations (n, 3), optional
+            Adds additional vertical lines in the plot at given MJD with
+            given color. The zorder entries need to be distinct negative
+            integers < -2. The default is [].
+        ticknumber_y : int, optional
+            Sets the approximate number of tickmarks along the y axis.
+            The default is 5.
+        ticknumber_x : int, optional
+            Sets the approximate number of tickmarks along the x axis in
+            each section. The default is 3.
+        E_bins : array-like (n,2), optional
+            Sets energy bins that should be analysed. For each bin E_min
+            and E_max must be given in keV. The default is [[0.2, 8.0]]
+        lc_binning : str or float, optional
+            Sets initial lc binsize in seconds. The default is -1
+            (meaning the current value is not changeds)
+        d : str, int or float, optional
+            Size of gap markers in pt. The default is '12'.
+        tilt : str, int or float, optional
+            Tild of gap markers. The default is '45'.
+        diag_color : str, optional
+            Color of gap markers. The default is 'k'.
+        short_time : bool, optional
+            Shorten time stamps in x-axis by subtracting value of lowest
+            enrty. The default is True.
+        fig_borders : array-like (n,1), optional
+            Sets the borders of the figure (top, bottom, left, right).
+            The default is [0.97, 0.1, 0.05, 0.98].
+        '''
+        if type(logdir) != str:
+            raise Exception('logdir must be a string.')
+        if (type(mincounts) != str and type(mincounts) != float
+                and type(mincounts) != int):
+            raise Exception('mincounts must be a string, float or int.')
+        else:
+            try:
+                mincounts = float(mincounts)
+            except ValueError:
+                raise Exception('mincounts must be a number.')
+        if type(mode) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if (mode != 'ul' and mode != 'mincounts'
+                    and mode != 'mincounts_ul'):
+                raise Exception('mode must be \'ul\', \'mincounts\' or '
+                                '\'mincounts_ul\'')
+        if type(fracexp) != str and type(fracexp) != float:
+            raise Exception('mincounts must be a string or float.')
+        else:
+            try:
+                fracexp = float(fracexp)
+            except ValueError:
+                raise Exception('fracexp must be a number.')
+        if type(show_eRASS) != bool:
+            raise Exception('show_eRASS must be a bool.')
+        if type(print_name) != bool:
+            raise Exception('print_name must be a bool.')
+        if type(print_datetime) != bool:
+            raise Exception('print_datetime must be a bool.')
+        if type(separate_TM) != bool:
+            raise Exception('separate_TM must be a bool.')
+        if type(stan_model) != str:
+            raise Exception('stan_model must be a string.')
+        if type(time_axis) != str:
+            raise Exception('time_axis must be a string.')
+        else:
+            if time_axis != 'mjd' and time_axis != 's':
+                raise Exception('time_axis must be \'mjd\' or \'s\'')
+        if type(label_style) != str:
+            raise Exception('label_style must be a string.')
+        if type(label_size) != float and type(label_size) != int:
+            raise Exception('label_size must be a float or int.')
+        if type(alpha_bg) != float:
+            raise Exception('alpha_bg must be a float.')
+        if ((type(figsize) != list and type(figsize) != np.ndarray)
+                or np.shape(figsize) != (2,)):
+            raise Exception('figsize must be (2,) array-like.')
+        if ((type(quantiles) != list and type(quantiles) != np.ndarray)
+                or (np.shape(quantiles) != (3,) and
+                    np.shape(quantiles) != (0,))):
+            raise Exception('quantiles must be (3,) or (0,) array-like.')
+        if type(ticknumber_x) != int:
+            raise Exception('ticknumber_x must be an int.')
+        if type(ticknumber_y) != int:
+            raise Exception('ticknumber_y must be an int.')
+        if colors != []:
+            if ((type(colors) != list and type(colors) != np.ndarray)
+                    or (np.shape(colors) != (2,)
+                        and np.shape(colors) != (1,))):
+                raise Exception('colors must be (2,) or (1,) array-like.')
+        if type(fileid) != str:
+            raise Exception('fileid must be a string.')
+        if type(toplab) != str:
+            raise Exception('toplab must be a string.')
+        if type(vlines) != list and type(vlines) != np.ndarray:
+            raise Exception('vlines must be array-like')
+        else:
+            for line in vlines:
+                if len(line) != 3:
+                    raise Exception('Each line in vlines needs 3 entries.')
+                if type(line[0]) != float and type(line[0]) != int:
+                    raise Exception(
+                        'The first entry in each line of vlines needs to be '
+                        'the MJD given as float or int.')
+                if type(line[1]) != str:
+                    raise Exception(
+                        'The second entry in each line of vlines needs to be a'
+                        ' matplotlib color given as a string.')
+                if type(line[2]) != int:
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a '
+                        'negative integer < -2.')
+                elif line[2] >= -1:
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a '
+                        'negative integer < -2.')
+        if type(tilt) != float and type(tilt) != int and type(tilt) != str:
+            raise Exception('tilt must be a float, str or int.')
+        if type(d) != float and type(d) != str and type(d) != int:
+            raise Exception('d must be a float or str.')
+        if type(diag_color) != str:
+            raise Exception('diag_color must be a str.')
+        if type(fig_borders) != list and type(fig_borders) != np.ndarray:
+            raise Exception('fig_borders must be array-like')
+        else:
+            if len(fig_borders) != 4:
+                raise Exception('fig_borders needs exactly 4 entries')
+            for entry in fig_borders:
+                if type(entry) != float:
+                    raise Exception(
+                        'Entries in fig_borders need to be of type float.')
+
+        os.chdir(self._working_dir_full + '/working/')
+
+        if stan_model == '':
+            stan_model = self._working_dir_full + '/working/lc_model_bin.stan'
+        if np.shape(quantiles) == (0,):
+            quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
+
+        if lc_binning != -1:
+            self.set_LC_binning(lc_binning=lc_binning)
+        if np.array(E_bins).tolist() != []:
+            self.set_Ebins(bins=E_bins)
+        if not self._LC_extracted and not self._debugging:
+            self._extract_lc()
+        if self._debugging:
+            self._LC_extracted = True
+            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._eRASS_vs_epoch()
+        localtime = time.asctime(time.localtime(time.time()))
+
+        user = getpass.getuser()
+        plt.rc('text', usetex=True)
+        plt.rc('font', family=label_style, size=label_size)
+
+        if separate_TM:
+            TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
+        else:
+            TM_list = [0]
+        time_rel = 0
+        pxmin = []
+        pxmax = []
+        pymin = 0
+        pymax = 0
+        xflag = 0
+
+        for bin_e in self._energy_bins:
+            if logdir == '':
+                logdir = f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}'
+            logdir = self._working_dir_full + '/logfiles/' + logdir
+            os.mkdir(logdir)
+            for TM in TM_list:
+                if fileid == '':
+                    pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
+                             f'fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_'
+                             'brokenLC')
+                    outfile = (f'{self._working_dir}/results/lightcurves/'
+                               f'{self._src_name}_{self._skytile}_LC_TM{TM}20_'
+                               f'fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_'
+                               'brokenLC')
+                else:
+                    pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_brokenLC'
+                    outfile = (f'{self._working_dir}/results/lightcurves/'
+                               f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
+                               'brokenLC')
+                replacements = [['@esass_location', self._esass],
+                                ['@infile',
+                                 f'./{self._src_name}_{self._skytile}_eROSITA_'
+                                 f'PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_'
+                                 f'{TM}20_LightCurve_00001.fits'],
+                                ['@pfile', f'{pfile}.fits'],
+                                ['@selection', f'FRACEXP>{fracexp}']]
+                sh_file = self._working_dir_full + '/working/fselect_lc.sh'
+                sh_file = self._replace_in_sh(sh_file, replacements)
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
+
+                fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
+
+                ncols, nrows = len(self._obs_periods), 1
+
+                big_ax = fig1.add_subplot(111)
+                big_ax.set_frame_on(False)
+                big_ax.patch.set_facecolor("none")
+
+                axs = []
+                for _ in self._obs_periods:
+                    ax = fig1.add_subplot(111)
+                    axs.append(ax)
+
+                hdulist = fits.open(f'{pfile}.fits')
+
+                if time_axis == 'mjd':
+                    xflag = 2
+                elif time_axis == 's':
+                    xflag = 1
+
+                if colors == []:
+                    colors = ['lightblue', 'black']
+
+                if mode == 'scan':
+                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
+                        hdulist=hdulist, axs=axs, logdir=logdir,
+                        mjdref=self._mjdref, xflag=xflag, color=colors[1],
+                        obs_periods=self._obs_periods, short_time=short_time,
+                        stan_model=stan_model, quantiles=quantiles,
+                        time_rel=time_rel, fexp_cut=float(fracexp),
+                        alpha_bg=alpha_bg)
+                elif mode == 'mincounts':
+                    raise Exception('This is not implemented yet.')
+                    # pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_bayes(
+                    #     hdulist=hdulist, axs=axs, logfile=logfile,
+                    #     mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                    #     color=colors[1], obs_periods=self._obs_periods,
+                    #     short_time=short_time)
+                elif mode == 'mincounts_scan':
+                    raise Exception('This is not implemented yet.')
+                    # pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
+                    #     hdulist=hdulist, axs=axs, logfile=logfile,
+                    #     mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                    #     color=colors[0], obs_periods=self._obs_periods,
+                    #     short_time=short_time)
+                    # pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_broken_bayes(
+                    #     hdulist=hdulist, axs=axs, logfile=logfile,
+                    #     mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                    #     color=colors[1], obs_periods=self._obs_periods,
+                    #     short_time=short_time, time_rel=time_rel)
+                    # pxmin, pxmax, pymin, pymax = get_boundaries_broken(
+                    #     [[pxmin1, pxmax1, pymin1, pymax1],
+                    #      [pxmin2, pxmax2, pymin2, pymax2]])
+
+                hdulist.close()
+
+                # plot time in s from beginning (xflag=1) or in MJD
+                if short_time:
+                    if time_axis == 's':
+                        # , fontsize=12)
+                        big_ax.set_xlabel(f'Time - {time_rel} (s)')
+                    elif time_axis == 'mjd':
+                        # , fontsize=12)
+                        big_ax.set_xlabel(f'MJD  - {time_rel} (days)')
+                else:
+                    if time_axis == 's':
+                        big_ax.set_xlabel(r'Time (s)')  # , fontsize=12)
+                    elif time_axis == 'mjd':
+                        big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
+
+                big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
+
+                if print_name:
+                    # user name and time
+                    big_ax.text(1.015, 0.0, f'{user} - {localtime}',
+                                rotation=90, fontsize=8,
+                                verticalalignment='bottom',
+                                horizontalalignment='left',
+                                transform=big_ax.transAxes)
+                # eROSITA label
+                    big_ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10,
+                                verticalalignment='bottom',
+                                horizontalalignment='left',
+                                transform=big_ax.transAxes)
+                    big_ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10,
+                                verticalalignment='bottom',
+                                horizontalalignment='right',
+                                transform=big_ax.transAxes)
+                # label plot:
+                    big_ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
+                                verticalalignment='bottom',
+                                horizontalalignment='center',
+                                transform=big_ax.transAxes)
+
+                for ax in axs:
+                    for i in range(len(vlines)):
+                        ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
+                                  colors=vlines[i][1], linestyle='dotted',
+                                  zorder=vlines[i][2])
+                    if show_eRASS:
+                        if time_axis == 'mjd':
+                            ax.vlines(self._ero_starttimes - time_rel, pymin,
+                                      pymax, colors='grey', linestyle='dotted',
+                                      zorder=-2)
+                        elif time_axis == 's':
+                            ax.vlines((np.array(self._ero_starttimes)
+                                       - self._mjdref) * 3600 * 24 - time_rel,
+                                      pymin, pymax, colors='grey',
+                                      linestyle='dotted', zorder=-4)
+
+                format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
+                                       ticknumber_x, ticknumber_y, ncols,
+                                       nrows, d, tilt, diag_color, big_ax)
+
+                fig1.set_tight_layout(True)
+                fig1.set_tight_layout(False)
+                wspace = 8.0 / figsize[0] * 0.05
+                fig1.subplots_adjust(
+                    wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
+                    left=fig_borders[2], right=fig_borders[3])
+
+                width_ratios = []
+                height_ratios = [1]
+                for i_ax in range(len(axs)):
+                    width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
+
+                gs = gridspec.GridSpec(ncols=ncols,
+                                       nrows=nrows,
+                                       height_ratios=height_ratios,
+                                       width_ratios=width_ratios)
+
+                for i_ax, ax in enumerate(axs):
+                    ax.set_position(gs[i_ax].get_position(fig1))
+
+                self._width_ratios = width_ratios
+                self._fig = fig1
+                self._axes = axs
+                self._big_ax = big_ax
+
+                pltfile = outfile + ".pdf"
+                plt.savefig(pltfile)
+                pltfile = outfile + ".eps"
+                plt.savefig(pltfile)
+                pltfile = outfile + ".png"
+                plt.savefig(pltfile)
 
     def _extract_spectrum(self, logname, mode, filelist, epoch):
         replacements = [['@source_name', self._src_name],

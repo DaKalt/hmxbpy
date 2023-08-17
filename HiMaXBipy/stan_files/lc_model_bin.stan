@@ -1,0 +1,24 @@
+data {
+    int<lower=0> N;
+    array[N] int<lower=0> sc;
+    array[N] int<lower=0> bg;
+    array[N] real<lower=0> frac_exp;
+    array[N] real<lower=0> dt;
+    array[N] real<lower=0> bg_area;
+}
+parameters {
+    real<lower=-6,upper=6> log_cr_sc;
+    real<lower=-6,upper=6> log_cr_bg;
+}
+transformed parameters {
+    real<lower=0> sc_rate;
+    sc_rate = 10 ^ log_cr_sc;
+    real<lower=0> bg_rate;
+    bg_rate = 10 ^ log_cr_bg;
+}
+model {
+    for (n in 1:N) {
+        sc[n] ~ poisson((sc_rate + bg_rate) / (dt[n]*frac_exp[n]));
+        bg[n] ~ poisson(bg_rate * bg_area[n] / (dt[n]*frac_exp[n]));
+    }
+}
