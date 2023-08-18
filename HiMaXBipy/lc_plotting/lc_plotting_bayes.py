@@ -21,7 +21,6 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     Lightcurve rebinned to eROdays with countrates optained with Bayesian fit
     assuming Poissionian distribution for counts and log
     '''
-    logging.basicConfig(filename=logfile)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -50,6 +49,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
 
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
+    logging.basicConfig(filename=logfile)
 
     istart = 0
     iend = 0
@@ -110,7 +110,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                                            quantiles[2]))
         istart = i + 1
 
-    #TODO: if writing to file works the error should still be displayed here
+    # TODO: if writing to file works the error should still be displayed here
     for line in output:
         if line.lower().find(' error ') > 0:
             print(line)
