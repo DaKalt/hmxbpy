@@ -21,6 +21,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     Lightcurve rebinned to eROdays with countrates optained with Bayesian fit
     assuming Poissionian distribution for counts and log
     '''
+    logger = logging.getLogger('cmdstanpy')
+    handler = logging.FileHandler(filename=logfile, mode='w')
+    logger.addHandler(handler)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -49,7 +52,6 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
 
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
-    logging.basicConfig(filename=logfile)
 
     istart = 0
     iend = 0
