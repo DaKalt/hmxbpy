@@ -110,7 +110,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         istart = i + 1
 
     for line in output:
-        if line.lower().find('error'):
+        if line.lower().find(' error ') > 0:
             print(line)
     with open(logfile, 'w') as file:
         file.writelines(output)
