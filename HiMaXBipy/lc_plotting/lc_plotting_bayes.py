@@ -2,7 +2,8 @@ from cmdstanpy import cmdstan_path, install_cmdstan, CmdStanModel
 import numpy as np
 
 from HiMaXBipy.io.package_data import round_to_1
-from HiMaXBipy.io.output_capture import Capturing
+#from HiMaXBipy.io.output_capture import Capturing
+import logging
 
 # checking if cmdstan is already installed, otherwise installing it
 try:
@@ -20,6 +21,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     Lightcurve rebinned to eROdays with countrates optained with Bayesian fit
     assuming Poissionian distribution for counts and log
     '''
+    logging.basicConfig(filename=logfile)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -93,8 +95,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         data['frac_exp'] = fexp[istart:iend]
         data['bg'] = back[istart:iend]
         data['bg_area'] = backrat[istart:iend]
-        with Capturing(output) as output:
-            fit = model.sample(data=data, show_progress=False)
+        fit = model.sample(data=data, show_progress=False)
         sc_rate_lower.append(np.percentile(fit.stan_variables()['sc_rate'],
                                            quantiles[0]))
         sc_rate.append(np.percentile(fit.stan_variables()['sc_rate'],
@@ -109,11 +110,10 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                                            quantiles[2]))
         istart = i + 1
 
+    #TODO: if writing to file works the error should still be displayed here
     for line in output:
         if line.lower().find(' error ') > 0:
             print(line)
-    with open(logfile, 'w') as file:
-        file.writelines(output)
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
@@ -183,6 +183,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
+    logging.basicConfig()
 
     return pxmin, pxmax, pymin, pymax, time_rel
 
