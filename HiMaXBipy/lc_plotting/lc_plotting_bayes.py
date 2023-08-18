@@ -2,7 +2,6 @@ from cmdstanpy import cmdstan_path, install_cmdstan, CmdStanModel
 import numpy as np
 
 from HiMaXBipy.io.package_data import round_to_1
-#from HiMaXBipy.io.output_capture import Capturing
 import logging
 
 # checking if cmdstan is already installed, otherwise installing it
@@ -23,6 +22,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     '''
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='w')
+    logger.addHandler(handler)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.ERROR)
     logger.addHandler(handler)
     pxmin = []
     pxmax = []
