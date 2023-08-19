@@ -300,7 +300,6 @@ def plot_lc_eROday_broken_bayes_sim(hdulist, axs, logfile, mjdref, xflag,
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
     fit = model.sample(data=data, show_progress=False)
-    # TODO: results has to be read out differently, test this!
     sc_rate_lower = np.percentile(fit.stan_variables()['sc_rate'],
                                   quantiles[0], axis=0)
     sc_rate = np.percentile(fit.stan_variables()['sc_rate'],
