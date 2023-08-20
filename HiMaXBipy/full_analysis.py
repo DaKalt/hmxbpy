@@ -2237,7 +2237,7 @@ class HiMaXBi:
         os.chdir(self._working_dir_full + '/working/')
 
         if stan_model == '':
-            stan_model = self._working_dir_full + '/working/lc_model_simu.stan'
+            stan_model = self._working_dir_full + '/working/lc_model_bin.stan'
         if np.shape(quantiles) == (0,):
             quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
 
@@ -2324,7 +2324,7 @@ class HiMaXBi:
                     colors = ['lightblue', 'black']
 
                 if mode == 'scan':
-                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes_sim(
+                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
                         hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, color=colors[1],
                         obs_periods=self._obs_periods, short_time=short_time,
