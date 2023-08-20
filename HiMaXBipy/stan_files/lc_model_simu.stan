@@ -22,7 +22,7 @@ model {
         for (n in 1:N) {
             if (dt[m,n] > 0) {
                 sc[m,n] ~ poisson((sc_rate[m] + bg_rate[m]) * (dt[m,n]*frac_exp[m,n]));
-                bg[m,n] ~ poisson(bg_rate[m] / bg_ratio[m,n] * (dt[m,n]*frac_exp[m,n]));
+                bg[m,n] ~ poisson(bg_rate[m] * bg_ratio[m,n] * (dt[m,n]*frac_exp[m,n]));
             }
         }
     }
