@@ -2237,7 +2237,7 @@ class HiMaXBi:
         os.chdir(self._working_dir_full + '/working/')
 
         if stan_model == '':
-            stan_model = self._working_dir_full + '/working/lc_model_bin.stan'
+            stan_model = self._working_dir_full + '/working/lc_model_simu.stan'
         if np.shape(quantiles) == (0,):
             quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
 
