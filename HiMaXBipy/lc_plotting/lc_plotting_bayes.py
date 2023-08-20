@@ -458,7 +458,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
             for period in obs_periods:
                 if time_mjd[i] < period[1] and time_mjd[i+1] > period[1]:
                     period_last = True
-                    if time_mjd[istart_old] < period[0]:
+                    if time_mjd[istart_old] < period[0] or istart == 0:
                         period_first = True
             if period_last:
                 iend = i + 1
