@@ -256,8 +256,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                     border_low = True
             if not border_low:
                 tstart = (time[istart] + time[istart-1]) / 2
-        if iend == nrow:
-            tend = time[nrow - 1]
+        if iend == nrow - 1:
+            tend = time[iend] + delt[iend]
         else:
             border_high = False
             for period in obs_periods:
@@ -479,8 +479,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                     border_low = True
             if not border_low:
                 tstart = (time[istart] + time[istart-1]) / 2
-        if iend == nrow:
-            tend = time[nrow - 1]
+        if iend == nrow - 1:
+            tend = time[iend] + delt[iend]
         else:
             border_high = False
             for period in obs_periods:
