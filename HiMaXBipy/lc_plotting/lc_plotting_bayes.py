@@ -551,6 +551,9 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     bg_rate_lower = np.array(bg_rate_lower)
     bg_rate_upper = np.array(bg_rate_upper)
 
+    print(mjd)
+    print(obs_periods)
+
     for i_ax, ax in enumerate(axs):
         if xflag == 1:
             xtime_part = xtime[(mjd > obs_periods[i_ax][0]) *

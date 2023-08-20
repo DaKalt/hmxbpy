@@ -2028,7 +2028,7 @@ class HiMaXBi:
         logfile.close()
 
     def plot_lc_bayes_broken(self, fracexp='0.15', mincounts='10',
-                             mode='mincounts_scan', show_eRASS=True,
+                             mode='mincounts', show_eRASS=True,
                              logfile='', stan_model='',
                              alpha_bg=0.5, quantiles=[],
                              time_axis='mjd', print_name=False,
