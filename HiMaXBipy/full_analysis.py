@@ -26,7 +26,8 @@ from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
     plot_lc_mincounts_broken_new, format_axis_broken_new, plot_lc_UL_hr,\
     plot_lc_mincounts_hr
-from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes
+from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,\
+    plot_lc_eROday_broken_bayes_sim
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
@@ -2323,7 +2324,7 @@ class HiMaXBi:
                     colors = ['lightblue', 'black']
 
                 if mode == 'scan':
-                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
+                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes_sim(
                         hdulist=hdulist, axs=axs, logfile=logfile,
                         mjdref=self._mjdref, xflag=xflag, color=colors[1],
                         obs_periods=self._obs_periods, short_time=short_time,
