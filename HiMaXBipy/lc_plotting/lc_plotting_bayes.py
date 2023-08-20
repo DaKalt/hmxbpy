@@ -449,7 +449,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                 istart = istart_old
                 del (xtime[-1], xtime_d[-1], dts[-1], scs[-1], fexps[-1],
                      bgs[-1], bgrats[-1])
-        elif (cnts[istart:i] >= mincounts and
+        elif (cnts[istart:i].sum() >= mincounts and
               time[i + 1] - time[i] > 3600.0):  # elif to avoid error
             iend = i + 1
         else:  # TODO: case when at the end of an obs period
