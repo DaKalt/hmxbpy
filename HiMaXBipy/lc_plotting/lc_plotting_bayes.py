@@ -241,9 +241,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     # from quantiles
     for i in range(nrow):
         if i == nrow - 1:
-            iend = i + 1
+            iend = i
         elif time[i + 1] - time[i] > 3600.0:  # elif to avoid error
-            iend = i + 1
+            iend = i
         else:
             continue
         if istart == 0:
@@ -269,11 +269,11 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         xtime.append((tend+tstart)/2)
         xtime_d.append((tend-tstart)/2)
         # data['N'] = iend-istart
-        dts.append(delt[istart:iend].tolist())
-        scs.append(cnts[istart:iend].tolist())
-        fexps.append(fexp[istart:iend].tolist())
-        bgs.append(back[istart:iend].tolist())
-        bgrats.append(backrat[istart:iend].tolist())
+        dts.append(delt[istart:iend+1].tolist())
+        scs.append(cnts[istart:iend+1].tolist())
+        fexps.append(fexp[istart:iend+1].tolist())
+        bgs.append(back[istart:iend+1].tolist())
+        bgrats.append(backrat[istart:iend+1].tolist())
         istart = i + 1
 
     N = 0
@@ -443,7 +443,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     # from quantiles
     for i in range(nrow):
         if i == nrow - 1:
-            iend = i + 1
+            iend = i
             if (cnts[istart:nrow].sum() < mincounts and
                     not time_mjd[istart_old] < obs_periods[-1][0]):
                 istart = istart_old
@@ -451,7 +451,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                      bgs[-1], bgrats[-1])
         elif (cnts[istart:i].sum() >= mincounts and
               time[i + 1] - time[i] > 3600.0):  # elif to avoid error
-            iend = i + 1
+            iend = i
         else:  # TODO: case when at the end of an obs period
             period_last = False
             period_first = False
@@ -461,7 +461,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                     if time_mjd[istart_old] < period[0] or istart == 0:
                         period_first = True
             if period_last:
-                iend = i + 1
+                iend = i
                 if not period_first:
                     istart = istart_old
                     del (xtime[-1], xtime_d[-1], dts[-1], scs[-1], fexps[-1],
@@ -492,11 +492,11 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         xtime.append((tend+tstart)/2)
         xtime_d.append((tend-tstart)/2)
         # data['N'] = iend-istart
-        dts.append(delt[istart:iend].tolist())
-        scs.append(cnts[istart:iend].tolist())
-        fexps.append(fexp[istart:iend].tolist())
-        bgs.append(back[istart:iend].tolist())
-        bgrats.append(backrat[istart:iend].tolist())
+        dts.append(delt[istart:iend+1].tolist())
+        scs.append(cnts[istart:iend+1].tolist())
+        fexps.append(fexp[istart:iend+1].tolist())
+        bgs.append(back[istart:iend+1].tolist())
+        bgrats.append(backrat[istart:iend+1].tolist())
         istart_old = istart
         istart = i + 1
 
