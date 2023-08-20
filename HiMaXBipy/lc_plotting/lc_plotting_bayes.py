@@ -363,7 +363,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                         yerr=[sc_rate + (-sc_rate_lower),
                               sc_rate_upper + (-sc_rate)],
                         linestyle='None', color=color, fmt='o',
-                        zorder=1)
+                        zorder=2)
             ax.errorbar(xtime_short, bg_rate, xerr=xtime_d,
                         yerr=[bg_rate + (-bg_rate_lower),
                               bg_rate_upper + (-bg_rate)],
@@ -374,7 +374,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                         yerr=[sc_rate + (-sc_rate_lower),
                               sc_rate_upper + (-sc_rate)],
                         linestyle='None', color=color, fmt='o',
-                        zorder=1)
+                        zorder=2)
             ax.errorbar(mjd_short, bg_rate, xerr=mjd_d,
                         yerr=[bg_rate + (-bg_rate_lower),
                               bg_rate_upper + (-bg_rate)],
@@ -591,23 +591,23 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                         yerr=[sc_rate + (-sc_rate_lower),
                               sc_rate_upper + (-sc_rate)],
                         linestyle='None', color=color, fmt='o',
-                        zorder=1)
+                        zorder=4)
             ax.errorbar(xtime_short, bg_rate, xerr=xtime_d,
                         yerr=[bg_rate + (-bg_rate_lower),
                               bg_rate_upper + (-bg_rate)],
                         linestyle='None', color=color, fmt='x',
-                        zorder=1, alpha=alpha_bg)
+                        zorder=3, alpha=alpha_bg)
         else:
             ax.errorbar(mjd_short, sc_rate, xerr=mjd_d,
                         yerr=[sc_rate + (-sc_rate_lower),
                               sc_rate_upper + (-sc_rate)],
                         linestyle='None', color=color, fmt='o',
-                        zorder=1)
+                        zorder=4)
             ax.errorbar(mjd_short, bg_rate, xerr=mjd_d,
                         yerr=[bg_rate + (-bg_rate_lower),
                               bg_rate_upper + (-bg_rate)],
                         linestyle='None', color=color, fmt='x',
-                        zorder=1, alpha=alpha_bg)
+                        zorder=3, alpha=alpha_bg)
 
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
