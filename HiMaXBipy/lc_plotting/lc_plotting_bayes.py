@@ -331,13 +331,17 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         if xflag == 1:
             xtime_part = xtime[(mjd > obs_periods[i_ax][0]) *
                                (mjd < obs_periods[i_ax][1])]
-            xmin = min(xtime_part)
-            xmax = max(xtime_part)
+            xtime_d_part = xtime_d[(mjd > obs_periods[i_ax][0]) *
+                                   (mjd < obs_periods[i_ax][1])]
+            xmin = min(xtime_part - xtime_d_part)
+            xmax = max(xtime_part + xtime_d_part)
         else:
             mjd_part = mjd[(mjd > obs_periods[i_ax][0]) *
                            (mjd < obs_periods[i_ax][1])]
-            xmin = min(mjd_part)
-            xmax = max(mjd_part)
+            mjd_d_part = mjd_d[(mjd > obs_periods[i_ax][0]) *
+                               (mjd < obs_periods[i_ax][1])]
+            xmin = min(mjd_part - mjd_d_part)
+            xmax = max(mjd_part + mjd_d_part)
 
         if short_time:
             if i_ax == 0 and time_rel == 0:
@@ -558,13 +562,17 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         if xflag == 1:
             xtime_part = xtime[(mjd > obs_periods[i_ax][0]) *
                                (mjd < obs_periods[i_ax][1])]
-            xmin = min(xtime_part)
-            xmax = max(xtime_part)
+            xtime_d_part = xtime_d[(mjd > obs_periods[i_ax][0]) *
+                                   (mjd < obs_periods[i_ax][1])]
+            xmin = min(xtime_part - xtime_d_part)
+            xmax = max(xtime_part + xtime_d_part)
         else:
             mjd_part = mjd[(mjd > obs_periods[i_ax][0]) *
                            (mjd < obs_periods[i_ax][1])]
-            xmin = min(mjd_part)
-            xmax = max(mjd_part)
+            mjd_d_part = mjd_d[(mjd > obs_periods[i_ax][0]) *
+                               (mjd < obs_periods[i_ax][1])]
+            xmin = min(mjd_part - mjd_d_part)
+            xmax = max(mjd_part + mjd_d_part)
 
         if short_time:
             if i_ax == 0 and time_rel == 0:
