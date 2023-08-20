@@ -26,8 +26,7 @@ from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
     plot_lc_mincounts_broken_new, format_axis_broken_new, plot_lc_UL_hr,\
     plot_lc_mincounts_hr
-from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,\
-    plot_lc_eROday_broken_bayes_sim
+from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
@@ -2237,7 +2236,7 @@ class HiMaXBi:
         os.chdir(self._working_dir_full + '/working/')
 
         if stan_model == '':
-            stan_model = self._working_dir_full + '/working/lc_model_bin.stan'
+            stan_model = self._working_dir_full + '/working/lc_model_simu.stan'
         if np.shape(quantiles) == (0,):
             quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
 

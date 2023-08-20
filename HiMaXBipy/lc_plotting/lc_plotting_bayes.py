@@ -12,7 +12,7 @@ except ValueError:
     install_cmdstan()
 
 
-def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
+def plot_lc_eROday_broken_bayes_old(hdulist, axs, logfile, mjdref, xflag,
                                 color, obs_periods, short_time, stan_model,
                                 quantiles, time_rel=0, fexp_cut=0.15,
                                 alpha_bg=0.5):
@@ -185,7 +185,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     return pxmin, pxmax, pymin, pymax, time_rel
 
 
-def plot_lc_eROday_broken_bayes_sim(hdulist, axs, logfile, mjdref, xflag,
+def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                                     color, obs_periods, short_time, stan_model,
                                     quantiles, time_rel=0, fexp_cut=0.15,
                                     alpha_bg=0.5):
