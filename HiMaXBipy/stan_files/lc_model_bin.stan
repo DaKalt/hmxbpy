@@ -4,7 +4,7 @@ data {
     array[N] int<lower=0> bg;
     array[N] real<lower=0> frac_exp;
     array[N] real<lower=0> dt;
-    array[N] real<lower=0> bg_rate;
+    array[N] real<lower=0> bg_ratio;
 }
 parameters {
     real<lower=-3,upper=4> log_cr_sc;

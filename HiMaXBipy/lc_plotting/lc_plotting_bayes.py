@@ -97,7 +97,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         data['sc'] = cnts[istart:iend]
         data['frac_exp'] = fexp[istart:iend]
         data['bg'] = back[istart:iend]
-        data['bg_rate'] = backrat[istart:iend]
+        data['bg_ratio'] = backrat[istart:iend]
         fit = model.sample(data=data, show_progress=False)
         sc_rate_lower.append(np.percentile(fit.stan_variables()['sc_rate'],
                                            quantiles[0]))
@@ -295,7 +295,7 @@ def plot_lc_eROday_broken_bayes_sim(hdulist, axs, logfile, mjdref, xflag,
     data['sc'] = np.array(scs)
     data['frac_exp'] = np.array(fexps)
     data['bg'] = np.array(bgs)
-    data['bg_rate'] = np.array(bgrats)
+    data['bg_ratio'] = np.array(bgrats)
 
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
