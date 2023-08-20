@@ -26,7 +26,8 @@ from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
     plot_lc_mincounts_broken_new, format_axis_broken_new, plot_lc_UL_hr,\
     plot_lc_mincounts_hr
-from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes
+from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,\
+    plot_lc_mincounts_broken_bayes
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 
 
@@ -2027,7 +2028,7 @@ class HiMaXBi:
         logfile.close()
 
     def plot_lc_bayes_broken(self, fracexp='0.15', mincounts='10',
-                             mode='scan', show_eRASS=True,
+                             mode='mincounts_scan', show_eRASS=True,
                              logfile='', stan_model='',
                              alpha_bg=0.5, quantiles=[],
                              time_axis='mjd', print_name=False,
@@ -2053,7 +2054,6 @@ class HiMaXBi:
         mode : str, optional
             Type of LC to be produced. Either 'scan', 'mincounts' or
             'mincounts_scan'. The default is 'mincounts_scan'.
-            #TODO: make this the actual default
         show_eRASS : bool, optional
             True to show start/end dates of eRASSi as vertical lines.
             The default is True.
@@ -2331,27 +2331,32 @@ class HiMaXBi:
                         time_rel=time_rel, fexp_cut=float(fracexp),
                         alpha_bg=alpha_bg)
                 elif mode == 'mincounts':
-                    raise Exception('This is not implemented yet.')
-                    # pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_bayes(
-                    #     hdulist=hdulist, axs=axs, logfile=logfile,
-                    #     mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                    #     color=colors[1], obs_periods=self._obs_periods,
-                    #     short_time=short_time)
+                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_bayes(
+                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[1], obs_periods=self._obs_periods,
+                        short_time=short_time, stan_model=stan_model,
+                        quantiles=quantiles, time_rel=time_rel,
+                        fexp_cut=float(fracexp), alpha_bg=alpha_bg)
                 elif mode == 'mincounts_scan':
-                    raise Exception('This is not implemented yet.')
-                    # pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
-                    #     hdulist=hdulist, axs=axs, logfile=logfile,
-                    #     mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                    #     color=colors[0], obs_periods=self._obs_periods,
-                    #     short_time=short_time)
-                    # pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_broken_bayes(
-                    #     hdulist=hdulist, axs=axs, logfile=logfile,
-                    #     mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                    #     color=colors[1], obs_periods=self._obs_periods,
-                    #     short_time=short_time, time_rel=time_rel)
-                    # pxmin, pxmax, pymin, pymax = get_boundaries_broken(
-                    #     [[pxmin1, pxmax1, pymin1, pymax1],
-                    #      [pxmin2, pxmax2, pymin2, pymax2]])
+                    pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
+                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, color=colors[0],
+                        obs_periods=self._obs_periods, short_time=short_time,
+                        stan_model=stan_model, quantiles=quantiles,
+                        time_rel=time_rel, fexp_cut=float(fracexp),
+                        alpha_bg=alpha_bg)
+                    pxmin2, pxmax2, pymin2, pymax2, time_rel = plot_lc_mincounts_broken_bayes(
+                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[1], obs_periods=self._obs_periods,
+                        short_time=short_time, stan_model=stan_model,
+                        quantiles=quantiles, time_rel=time_rel,
+                        fexp_cut=float(fracexp), alpha_bg=alpha_bg)
+                    pymin = min([pymin1, pymin2])
+                    pymax = max([pymax1, pymax2])
+                    pxmin = np.min([pxmin1, pxmin2], axis=0)
+                    pxmax = np.max([pxmax1, pxmax2], axis=0)
 
                 hdulist.close()
 
