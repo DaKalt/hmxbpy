@@ -2271,6 +2271,8 @@ class HiMaXBi:
             if logfile == '':
                 logfile = f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}.log'
             logfile = self._working_dir_full + '/logfiles/lightcurves/' + logfile
+            if os.path.exists(logfile):
+                os.remove(logfile)
             for TM in TM_list:
                 if fileid == '':
                     pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'

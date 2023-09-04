@@ -195,7 +195,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     fit done for each bin simultaneously
     '''
     logger = logging.getLogger('cmdstanpy')
-    handler = logging.FileHandler(filename=logfile, mode='w')
+    handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
     handler = logging.StreamHandler()
     handler.setLevel(logging.WARNING)
@@ -316,7 +316,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
     amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
     amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
-    logfile.writelines(f'AmpVar={amp_var}+{amp_var_up}-{amp_var_low}')
+    with open(logfile, mode='a') as file:
+        file.writelines(f'eROday AmpVar={amp_var}+{amp_var_up}-{amp_var_low}')
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
 
@@ -404,7 +405,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     fit done for each bin simultaneously
     '''
     logger = logging.getLogger('cmdstanpy')
-    handler = logging.FileHandler(filename=logfile, mode='w')
+    handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
     handler = logging.StreamHandler()
     handler.setLevel(logging.WARNING)
@@ -544,6 +545,12 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                             quantiles[1], axis=0)
     bg_rate_upper = np.percentile(fit.stan_variables()['bg_rate'],
                                   quantiles[2], axis=0)
+
+    amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
+    amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
+    amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
+    with open(logfile, mode='a') as file:
+        file.writelines(f'eROday AmpVar={amp_var}+{amp_var_up}-{amp_var_low}')
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
