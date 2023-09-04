@@ -23,9 +23,9 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, logfile, mjdref, xflag,
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='w')
     logger.addHandler(handler)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.WARNING)
-    logger.addHandler(handler)
+    handler2 = logging.StreamHandler()
+    handler2.setLevel(logging.WARNING)
+    logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -197,9 +197,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.WARNING)
-    logger.addHandler(handler)
+    handler2 = logging.StreamHandler()
+    handler2.setLevel(logging.WARNING)
+    logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -317,7 +317,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
     amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
     with open(logfile, mode='a') as file:
-        file.writelines(f'eROday AmpVar={amp_var}+{amp_var_up}-{amp_var_low}')
+        file.writelines(f'eROday AmpVar={amp_var}+{amp_var_up-amp_var}'
+                        f'-{amp_var-amp_var_low}\n')
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
 
@@ -407,9 +408,9 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.WARNING)
-    logger.addHandler(handler)
+    handler2 = logging.StreamHandler()
+    handler2.setLevel(logging.WARNING)
+    logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -550,7 +551,9 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
     amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
     with open(logfile, mode='a') as file:
-        file.writelines(f'eROday AmpVar={amp_var}+{amp_var_up}-{amp_var_low}')
+        file.writelines(f'mincounts {mincounts} AmpVar={amp_var}'
+                        f'+{amp_var_up-amp_var}'
+                        f'-{amp_var-amp_var_low}\n')
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
