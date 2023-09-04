@@ -313,6 +313,10 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     bg_rate_upper = np.percentile(fit.stan_variables()['bg_rate'],
                                   quantiles[2], axis=0)
 
+    amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
+    amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
+    amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
+    logfile.writelines(f'AmpVar={amp_var}+{amp_var_up}-{amp_var_low}')
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
 
@@ -615,3 +619,15 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     logging.basicConfig()
 
     return pxmin, pxmax, pymin, pymax, time_rel
+
+
+# TODO: implement bayesian blocks
+'''Notes for Bayesian blocks test
+from astropy.stats import bayesian blocks
+t_blocked = bayesian_blocks(t, a, fitness='measures', sigma=np.sqrt(a), gamma=0.5)
+used this with random generated, positive a and uniform t but uniformity of t should not matter
+except for the first and last values t_blocked always is exactly in the centre between original timebins when there is a change
+seems reasonable to use fitness 'measures' with lightcurve, because 'events' would miss the fact that fracexp changes
+need to test various values for gamma or p0 (not sure how this one works yet)
+for sigma maybe use the maximum value of upper and lower errorbar or sqrt((upper^2+lower^2)/2)? Talk about this with Chandreyee or TODO read about it
+'''
