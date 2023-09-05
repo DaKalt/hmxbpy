@@ -17,11 +17,13 @@ transformed parameters {
     array[M] real<lower=0> bg_rate;
     bg_rate = 10 ^ log_cr_bg;
     real<lower=0, upper=1> amp_dev;
+    real<lower=0> amp_frac;
     real<lower=0> min_rate;
     real<lower=0> max_rate;
     min_rate = min(sc_rate);
     max_rate = max(sc_rate);
     amp_dev = (max_rate - min_rate) / (max_rate + min_rate);
+    amp_frac = max_rate / min_rate;
 }
 model {
     for (m in 1:M) {

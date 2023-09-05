@@ -46,6 +46,8 @@ class HiMaXBi:
     _distance = 50.
     _Z = 0.49
     _debugging = False
+    _NH = 6e20
+    _NH_set = False
 
     def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
@@ -235,24 +237,64 @@ class HiMaXBi:
         except TypeError:
             raise Exception('distance must be convertible to float.')
 
-    def set_metallicity(self, Z):
+    def set_metallicity(self, Z=-1, Z_file=''):
         '''Set metallicity at the source location. The default is 0.49
-        for LMC.
+        for LMC. Either Z or Z_file has to be given, if both are given,
+        Z will be used.
 
         Parameters
         ----------
-        Z : float or str
-            Distance to observed object in kpc to calculate Flux.
+        Z : float>0 or str
+            Metallicity for local absorption. The default value is -1.
+        file : str
+            File that contains metallicity for local absorption. The
+            default value is ''.
 
         '''
         if type(Z) != float and type(Z) != str:
             raise Exception('Z must be a float or string.')
+        if type(Z_file) != str:
+            raise Exception('Z_file must be a string.')
         try:
+            if float(Z) == -1 and os.path.exists(Z_file):
+                with open(Z_file) as file:
+                    lines = file.readlines()
+                Z = lines[0][:lines[0].find('\n')]
             if float(Z) <= 0:
-                raise Exception('Z must be > 0.')
-            self._Z = float(Z)
+                raise Exception('Z must be > 0 or Z_file must exist.')
         except TypeError:
             raise Exception('Z must be convertible to float.')
+        self._Z = float(Z)
+
+    def set_NH(self, NH=-1, NH_file=''):
+        '''Set NH in the line of sight (LOS) towards the source. The
+        default for LMC is 6e20. Either NH or NH_file has to be given,
+        if both are given, NH will be used.
+
+        Parameters
+        ----------
+        NH : float or str
+            NH in LOS to source. The default value is -1.
+        file : str
+            File that contains NH in LOS to source. The
+            default value is ''.
+
+        '''
+        if type(NH) != float and type(NH) != str:
+            raise Exception('NH must be a float or string.')
+        if type(NH_file) != str:
+            raise Exception('NH_file must be a string.')
+        try:
+            if float(NH) == -1 and os.path.exists(NH_file):
+                with open(NH_file) as file:
+                    lines = file.readlines()
+                NH = lines[0][:lines[0].find('\n')]
+            if float(NH) <= 0:
+                raise Exception('NH must be > 0 or NH_file must exist.')
+        except TypeError:
+            raise Exception('NH must be convertible to float.')
+        self._NH = float(NH)
+        self._NH_set = True
 
     def set_mjd_ref(self, mjdref):
         '''Set Reference MJD date for eROSITA times. The default is
@@ -2616,8 +2658,6 @@ class HiMaXBi:
             raise Exception('return_array must be a bool.')
         if type(conf_contours) != bool:
             raise Exception('conf_contours must be a bool.')
-        if type(skip_LC) != bool:
-            raise Exception('skip_LC must be a bool.')
         if type(absorption) != str and type(absorption) != float:
             raise Exception('absorption must be a string or float.')
         else:
@@ -2664,7 +2704,7 @@ class HiMaXBi:
         if not os.path.exists(self._working_dir + '/' + model_file):
             raise Exception(f'File {model_file} does not exist.')
         if Z != -1:
-            self.set_metallicity(Z)
+            self.set_metallicity(Z=Z)
         if distance != -1:
             self.set_distance(distance)
         if grouping != -1:
@@ -2757,6 +2797,9 @@ class HiMaXBi:
             self._LC_extracted = True
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()
+        if not self._NH_set:
+            warnings.warn('Source specific NH not set yet. Consider'
+                          'rerunning the script with a value given.')
 
         table_name = self._working_dir + '/results/spectra/' + \
             log_prefix  # not sure if this works the inteded way
