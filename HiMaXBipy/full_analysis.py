@@ -267,7 +267,7 @@ class HiMaXBi:
             raise Exception('Z must be convertible to float.')
         self._Z = float(Z)
 
-    def set_NH(self, NH=-1, NH_file=''):
+    def set_NH(self, NH=-1., NH_file=''):
         '''Set NH in the line of sight (LOS) towards the source. The
         default for LMC is 6e20. Either NH or NH_file has to be given,
         if both are given, NH will be used.
