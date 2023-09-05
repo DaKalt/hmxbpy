@@ -48,6 +48,7 @@ class HiMaXBi:
     _debugging = False
     _NH = 6e20
     _NH_set = False
+    _create_epochs = False
 
     def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
@@ -531,7 +532,6 @@ class HiMaXBi:
         self._obs_periods = np.delete(self._obs_periods, index, axis=0)
 
     def _eRASS_vs_epoch(self):
-        self._create_epochs = False
         self._period_names = []
         for i, period in enumerate(self._obs_periods):
             for date in self._ero_starttimes:
