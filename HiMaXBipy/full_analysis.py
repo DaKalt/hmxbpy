@@ -3262,3 +3262,4 @@ class HiMaXBi:
         self.plot_lc_parts()
         self.plot_lc_broken()
         self.plot_spectra()
+        self.plot_lc_bayes_broken()
