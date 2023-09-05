@@ -2520,7 +2520,7 @@ class HiMaXBi:
 
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='.log', Z=-1, distance=-1,
-                     skip_varabs=False, absorption=6 * 10 ** -2, rebin=True,
+                     skip_varabs=False, NH=-1., rebin=True,
                      rebin_params=[3, 10], rescale=False, rescale_F=[1e-6, 1.],
                      rescale_chi=[-5., 5.], model_file='', save_settings=False,
                      grouping=-1, fit_statistic='cstat', colors=[], markers=[],
@@ -2558,9 +2558,10 @@ class HiMaXBi:
             (can be used for low count data to reduce computation time
             since the varabs fit usually does not converge then). The
             default is False.
-        absorption : float or str, optional
-            Sets the MW absorption modeled by Tbabs. The default is
-            6 * 10 ** -2.
+        NH : float or str, optional
+            Sets the MW absorption modeled by Tbabs in units of cm^-2.
+            The default is -1 to use
+            preset NH.
         rebin : bool, optional
             Rebin energy bins during plotting (does not influence fit).
             The default is True.
@@ -2658,15 +2659,17 @@ class HiMaXBi:
             raise Exception('return_array must be a bool.')
         if type(conf_contours) != bool:
             raise Exception('conf_contours must be a bool.')
-        if type(absorption) != str and type(absorption) != float:
-            raise Exception('absorption must be a string or float.')
+        if type(NH) != str and type(NH) != float:
+            raise Exception('NH must be a string or float.')
         else:
             try:
-                absorption = float(absorption)
-                if absorption <= 0:
-                    raise Exception('absorption must be > 0.')
+                NH = float(NH)
+                if NH <= 0 and not NH == -1.:
+                    raise Exception('NH must be > 0.')
             except ValueError:
-                raise Exception('absorption must be a number.')
+                raise Exception('NH must be a number.')
+        if NH != -1.:
+            self.set_NH(NH=NH)
         if type(rebin_params) != list and type(rebin_params) != np.ndarray:
             raise Exception('rebin_params must be array-like')
         else:
@@ -2806,23 +2809,23 @@ class HiMaXBi:
         log_prefix = self._working_dir + '/logfiles/spectra/' + log_prefix
         if mode == 'all':
             self._plot_spectra_simultaneous(table_name, log_prefix,
-                                            skip_varabs, absorption, separate,
-                                            rebin, rebin_params, rescale_F,
-                                            rescale_chi, abund, skip_eRASS,
-                                            varabs_starting_pars, plot_command,
-                                            model_file, title, save_settings,
-                                            log_suffix, colors, markers,
-                                            fit_statistic)
+                                            skip_varabs, self._NH/(1e22),
+                                            separate, rebin, rebin_params,
+                                            rescale_F, rescale_chi, abund,
+                                            skip_eRASS, varabs_starting_pars,
+                                            plot_command, model_file, title,
+                                            save_settings, log_suffix, colors,
+                                            markers, fit_statistic)
             print('First done.')
             self._plot_spectra_merged(log_prefix, skip_eRASS, table_name,
-                                      skip_varabs, absorption, rebin,
+                                      skip_varabs, self._NH/(1e22), rebin,
                                       rebin_params, rescale_F, rescale_chi,
                                       abund, varabs_starting_pars,
                                       plot_command, model_file, title,
                                       save_settings, log_suffix, colors,
                                       markers, fit_statistic)
             self._plot_spectra_individual(table_name, log_prefix, skip_eRASS,
-                                          skip_varabs, absorption, rebin,
+                                          skip_varabs, self._NH/(1e22), rebin,
                                           rebin_params, rescale_F, rescale_chi,
                                           abund, varabs_starting_pars,
                                           plot_command, model_file, title,
@@ -2830,7 +2833,7 @@ class HiMaXBi:
                                           markers, fit_statistic)
         elif mode == 'individual':
             self._plot_spectra_individual(table_name, log_prefix, skip_eRASS,
-                                          skip_varabs, absorption, rebin,
+                                          skip_varabs, self._NH/(1e22), rebin,
                                           rebin_params, rescale_F, rescale_chi,
                                           abund, varabs_starting_pars,
                                           plot_command, model_file, title,
@@ -2838,16 +2841,16 @@ class HiMaXBi:
                                           markers, fit_statistic)
         elif mode == 'simultaneous':
             self._plot_spectra_simultaneous(table_name, log_prefix,
-                                            skip_varabs, absorption, separate,
-                                            rebin, rebin_params, rescale_F,
-                                            rescale_chi, abund, skip_eRASS,
-                                            varabs_starting_pars, plot_command,
-                                            model_file, title, save_settings,
-                                            log_suffix, colors, markers,
-                                            fit_statistic)
+                                            skip_varabs, self._NH/(1e22),
+                                            separate, rebin, rebin_params,
+                                            rescale_F, rescale_chi, abund,
+                                            skip_eRASS, varabs_starting_pars,
+                                            plot_command, model_file, title,
+                                            save_settings, log_suffix, colors,
+                                            markers, fit_statistic)
         elif mode == 'merged':
             self._plot_spectra_merged(log_prefix, skip_eRASS, table_name,
-                                      skip_varabs, absorption, rebin,
+                                      skip_varabs, self._NH/(1e22), rebin,
                                       rebin_params, rescale_F, rescale_chi,
                                       abund, varabs_starting_pars,
                                       plot_command, model_file, title,
