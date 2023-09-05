@@ -238,7 +238,7 @@ class HiMaXBi:
         except TypeError:
             raise Exception('distance must be convertible to float.')
 
-    def set_metallicity(self, Z=-1, Z_file=''):
+    def set_metallicity(self, Z=-1., Z_file=''):
         '''Set metallicity at the source location. The default is 0.49
         for LMC. Either Z or Z_file has to be given, if both are given,
         Z will be used.
@@ -257,7 +257,7 @@ class HiMaXBi:
         if type(Z_file) != str:
             raise Exception('Z_file must be a string.')
         try:
-            if float(Z) == -1 and os.path.exists(Z_file):
+            if float(Z) == -1. and os.path.exists(Z_file):
                 with open(Z_file) as file:
                     lines = file.readlines()
                 Z = lines[0][:lines[0].find('\n')]
