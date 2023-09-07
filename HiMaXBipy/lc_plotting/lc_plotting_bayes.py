@@ -314,11 +314,12 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
                                   quantiles[2], axis=0)
 
     amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
-    amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
-    amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
+    amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
+    amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
     amp_frac = np.percentile(fit.stan_variables()['amp_frac'], quantiles[1])
-    amp_frac_up = np.percentile(fit.stan_variables()['amp_frac'], quantiles[0])
     amp_frac_low = np.percentile(
+        fit.stan_variables()['amp_frac'], quantiles[0])
+    amp_frac_up = np.percentile(
         fit.stan_variables()['amp_frac'], quantiles[2])
     with open(logfile, mode='a') as file:
         file.writelines(f'eROday AmpVar={amp_var}+{amp_var_up-amp_var}'
