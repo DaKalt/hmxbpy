@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: HiMaXBipy
+Version: 1.0.128
+Summary: A python tool to analyse eROSITA data of HMXB
+Author: David M. Kaltenbrunner
+Author-email: kald@mpe.mpg.de
+License: MIT
+Platform: UNKNOWN
+Requires: xspec
+Requires: cmdstanpy
+
+UNKNOWN
+
