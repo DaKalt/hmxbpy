@@ -1157,10 +1157,8 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
             longest_y = ''
             for entry in ax.get_yticks():
                 entry = round_to_1(entry)
-                print(entry)
                 if len(str(entry)) > len(longest_y):
                     longest_y = str(entry)
-                    print('long: ' + longest_y)
 
         tick_size_x = np.round(
             (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
@@ -1624,8 +1622,6 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
         mjd_2 = mjd_2[filter_2][filter]
         mjd_d_2 = mjd_d_2[filter_2][filter]
         uplimit_2 = uplimit_2[filter_2][filter]
-        print(len(yrate_1))
-        print(len(filter_1))
 
         yrate = (yrate_1 + (-yrate_2)) / (yrate_1 + yrate_2)
         yrate_e = np.sqrt((2*yrate_2/(yrate_1+yrate_2))**2 * (yrate_e_1)**2 +
