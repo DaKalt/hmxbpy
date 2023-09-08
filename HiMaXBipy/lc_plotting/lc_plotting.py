@@ -1155,7 +1155,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
             ax.set_yticks(yticks)
 
             longest_y = ''
-            for entry in yticks:
+            for entry in ax.get_yticks():
                 entry = round_to_1(entry)
                 if len(str(entry)) > len(longest_y):
                     longest_y = str(entry)
