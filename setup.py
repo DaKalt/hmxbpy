@@ -35,7 +35,7 @@ setup(
         'HiMaXBipy/tex_style'
 
     ],
-    version='v1.0.139',
+    version='v1.0.140',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',

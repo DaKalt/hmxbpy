@@ -21,12 +21,12 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, logfile, mjdref, xflag,
     assuming Poissionian distribution for counts and log
     '''
     logger = logging.getLogger('cmdstanpy')
+    logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler(filename=logfile, mode='w')
     logger.addHandler(handler)
-    # handler2 = logging.StreamHandler() #need to test if this fixes the
-    # problem of no logging at all in logfile
-    # handler2.setLevel(logging.WARNING)
-    # logger.addHandler(handler2)
+    handler2 = logging.StreamHandler()
+    handler2.setLevel(logging.WARNING)
+    logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -181,7 +181,6 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, logfile, mjdref, xflag,
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
-    logging.basicConfig()
 
     return pxmin, pxmax, pymin, pymax, time_rel
 
@@ -196,11 +195,12 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     fit done for each bin simultaneously
     '''
     logger = logging.getLogger('cmdstanpy')
+    logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler(filename=logfile, mode='a')
     handler.setLevel(logging.INFO)
     logger.addHandler(handler)
     handler2 = logging.StreamHandler()
-    handler2.setLevel(logging.WARNING)  # TODO test
+    handler2.setLevel(logging.WARNING)
     logger.addHandler(handler2)
     pxmin = []
     pxmax = []
@@ -302,7 +302,6 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
     fit = model.sample(data=data, show_progress=False)
-    logging.basicConfig()
     sc_rate_lower = np.percentile(fit.stan_variables()['sc_rate'],
                                   quantiles[0], axis=0)
     sc_rate = np.percentile(fit.stan_variables()['sc_rate'],
@@ -416,6 +415,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     fit done for each bin simultaneously
     '''
     logger = logging.getLogger('cmdstanpy')
+    logger.setLevel(logging.DEBUG)
     handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
     handler2 = logging.StreamHandler()
@@ -544,7 +544,6 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
     fit = model.sample(data=data, show_progress=False)
-    logging.basicConfig()
     sc_rate_lower = np.percentile(fit.stan_variables()['sc_rate'],
                                   quantiles[0], axis=0)
     sc_rate = np.percentile(fit.stan_variables()['sc_rate'],
@@ -573,10 +572,6 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         file.writelines(f'AmpFrac={amp_frac}'
                         f'+{amp_frac_up-amp_frac}'
                         f'-{amp_frac-amp_frac_low}\n')
-    with open(logfile, mode='r') as file:
-        for i, line in enumerate(file):
-            if i == 0:
-                print(line)
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
