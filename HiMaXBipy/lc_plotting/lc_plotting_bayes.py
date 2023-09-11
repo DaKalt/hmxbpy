@@ -23,9 +23,10 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, logfile, mjdref, xflag,
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='w')
     logger.addHandler(handler)
-    handler2 = logging.StreamHandler()
-    handler2.setLevel(logging.WARNING)
-    logger.addHandler(handler2)
+    # handler2 = logging.StreamHandler() #need to test if this fixes the
+    # problem of no logging at all in logfile
+    # handler2.setLevel(logging.WARNING)
+    # logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -197,9 +198,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
-    handler2 = logging.StreamHandler()
-    handler2.setLevel(logging.WARNING)
-    logger.addHandler(handler2)
+    # handler2 = logging.StreamHandler()
+    # handler2.setLevel(logging.WARNING) #TODO test
+    # logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
