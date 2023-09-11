@@ -417,9 +417,9 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
-    handler2 = logging.StreamHandler()
-    handler2.setLevel(logging.WARNING)
-    logger.addHandler(handler2)
+    # handler2 = logging.StreamHandler()
+    # handler2.setLevel(logging.WARNING)
+    # logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -471,7 +471,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         elif (cnts[istart:i].sum() >= mincounts and
               time[i + 1] - time[i] > 3600.0):  # elif to avoid error
             iend = i
-        else:  # TODO: case when at the end of an obs period
+        else:
             period_last = False
             period_first = False
             for period in obs_periods:
@@ -571,6 +571,10 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         file.writelines(f'AmpFrac={amp_frac}'
                         f'+{amp_frac_up-amp_frac}'
                         f'-{amp_frac-amp_frac_low}\n')
+    with open(logfile, mode='r') as file:
+        for i, line in enumerate(file):
+            if i == 0:
+                print(line)
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
