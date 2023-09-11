@@ -198,9 +198,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
-    # handler2 = logging.StreamHandler()
-    # handler2.setLevel(logging.WARNING) #TODO test
-    # logger.addHandler(handler2)
+    handler2 = logging.StreamHandler()
+    handler2.setLevel(logging.WARNING)  # TODO test
+    logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -301,6 +301,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
     fit = model.sample(data=data, show_progress=False)
+    logging.basicConfig()
     sc_rate_lower = np.percentile(fit.stan_variables()['sc_rate'],
                                   quantiles[0], axis=0)
     sc_rate = np.percentile(fit.stan_variables()['sc_rate'],
@@ -399,7 +400,6 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
-    logging.basicConfig()
 
     return pxmin, pxmax, pymin, pymax, time_rel
 
@@ -417,9 +417,9 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='a')
     logger.addHandler(handler)
-    # handler2 = logging.StreamHandler()
-    # handler2.setLevel(logging.WARNING)
-    # logger.addHandler(handler2)
+    handler2 = logging.StreamHandler()
+    handler2.setLevel(logging.WARNING)
+    logger.addHandler(handler2)
     pxmin = []
     pxmax = []
     ymin = 0
@@ -543,6 +543,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
     fit = model.sample(data=data, show_progress=False)
+    logging.basicConfig()
     sc_rate_lower = np.percentile(fit.stan_variables()['sc_rate'],
                                   quantiles[0], axis=0)
     sc_rate = np.percentile(fit.stan_variables()['sc_rate'],
@@ -647,7 +648,6 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
-    logging.basicConfig()
 
     return pxmin, pxmax, pymin, pymax, time_rel
 

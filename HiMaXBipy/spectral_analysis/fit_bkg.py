@@ -6,6 +6,12 @@ MultiFitter fits first one with SingleFitter,
 then goes through all the others
 by setting the parameter values to those of the previous id
 and then fitting each stage
+
+Note: The author of this script is Johannes Buchner to utilise bxa
+The last function in this programm was added as a copy of main() for
+better inclusion in the HiMaXBipy package. Also the PCA model (.json
+file) for fitting of the background spectrum originates from the bxa
+package.
 """
 import numpy
 from numpy import log10
@@ -617,3 +623,72 @@ if __name__ == '__main__':
     main()
 
 __dir__ = [PCAFitter, PCAModel]
+
+
+def fit_bkg(bkg_file, source_file=''):
+    import sys
+    # logging.basicConfig(filename='bxa.log',level=logging.DEBUG)
+    #logFormatter = logging.Formatter("[%(name)s %(levelname)s]: %(message)s")
+    logFormatter = logging.Formatter("%(levelname)s: %(message)s")
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(logFormatter)
+    consoleHandler.setLevel(logging.INFO)
+    logging.getLogger().addHandler(consoleHandler)
+    logf.setLevel(logging.INFO)
+
+    background_file = bkg_file
+    source_file = source_file if source_file != '' else None
+    fitter = PCAFitter(background_file)
+    result, predictions = fitter.fit()
+    data = fitter.cts
+
+    # write out bkg file
+    print('creating bstat bkg file ...')
+
+    if background_file.endswith('.fits'):
+        numpy.savetxt(background_file[:-5] + '.dat', result)
+    with open(background_file + '.bstat.out', 'w') as fout:
+        numpy.savetxt(fout, numpy.transpose([data, result]))
+
+    # plot fit
+    print('plotting...')
+    m = max(data.sum(), result.sum())
+    x = numpy.arange(fitter.ilo, fitter.ihi)
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.title('data-model should follow 1:1 dashed line')
+    plt.plot(data.cumsum(), result.cumsum(), '-', color='r', lw=2, alpha=0.7)
+    plt.plot([0, m], [0, m], '--', color='gray', lw=0.4)
+    plt.ylabel('Cumulative counts (data)')
+    plt.ylabel('Cumulative counts (model)')
+    plt.savefig(background_file + '.bstat_cum.pdf', bbox_inches='tight')
+    plt.close()
+    plt.figure()
+    plt.title('model (red) should describe data (black)')
+    for r in predictions:
+        if r is not None:
+            plt.plot(x, r, '-', color='orange', lw=1, alpha=0.3)
+    plt.plot(x, result, '-', color='r', lw=2)
+    plt.plot(x, data, 'o ', color='k')
+    plt.ylim(0, max(result.max(), data.max()))
+    plt.xlabel('channel')
+    plt.ylabel('counts')
+    plt.savefig(background_file + '.bstat.pdf', bbox_inches='tight')
+    plt.yscale('log')
+    plt.ylim(0.01, max(result.max(), data.max()))
+    plt.savefig(background_file + '.bstat_log.pdf', bbox_inches='tight')
+    plt.close()
+    print()
+    print('-> Check that %s is a 1:1 line' %
+          (background_file + '.bstat_cum.pdf'))
+    if source_file:
+        foutsrc = create_spectral_files(fitter, result, source_file)
+        print()
+        print('-> In xspec, to load the data with BStat statistic, run:')
+        print()
+        print('   data %s' % foutsrc)
+        print('   statistic pstat # (to use BStat) ')
+        print()
+        create_ogip_atable(result, background_file, source_file,
+                           outfilename=background_file + '_model.fits',
+                           ilo=fitter.ilo, ihi=fitter.ihi)
