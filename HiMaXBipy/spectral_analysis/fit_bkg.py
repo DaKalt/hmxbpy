@@ -295,7 +295,7 @@ class PCAFitter(object):
         instrument = hdr.get('INSTRUME', '')
         if telescope == '' and instrument == '':
             raise Exception(
-                'ERROR: The TELESCOP/INSTRUME headers are not set in '
+                'ERROR: The TELESCOP/INSTRUMENT headers are not set in '
                 'the data file.')
         for folder in os.environ.get('BKGMODELDIR', '.'), \
                 os.path.dirname(__file__):
@@ -625,7 +625,7 @@ if __name__ == '__main__':
 __dir__ = [PCAFitter, PCAModel]
 
 
-def fit_bkg(bkg_file, source_file=''):
+def fit_bkg(bkg_file, source_file='', logfile=''):
     import sys
     # logging.basicConfig(filename='bxa.log',level=logging.DEBUG)
     #logFormatter = logging.Formatter("[%(name)s %(levelname)s]: %(message)s")

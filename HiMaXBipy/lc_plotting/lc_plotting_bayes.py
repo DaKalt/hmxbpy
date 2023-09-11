@@ -197,6 +197,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     '''
     logger = logging.getLogger('cmdstanpy')
     handler = logging.FileHandler(filename=logfile, mode='a')
+    handler.setLevel(logging.INFO)
     logger.addHandler(handler)
     handler2 = logging.StreamHandler()
     handler2.setLevel(logging.WARNING)  # TODO test
