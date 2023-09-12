@@ -74,10 +74,10 @@ def create_ogip_atable(BackArray, BackSpecFile, SourceSpecFile,
         source_hdr = pyfits.getheader(SourceSpecFile, extname='SPECTRUM')
         backscal = hdr['BACKSCAL'] / source_hdr['BACKSCAL']
     else:
-        print()
-        print()
-        print("Warning: no source file provided. You need to scale the "
-              "atable by the source BACKSCAL parameter!")
+        logf.info('')
+        logf.info('')
+        logf.warning("Warning: no source file provided. You need to scale the "
+                     "atable by the source BACKSCAL parameter!")
         backscal = hdr['BACKSCAL']
     dtype1 = [('NAME', 'S12'), ('METHOD', '>i4'), ('INITIAL', '>f4'),
               ('DELTA', '>f4'), ('MINIMUM', '>f4'),
@@ -117,12 +117,12 @@ def create_ogip_atable(BackArray, BackSpecFile, SourceSpecFile,
     # store the model in counts / s / cm^2
     bspec = numpy.pad(BackArray, (ilo, Nchannel-ihi)) / \
         hdr['EXPOSURE'] / hdr['AREASCAL']
-    print("background spectrum is scaled by:",
-          hdr['EXPOSURE'], hdr['AREASCAL'])
+    logf.info("background spectrum is scaled by:",
+              hdr['EXPOSURE'], hdr['AREASCAL'])
     # for the source, adjust by the background scaling factor
     sspec = bspec / backscal
-    print(BackArray.mean())
-    print("source spectrum is up-scaled by:", backscal)
+    logf.info(BackArray.mean())
+    logf.info("source spectrum is up-scaled by:", backscal)
     table = numpy.array([
         ((0,), bspec),
         ((1,), sspec),
@@ -139,7 +139,7 @@ def create_ogip_atable(BackArray, BackSpecFile, SourceSpecFile,
 
     pyfits.HDUList([hdu0, hdu1, hdu2, hdu3]).writeto(
         outfilename, overwrite=True)
-    print("""
+    logf.info("""
 -> Xspec atable of the best-fit background created at: %(modelfilename)s.
 Keep in mind that you need to use a diagonal RMF and no ARF for this
 contribution. To use it in xspec:
@@ -199,7 +199,7 @@ def create_spectral_files(fitter, result, src_filename):
     del f
 
     # update source file
-    print('creating src file with updated BACKFILE header ...')
+    logf.info('creating src file with updated BACKFILE header ...')
     bext = src_filename.split('.')[-1]
     f = pyfits.open(src_filename)
     for e in f:
@@ -253,10 +253,10 @@ class PCAModel(object):
                        max=20, hard_min=-100, hard_max=100)
         pars = [p0]
         for i in range(len(self.s)):
-        pi = Parameter(modelname=modelname, name='PC%d' % (i+1),
-                       val=0, min=-20, max=20,
-                       hard_min=-1e300, hard_max=1e300)
-        pars.append(pi)
+            pi = Parameter(modelname=modelname, name='PC%d' % (i+1),
+                           val=0, min=-20, max=20,
+                           hard_min=-1e300, hard_max=1e300)
+            pars.append(pi)
         self.pars = pars
 
     def calc(self, p):
@@ -267,7 +267,7 @@ class PCAModel(object):
             cts = (10**y - 1) * 10**lognorm
             return cts
         except Exception as e:
-            print("Exception in PCA model:", e, p)
+            logf.warning("Exception in PCA model:", e, p)
             raise e
 
 
@@ -357,7 +357,7 @@ class PCAFitter(object):
         stat = numpy.where(numpy.isfinite(logls), -2 * logls, 1e100 *
                            (1 + numpy.max(self.cts)
                             - numpy.nanmax(pred))**2).sum()
-        # print("stat: %.1f" % stat)  #  pred, self.cts)
+        # logf.info("stat: %.1f" % stat)  #  pred, self.cts)
         return stat
 
     def complete_parameters(self, pars):
@@ -373,15 +373,15 @@ class PCAFitter(object):
         for i in range(self.ngaussians):
             LineE, logSigma, lognorm = pars[3*i:3*(i+1)]
             if LineE < 0 or LineE > self.ndata:
-                #print('LineE out of range:', LineE)
+                #logf.info('LineE out of range:', LineE)
                 return None
             # should not be narrower than a single bin, otherwise we get
             # overfitting
             if logSigma < log10(3.0) or logSigma > log10(self.ndata):
-                #print('logSigma out of range:', logSigma, 10**logSigma)
+                #logf.info('logSigma out of range:', logSigma, 10**logSigma)
                 return None
             if lognorm < -6 or lognorm > 10:
-                #print('lognorm out of range:', lognorm, 10**lognorm)
+                #logf.info('lognorm out of range:', lognorm, 10**lognorm)
                 return None
             pred = pred + gaussmodel_calc(self.x,
                                           LineE, 10**logSigma, 10**lognorm)
@@ -444,7 +444,7 @@ class PCAFitter(object):
             p.val = v
 
         # start with the full fit and remove(freeze) parameters
-        print('%d parameters, stat=%.2f' % (len(initial), initial_v))
+        logf.info('%d parameters, stat=%.2f' % (len(initial), initial_v))
         results = [(2 * len(final) + initial_v, final, len(final), initial_v)]
         for i in range(len(initial)-1, 0, -1):
             initial = final[:i]
@@ -452,22 +452,22 @@ class PCAFitter(object):
             final = self.complete_parameters(r.x)
             predictions.append(self.predict(final))
             v = self.calc_bkg_stat_wrapped_gaussians(final)
-            print('--> %d parameters, stat=%.2f' % (i, v))
+            logf.info('--> %d parameters, stat=%.2f' % (i, v))
             results.insert(0, (v + 2*i, final, i, v))
 
-        print()
-        print('Background PCA fitting AIC results:')
-        print('-----------------------------------')
-        print()
-        print('stat Ncomp AIC')
+        logf.info('')
+        logf.info('Background PCA fitting AIC results:')
+        logf.info('-----------------------------------')
+        logf.info('')
+        logf.info('stat Ncomp AIC')
         for aic, params, nparams, val in results:
-            print('%-05.1f %2d %-05.1f' % (val, nparams, aic))
+            logf.info('%-05.1f %2d %-05.1f' % (val, nparams, aic))
         aic, final, nparams, val = min(results)
         for p, v in zip(bkgmodel.pars, final):
             p.val = v
 
-        print()
-        print('Increasing parameters again...')
+        logf.info('')
+        logf.info('Increasing parameters again...')
         # now increase the number of parameters again
         #results = [(aic, final, nparams, val)]
         last_aic, last_final, last_nparams, _ = aic, final, nparams, val
@@ -481,18 +481,18 @@ class PCAFitter(object):
             next_aic = v + 2*next_nparams
             if next_aic < last_aic:
                 # accept
-                print('%d parameters, aic=%.2f ** accepting' %
-                      (next_nparams, next_aic))
+                logf.info('%d parameters, aic=%.2f ** accepting' %
+                          (next_nparams, next_aic))
                 last_aic, last_final, last_nparams, _ = next_aic, \
                     next_final, next_nparams, v
             else:
-                print('%d parameters, aic=%.2f' % (next_nparams, next_aic))
+                logf.info('%d parameters, aic=%.2f' % (next_nparams, next_aic))
             # stop if we are 3 parameters ahead what we needed
             if next_nparams >= last_nparams + 3:
                 break
 
-        print('Final choice: %d parameters, aic=%.2f' %
-              (last_nparams, last_aic))
+        logf.info('Final choice: %d parameters, aic=%.2f' %
+                  (last_nparams, last_aic))
         # reset to the last good solution
         for p, v in zip(bkgmodel.pars, last_final):
             p.val = v
@@ -506,24 +506,24 @@ class PCAFitter(object):
         # return last_final
         del i
         for gi in range(10):
-            print()
-            print('Adding Gaussian#%d' % (gi+1))
+            logf.info('')
+            logf.info('Adding Gaussian#%d' % (gi+1))
             # find largest discrepancy
 
             y = self.cts.cumsum()
             z = last_pred.cumsum()
             diff = numpy.abs(y - z)
             xi = numpy.argmax(diff)
-            print('largest remaining discrepancy at %d, need %d counts' %
-                  (xi, diff[xi]))
+            logf.info('largest remaining discrepancy at %d, need %d counts' %
+                      (xi, diff[xi]))
             power = diff[xi]
-            print('placing gaussian there ...')
+            logf.info('placing gaussian there ...')
             # we work in energy bins, not energy
             initial = [xi, log10(4.), log10(power)] + \
                 list(last_final)[:last_nparams]
             self.ngaussians = gi + 1
-            print('initial guess:',
-                  self.calc_bkg_stat_wrapped_gaussians(initial))
+            logf.info('initial guess:',
+                      self.calc_bkg_stat_wrapped_gaussians(initial))
             r = minimize(self.calc_bkg_stat_wrapped_gaussians, x0=initial)
             next_final = r.x
             v = self.calc_bkg_stat_wrapped_gaussians(next_final)
@@ -532,16 +532,16 @@ class PCAFitter(object):
 
             next_nparams = last_nparams + 3
             next_aic = v + 2 * next_nparams
-            print('with Gaussian:', next_aic, '; change: '
-                  '%.1f (negative is good)' %
-                  (next_aic - last_aic))
+            logf.info('with Gaussian:', next_aic, '; change: '
+                      '%.1f (negative is good)' %
+                      (next_aic - last_aic))
             if next_aic < last_aic:
-                print('accepting')
+                logf.info('accepting')
                 last_aic, last_final, last_nparams, _ = next_aic, next_final, \
                     next_nparams, v
                 last_pred = next_pred
             else:
-                print('not significant, rejecting')
+                logf.info('not significant, rejecting')
                 # reset to previous model
                 return last_pred, predictions
 
@@ -558,7 +558,7 @@ def main():
     logf.setLevel(logging.INFO)
 
     if len(sys.argv) not in (2, 3):
-        print('SYNOPSIS: %s <bkg.pi> [<src.pi>] ' % sys.argv[0])
+        logf.info('SYNOPSIS: %s <bkg.pi> [<src.pi>] ' % sys.argv[0])
         sys.exit(1)
     background_file = sys.argv[1]
     source_file = sys.argv[2] if len(sys.argv) > 2 else None
@@ -568,7 +568,7 @@ def main():
     data = fitter.cts
 
     # write out bkg file
-    print('creating bstat bkg file ...')
+    logf.info('creating bstat bkg file ...')
 
     if background_file.endswith('.fits'):
         numpy.savetxt(background_file[:-5] + '.dat', result)
@@ -576,7 +576,7 @@ def main():
         numpy.savetxt(fout, numpy.transpose([data, result]))
 
     # plot fit
-    print('plotting...')
+    logf.info('plotting...')
     m = max(data.sum(), result.sum())
     x = numpy.arange(fitter.ilo, fitter.ihi)
     import matplotlib.pyplot as plt
@@ -603,17 +603,17 @@ def main():
     plt.ylim(0.01, max(result.max(), data.max()))
     plt.savefig(background_file + '.bstat_log.pdf', bbox_inches='tight')
     plt.close()
-    print()
-    print('-> Check that %s is a 1:1 line' %
-          (background_file + '.bstat_cum.pdf'))
+    logf.info('')
+    logf.warning('-> Check that %s is a 1:1 line' %
+                 (background_file + '.bstat_cum.pdf'))
     if source_file:
         foutsrc = create_spectral_files(fitter, result, source_file)
-        print()
-        print('-> In xspec, to load the data with BStat statistic, run:')
-        print()
-        print('   data %s' % foutsrc)
-        print('   statistic pstat # (to use BStat) ')
-        print()
+        logf.info('')
+        logf.info('-> In xspec, to load the data with BStat statistic, run:')
+        logf.info('')
+        logf.info('   data %s' % foutsrc)
+        logf.info('   statistic pstat # (to use BStat) ')
+        logf.info('')
         create_ogip_atable(result, background_file, source_file,
                            outfilename=background_file + '_model.fits',
                            ilo=fitter.ilo, ihi=fitter.ihi)
@@ -626,15 +626,23 @@ __dir__ = [PCAFitter, PCAModel]
 
 
 def fit_bkg(bkg_file, source_file='', logfile=''):
-    import sys
     # logging.basicConfig(filename='bxa.log',level=logging.DEBUG)
     #logFormatter = logging.Formatter("[%(name)s %(levelname)s]: %(message)s")
     logFormatter = logging.Formatter("%(levelname)s: %(message)s")
-    consoleHandler = logging.StreamHandler()
-    consoleHandler.setFormatter(logFormatter)
-    consoleHandler.setLevel(logging.INFO)
-    logging.getLogger().addHandler(consoleHandler)
-    logf.setLevel(logging.INFO)
+    if logfile == '':
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setFormatter(logFormatter)
+        consoleHandler.setLevel(logging.INFO)
+        logf.addHandler(consoleHandler)
+    else:
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setFormatter(logFormatter)
+        consoleHandler.setLevel(logging.WARNING)
+        logf.addHandler(consoleHandler)
+        fileHandler = logging.FileHandler(filename=logfile, mode='a')
+        fileHandler.setFormatter(logFormatter)
+        fileHandler.setLevel(logging.INFO)
+        logf.addHandler(fileHandler)
 
     background_file = bkg_file
     source_file = source_file if source_file != '' else None
@@ -643,7 +651,7 @@ def fit_bkg(bkg_file, source_file='', logfile=''):
     data = fitter.cts
 
     # write out bkg file
-    print('creating bstat bkg file ...')
+    logf.info('creating bstat bkg file ...')
 
     if background_file.endswith('.fits'):
         numpy.savetxt(background_file[:-5] + '.dat', result)
@@ -651,7 +659,7 @@ def fit_bkg(bkg_file, source_file='', logfile=''):
         numpy.savetxt(fout, numpy.transpose([data, result]))
 
     # plot fit
-    print('plotting...')
+    logf.info('plotting...')
     m = max(data.sum(), result.sum())
     x = numpy.arange(fitter.ilo, fitter.ihi)
     import matplotlib.pyplot as plt
@@ -678,17 +686,17 @@ def fit_bkg(bkg_file, source_file='', logfile=''):
     plt.ylim(0.01, max(result.max(), data.max()))
     plt.savefig(background_file + '.bstat_log.pdf', bbox_inches='tight')
     plt.close()
-    print()
-    print('-> Check that %s is a 1:1 line' %
-          (background_file + '.bstat_cum.pdf'))
+    logf.info('')
+    logf.info('-> Check that %s is a 1:1 line' %
+              (background_file + '.bstat_cum.pdf'))
     if source_file:
         foutsrc = create_spectral_files(fitter, result, source_file)
-        print()
-        print('-> In xspec, to load the data with BStat statistic, run:')
-        print()
-        print('   data %s' % foutsrc)
-        print('   statistic pstat # (to use BStat) ')
-        print()
+        logf.info('')
+        logf.info('-> In xspec, to load the data with BStat statistic, run:')
+        logf.info('')
+        logf.info('   data %s' % foutsrc)
+        logf.info('   statistic pstat # (to use BStat) ')
+        logf.info('')
         create_ogip_atable(result, background_file, source_file,
                            outfilename=background_file + '_model.fits',
                            ilo=fitter.ilo, ihi=fitter.ihi)

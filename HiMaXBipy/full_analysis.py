@@ -7,6 +7,7 @@ Created on Tue Aug 30 04:23:18 2022
 """
 import fileinput
 import getpass
+import logging
 import os
 import shutil
 import subprocess
@@ -22,6 +23,7 @@ import scipy.stats
 from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir
+from HiMaXBipy.io.logging import setup_logfile, setup_logger
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
     plot_lc_mincounts_broken_new, format_axis_broken_new, plot_lc_UL_hr,\
@@ -131,6 +133,8 @@ class HiMaXBi:
                 'Working and Data directories with a "-" in their full path ' +
                 'cause problems during data analysis.')
 
+        self._logger = setup_logger('HiMaXBipy', self._working_dir_full)
+
     def _replace_in_sh(self, path, replacements):
         '''
         Parameters
@@ -166,6 +170,7 @@ class HiMaXBi:
             E_min and E_max must be given in keV. The default is
             [[0.2, 8.0]]
         '''
+        self._logger.info('Ebins set.')
         if type(bins) != list and type(bins) != np.ndarray:
             raise Exception('bins must be array-like')
         else:
@@ -197,6 +202,7 @@ class HiMaXBi:
             E_min and E_max must be given in keV. The default is
             [[0.2, 8.0]]
         '''
+        self._logger.info('Ebins HR set.')
         if type(bins) != list and type(bins) != np.ndarray:
             raise Exception('bins must be array-like')
         else:
@@ -229,6 +235,7 @@ class HiMaXBi:
             Distance to observed object in kpc to calculate Flux.
 
         '''
+        self._logger.info(f'Distance set to {distance} kpc.')
         if type(distance) != float and type(distance) != str:
             raise Exception('distance must be a float or string.')
         try:
@@ -252,6 +259,7 @@ class HiMaXBi:
             default value is ''.
 
         '''
+        self._logger.info(f'Metallicity set with Z {Z} and file \'{Z_file}\'.')
         if type(Z) != float and type(Z) != str:
             raise Exception('Z must be a float or string.')
         if type(Z_file) != str:
@@ -281,6 +289,7 @@ class HiMaXBi:
             default value is ''.
 
         '''
+        self._logger.info(f'NH set with NH {NH} and file \'{NH_file}\'.')
         if type(NH) != float and type(NH) != str:
             raise Exception('NH must be a float or string.')
         if type(NH_file) != str:
@@ -307,6 +316,7 @@ class HiMaXBi:
             Reference value to transform eROSITA times to MJD.
 
         '''
+        self._logger.info(f'MJD set {mjdref}.')
         if type(mjdref) != float and type(mjdref) != str:
             raise Exception('mjdref must be a float or string.')
         try:
@@ -323,6 +333,7 @@ class HiMaXBi:
             full path of esass initialisation script.
 
         '''
+        self._logger.info(f'eSASS set {esass_location}.')
         if type(esass_location) != str:
             raise Exception('esass_location must be string.')
         if not os.path.exists(esass_location):
@@ -340,6 +351,7 @@ class HiMaXBi:
             Name of the skytile in which the source lies.
 
         '''
+        self._logger.info('Skytile set to {skytile}.')
         if type(skytile) == str:
             self._skytile = skytile
             self._LC_extracted = False
@@ -372,6 +384,7 @@ class HiMaXBi:
             List of names of eventfiles to use separated by spaces and
             without foldernames.
         '''
+        self._logger.info('Filelist set.')
         if type(filelist) != str:
             raise Exception('filelist must be string.')
         filelist = filelist.strip()
@@ -381,7 +394,7 @@ class HiMaXBi:
             self._ownership = 'm'
         else:
             self._ownership = 'x'
-            warnings.warn('Unknown ownership.')
+            self._logger.warning('WARNING: Unknown ownership.')
         temp1 = filelist
         temp3 = ''
         while temp1.find(' ') != -1:
@@ -406,6 +419,7 @@ class HiMaXBi:
             Set the initial binning of the lightcurve in seconds.
 
         '''
+        self._logger.info('Binning LC.')
         if not (type(lc_binning) == str or type(lc_binning) == float):
             raise Exception('lc_binning must be a string or float.')
         try:
@@ -428,6 +442,7 @@ class HiMaXBi:
             used grouping=1 is recommended, for chi2 statistic
             grouping=20 is recommended.
         '''
+        self._logger.info('Setting Grouping.')
         if not (type(grouping) == str or type(grouping) == int):
             raise Exception('binning must be a string or float.')
         try:
@@ -437,9 +452,9 @@ class HiMaXBi:
         if int(grouping) < 1:
             raise Exception('grouping must be an integer >= 1.')
         if float(grouping) != int(grouping):
-            warnings.warn(
-                'grouping is treated as an integer. Float values will be '
-                + 'rounded down to the next integer.')
+            self._logger.warning(
+                'WARNING: grouping is treated as an integer. Float values will'
+                ' be rounded down to the next integer.')
         self._grouping = int(grouping)
 
     def _extract_lc(self, logname='lc_extract_autosave'):
@@ -455,6 +470,7 @@ class HiMaXBi:
         them.
 
         '''
+        self._logger.info('Extracting LC.')
         if type(logname) != str:
             raise Exception('logname must be a string.')
         if self._skytile == '' or self._filelist == '':
@@ -488,12 +504,14 @@ class HiMaXBi:
 
             # iterate on the stdout line by line
             if not logname == '':
-                with open(f'{self._working_dir}/logfiles/lightcurves/'
-                          f'{logname}_{bin_e[0]}keV_{bin_e[1]}'
-                          'keV.log', 'w') as logfile:
-                    for line in process.stdout.readlines():
-                        # to fix the weird b'something' format
-                        logfile.write(str(line)[2:-3] + '\n')
+                filename = (f'{self._working_dir}/logfiles/lightcurves/'
+                            f'{logname}_{bin_e[0]}keV_{bin_e[1]}'
+                            'keV.log')
+                logstate = setup_logfile(self._logger, filename)
+                for line in process.stdout.readlines():
+                    # to fix the weird b'something' format
+                    self._logger.info(str(line)[2:-3] + '\n')
+                self._logger.handlers = logstate
         self._LC_extracted = True
         # one month gap minimum to sort out possible short gaps due to
         # problems during observation
@@ -501,6 +519,7 @@ class HiMaXBi:
         self._eRASS_vs_epoch()
 
     def _find_obs_periods(self, gapsize):
+        self._logger.info('Finding Observation Periods.')
         bin_e = self._energy_bins[0]
         with fits.open(f'./{self._src_name}_{self._skytile}_eROSITA_PATall_'
                        f'{self._LC_prebinning}s_{bin_e[0]}keV_{bin_e[1]}keV_'
@@ -532,6 +551,7 @@ class HiMaXBi:
         self._obs_periods = np.delete(self._obs_periods, index, axis=0)
 
     def _eRASS_vs_epoch(self):
+        self._logger.info('Running eRASS vs. epoch.')
         self._period_names = []
         for i, period in enumerate(self._obs_periods):
             for date in self._ero_starttimes:
@@ -628,6 +648,7 @@ class HiMaXBi:
             (meaning the current value is not changeds)
 
         '''
+        self._logger.info('Running plot_lc_full.')
         if type(logname) != str:
             raise Exception('logname must be a string.')
         if (type(mincounts) != str and type(mincounts) != float
@@ -719,11 +740,11 @@ class HiMaXBi:
             self._LC_extracted = True
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()
-        logfile = open(self._working_dir +
-                       '/logfiles/lightcurves/' + f'{logname}', 'w')
+        logname_full = f'{self._working_dir}/logfiles/lightcurves/{logname}'
+        logstate = setup_logfile(self._logger, logname_full)
         localtime = time.asctime(time.localtime(time.time()))
 
-        logfile.write(localtime + '\n')
+        self._logger.info(localtime + '\n')
         user = getpass.getuser()
         plt.rc('text', usetex=True)
         plt.rc('font', family=label_style, size=label_size)
@@ -763,7 +784,7 @@ class HiMaXBi:
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                 ax = fig1.add_subplot(111)
 
-                logfile.write(f'Now working on {pfile}.fits\n')
+                self._logger.info(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
 
                 xflag = 0
@@ -778,21 +799,21 @@ class HiMaXBi:
                 pxmin, pxmax, pymin, pymax = 0, 0, 0, 0
                 if mode == 'ul':
                     pxmin, pxmax, pymin, pymax = plot_lc_UL(
-                        hdulist=hdulist, ax=ax, logfile=logfile,
+                        hdulist=hdulist, ax=ax, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1])
                 elif mode == 'mincounts':
                     pxmin, pxmax, pymin, pymax = plot_lc_mincounts(
-                        hdulist=hdulist, ax=ax, logfile=logfile,
+                        hdulist=hdulist, ax=ax, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1])
                 elif mode == 'mincounts_ul':
                     pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(
-                        hdulist=hdulist, ax=ax, logfile=logfile,
+                        hdulist=hdulist, ax=ax, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[0])
                     pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(
-                        hdulist=hdulist, ax=ax, logfile=logfile,
+                        hdulist=hdulist, ax=ax, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1])
                     pxmin, pxmax, pymin, pymax = get_boundaries(
@@ -849,15 +870,15 @@ class HiMaXBi:
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
-                logfile.write(f'{pltfile} created\n')
+                self._logger.info(f'{pltfile} created\n')
                 pltfile = outfile + ".eps"
                 plt.savefig(pltfile)
-                logfile.write(f'{pltfile} created\n')
+                self._logger.info(f'{pltfile} created\n')
                 pltfile = outfile + ".png"
                 plt.savefig(pltfile)
-                logfile.write(f'{pltfile} created\n')
+                self._logger.info(f'{pltfile} created\n')
 
-        logfile.close()
+        self._logger.handlers = logstate
 
     def plot_lc_broken(self, fracexp='0.15', mincounts='10',
                        mode='mincounts_ul', show_eRASS=True,
@@ -945,6 +966,7 @@ class HiMaXBi:
             Sets the borders of the figure (top, bottom, left, right).
             The default is [0.97, 0.1, 0.05, 0.98].
         '''
+        self._logger.info('Running plot_lc_broken.')
         if type(logname) != str:
             raise Exception('logname must be a string.')
         if (type(mincounts) != str and type(mincounts) != float
@@ -1052,11 +1074,11 @@ class HiMaXBi:
             self._LC_extracted = True
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()
-        logfile = open(self._working_dir +
-                       '/logfiles/lightcurves/' + f'{logname}', 'w')
+        logname_full = f'{self._working_dir}/logfiles/lightcurves/{logname}'
+        logstate = setup_logfile(self._logger, logname_full)
         localtime = time.asctime(time.localtime(time.time()))
 
-        logfile.write(localtime + '\n')
+        self._logger.info(localtime + '\n')
         user = getpass.getuser()
         plt.rc('text', usetex=True)
         plt.rc('font', family=label_style, size=label_size)
@@ -1113,7 +1135,7 @@ class HiMaXBi:
                     ax = fig1.add_subplot(111)
                     axs.append(ax)
 
-                logfile.write(f'Now working on {pfile}.fits\n')
+                self._logger.info(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
 
                 if time_axis == 'mjd':
@@ -1126,7 +1148,7 @@ class HiMaXBi:
 
                 if mode == 'ul':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_UL_broken_new(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time)
@@ -1134,7 +1156,7 @@ class HiMaXBi:
                     pymax = max(pymax)
                 elif mode == 'mincounts':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_new(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time)
@@ -1142,12 +1164,12 @@ class HiMaXBi:
                     pymax = max(pymax)
                 elif mode == 'mincounts_ul':
                     pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_broken_new(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[0], obs_periods=self._obs_periods,
                         short_time=short_time)
                     pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_broken_new(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time, time_rel=time_rel)
@@ -1242,15 +1264,15 @@ class HiMaXBi:
 
                 pltfile = outfile + ".pdf"
                 plt.savefig(pltfile)
-                logfile.write(f'{pltfile} created\n')
+                self._logger.info(f'{pltfile} created\n')
                 pltfile = outfile + ".eps"
                 plt.savefig(pltfile)
-                logfile.write(f'{pltfile} created\n')
+                self._logger.info(f'{pltfile} created\n')
                 pltfile = outfile + ".png"
                 plt.savefig(pltfile)
-                logfile.write(f'{pltfile} created\n')
+                self._logger.info(f'{pltfile} created\n')
 
-        logfile.close()
+        self._logger.handlers = logstate
 
     def plot_lc_parts(self, fracexp='0.15', mincounts='10',
                       mode='mincounts_ul', show_eRASS=True,
@@ -1329,6 +1351,7 @@ class HiMaXBi:
             (meaning the current value is not changeds)
 
         '''
+        self._logger.info('Running plot_lc_parts.')
         if type(logname) != str:
             raise Exception('logname must be a string.')
         if (type(mincounts) != str and type(mincounts) != float
@@ -1416,7 +1439,8 @@ class HiMaXBi:
         if np.array(eRASSi) != np.sort(eRASSi):
             raise Exception('eRASSi must be sorted ascending.')
         if eRASSi != []:
-            warnings.warn('Use of eRASSi is currently not supported.')
+            self._logger.warning('WARNING: Use of eRASSi is currently not '
+                                 'supported.')
         os.chdir(self._working_dir_full + '/working/')
 
         if lc_binning != -1:
@@ -1433,15 +1457,15 @@ class HiMaXBi:
         xflag = 0
         pxmin, pxmax, pymin, pymax = 0, 0, 0, 0
 
-        logfile = open(self._working_dir +
-                       '/logfiles/lightcurves/' + logname, 'w')
+        logname_full = f'self._working_dir/logfiles/lightcurves/{logname}'
+        logstate = setup_logfile(self._logger, logname_full)
 
         for i, period in enumerate(self._obs_periods):
             naming = self._period_names[i]
 
             localtime = time.asctime(time.localtime(time.time()))
 
-            logfile.write(localtime + '\n')
+            self._logger.info(localtime + '\n')
             user = getpass.getuser()
             plt.rc('text', usetex=True)
             plt.rc('font', family=label_style, size=label_size)
@@ -1489,7 +1513,7 @@ class HiMaXBi:
                     fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                     ax = fig1.add_subplot(111)
 
-                    logfile.write(f'Now working on {pfile}.fits\n')
+                    self._logger.info(f'Now working on {pfile}.fits\n')
                     hdulist = fits.open(f'{pfile}.fits')
 
                     if time_axis == 'mjd':
@@ -1502,21 +1526,21 @@ class HiMaXBi:
 
                     if mode == 'ul':
                         pxmin, pxmax, pymin, pymax = plot_lc_UL(
-                            hdulist=hdulist, ax=ax, logfile=logfile,
+                            hdulist=hdulist, ax=ax, log=self._logger,
                             mjdref=self._mjdref, xflag=xflag,
                             mincounts=mincounts, color=colors[0])
                     elif mode == 'mincounts':
                         pxmin, pxmax, pymin, pymax = plot_lc_mincounts(
-                            hdulist=hdulist, ax=ax, logfile=logfile,
+                            hdulist=hdulist, ax=ax, log=self._logger,
                             mjdref=self._mjdref, xflag=xflag,
                             mincounts=mincounts, color=colors[0])
                     elif mode == 'mincounts_ul':
                         pxmin1, pxmax1, pymin1, pymax1 = plot_lc_UL(
-                            hdulist=hdulist, ax=ax, logfile=logfile,
+                            hdulist=hdulist, ax=ax, log=self._logger,
                             mjdref=self._mjdref, xflag=xflag,
                             mincounts=mincounts, color=colors[0])
                         pxmin2, pxmax2, pymin2, pymax2 = plot_lc_mincounts(
-                            hdulist=hdulist, ax=ax, logfile=logfile,
+                            hdulist=hdulist, ax=ax, log=self._logger,
                             mjdref=self._mjdref, xflag=xflag,
                             mincounts=mincounts, color=colors[1])
                         pxmin, pxmax, pymin, pymax = get_boundaries(
@@ -1574,15 +1598,15 @@ class HiMaXBi:
 
                     pltfile = outfile + ".pdf"
                     plt.savefig(pltfile)
-                    logfile.write(f'{pltfile} created\n')
+                    self._logger.info(f'{pltfile} created\n')
                     pltfile = outfile + ".eps"
                     plt.savefig(pltfile)
-                    logfile.write(f'{pltfile} created\n')
+                    self._logger.info(f'{pltfile} created\n')
                     pltfile = outfile + ".png"
                     plt.savefig(pltfile)
-                    logfile.write(f'{pltfile} created\n')
+                    self._logger.info(f'{pltfile} created\n')
 
-        logfile.close()
+        self._logger.handlers = logstate
 
     def plot_lc_HR(self, fracexp='0.15', mincounts='10',
                    mode='mincounts_ul', show_eRASS=True,
@@ -1671,6 +1695,7 @@ class HiMaXBi:
             Sets the borders of the figure (top, bottom, left, right).
             The default is [0.97, 0.1, 0.05, 0.98].
         '''
+        self._logger.info('Running plot_lc_HR.')
         if type(logname) != str:
             raise Exception('logname must be a string.')
         if (type(mincounts) != str and type(mincounts) != float
@@ -1778,11 +1803,11 @@ class HiMaXBi:
             self._LC_extracted = True
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()
-        logfile = open(self._working_dir +
-                       '/logfiles/lightcurves/' + f'{logname}', 'w')
+        logname_full = f'{self._working_dir}/logfiles/lightcurves/{logname}'
+        logstate = setup_logfile(self._logger, logname_full)
         localtime = time.asctime(time.localtime(time.time()))
 
-        logfile.write(localtime + '\n')
+        self._logger.info(localtime + '\n')
         user = getpass.getuser()
         plt.rc('text', usetex=True)
         plt.rc('font', family=label_style, size=label_size)
@@ -1843,7 +1868,7 @@ class HiMaXBi:
                     axs.append(ax)
                     axs_full.append(ax)
 
-                logfile.write(f'Now working on {pfile}.fits\n')
+                self._logger.info(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
                 pfiles.append(pfile)
 
@@ -1857,7 +1882,7 @@ class HiMaXBi:
 
                 if mode == 'ul':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_UL_broken_new(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time)
@@ -1865,7 +1890,7 @@ class HiMaXBi:
                     pymax = max(pymax)
                 elif mode == 'mincounts':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_new(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time)
@@ -1873,12 +1898,12 @@ class HiMaXBi:
                     pymax = max(pymax)
                 elif mode == 'mincounts_ul':
                     pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_broken_new(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[0], obs_periods=self._obs_periods,
                         short_time=short_time)
                     pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_broken_new(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time, time_rel=time_rel)
@@ -1928,7 +1953,7 @@ class HiMaXBi:
                 axs.append(ax)
                 axs_full.append(ax)
 
-            logfile.write(f'Now working on HR\n')
+            self._logger.info(f'Now working on HR\n')
             hdulist1 = fits.open(f'{pfiles[0]}.fits')
             hdulist2 = fits.open(f'{pfiles[1]}.fits')
 
@@ -1942,7 +1967,7 @@ class HiMaXBi:
 
             if mode == 'ul':
                 pxmin, pxmax, pymin, pymax, time_rel = plot_lc_UL_hr(
-                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs, logfile=logfile,
+                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs, log=self._logger,
                     mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                     color=colors[1], obs_periods=self._obs_periods,
                     short_time=short_time)
@@ -1951,7 +1976,7 @@ class HiMaXBi:
             elif mode == 'mincounts':
                 pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_hr(
                     hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
-                    logfile=logfile, mjdref=self._mjdref, xflag=xflag,
+                    log=self._logger, mjdref=self._mjdref, xflag=xflag,
                     mincounts=mincounts, color=colors[1],
                     obs_periods=self._obs_periods, short_time=short_time)
                 pymin = min(pymin)
@@ -1959,12 +1984,12 @@ class HiMaXBi:
             elif mode == 'mincounts_ul':
                 pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_hr(
                     hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
-                    logfile=logfile, mjdref=self._mjdref, xflag=xflag,
+                    log=self._logger, mjdref=self._mjdref, xflag=xflag,
                     mincounts=mincounts, color=colors[0],
                     obs_periods=self._obs_periods, short_time=short_time)
                 # pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_hr(
                 #     hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
-                #     logfile=logfile, mjdref=self._mjdref, xflag=xflag,
+                #     log=self._logger, mjdref=self._mjdref, xflag=xflag,
                 #     mincounts=mincounts, color=colors[1],
                 #     obs_periods=self._obs_periods, short_time=short_time,
                 #     time_rel=time_rel)
@@ -2059,15 +2084,15 @@ class HiMaXBi:
 
             pltfile = outfile + ".pdf"
             plt.savefig(pltfile)
-            logfile.write(f'{pltfile} created\n')
+            self._logger.info(f'{pltfile} created\n')
             pltfile = outfile + ".eps"
             plt.savefig(pltfile)
-            logfile.write(f'{pltfile} created\n')
+            self._logger.info(f'{pltfile} created\n')
             pltfile = outfile + ".png"
             plt.savefig(pltfile)
-            logfile.write(f'{pltfile} created\n')
+            self._logger.info(f'{pltfile} created\n')
 
-        logfile.close()
+        self._logger.handlers = logstate
 
     def plot_lc_bayes_broken(self, fracexp='0.15', mincounts='10',
                              mode='mincounts_scan', show_eRASS=True,
@@ -2172,6 +2197,7 @@ class HiMaXBi:
             Sets the borders of the figure (top, bottom, left, right).
             The default is [0.97, 0.1, 0.05, 0.98].
         '''
+        self._logger.info('Running plot_lc_HR.')
         if type(logfile) != str:
             raise Exception('logdir must be a string.')
         if (type(mincounts) != str and type(mincounts) != float
@@ -2313,6 +2339,7 @@ class HiMaXBi:
             if logfile == '':
                 logfile = f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}.log'
             logfile = self._working_dir_full + '/logfiles/lightcurves/' + logfile
+            logstate = setup_logfile(self._logger, logfile)
             if os.path.exists(logfile):
                 os.remove(logfile)
             for TM in TM_list:
@@ -2368,7 +2395,7 @@ class HiMaXBi:
 
                 if mode == 'scan':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, color=colors[1],
                         obs_periods=self._obs_periods, short_time=short_time,
                         stan_model=stan_model, quantiles=quantiles,
@@ -2376,7 +2403,7 @@ class HiMaXBi:
                         alpha_bg=alpha_bg)
                 elif mode == 'mincounts':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_bayes(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time, stan_model=stan_model,
@@ -2384,14 +2411,14 @@ class HiMaXBi:
                         fexp_cut=float(fracexp), alpha_bg=alpha_bg)
                 elif mode == 'mincounts_scan':
                     pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, color=colors[0],
                         obs_periods=self._obs_periods, short_time=short_time,
                         stan_model=stan_model, quantiles=quantiles,
                         time_rel=time_rel, fexp_cut=float(fracexp),
                         alpha_bg=alpha_bg)
                     pxmin2, pxmax2, pymin2, pymax2, time_rel = plot_lc_mincounts_broken_bayes(
-                        hdulist=hdulist, axs=axs, logfile=logfile,
+                        hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time, stan_model=stan_model,
@@ -2494,7 +2521,10 @@ class HiMaXBi:
                 pltfile = outfile + ".png"
                 plt.savefig(pltfile)
 
+            self._logger.handlers = logstate
+
     def _extract_spectrum(self, logname, mode, filelist, epoch):
+        self._logger.debug(f'Extracting spectrum for {filelist}.')
         replacements = [['@source_name', self._src_name],
                         ['@main_name', self._working_dir],
                         ['@result_dir', '.'],
@@ -2513,10 +2543,11 @@ class HiMaXBi:
         process.wait()  # Wait for process to complete.
 
         # iterate on the stdout line by line
-        with open(logname, 'w') as logfile:
-            for line in process.stdout.readlines():
-                # to fix weird b'something' format
-                logfile.write(str(line)[2:-3] + '\n')
+        logstate = setup_logfile(self._logger, logname)
+        for line in process.stdout.readlines():
+            # to fix weird b'something' format
+            self._logger.debug(str(line)[2:-3] + '\n')
+        self._logger.handlers = logstate
 
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='.log', Z=-1, distance=-1,
@@ -2634,6 +2665,7 @@ class HiMaXBi:
             Sets the number of latest eRASS in use. The default is 5.
 
         '''
+        self._logger.info('Running plot_spectra.')
         # Checking if input is sensible
         if type(mode) != str:
             raise Exception('mode must be a string.')
@@ -2722,8 +2754,8 @@ class HiMaXBi:
             if fit_statistic == 'chi':
                 if self._grouping < 20:
                     self._grouping = 20
-                    warnings.warn(
-                        'Grouping set to 20 due to chi fit-statistic usage.')
+                    self._logger.warning('WARNING: Grouping set to 20 due to '
+                                         'chi fit-statistic usage.')
         if type(colors) != list and type(colors) != np.ndarray:
             raise Exception('colors must be array-like')
         else:
@@ -2801,8 +2833,9 @@ class HiMaXBi:
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()
         if not self._NH_set:
-            warnings.warn('Source specific NH not set yet. Consider'
-                          'rerunning the script with a value given.')
+            self._logger.warning('WARNING: Source specific NH not set yet. '
+                                 'Consider rerunning the script with a value '
+                                 'given.')
 
         table_name = self._working_dir + '/results/spectra/' + \
             log_prefix  # not sure if this works the inteded way
@@ -2816,7 +2849,6 @@ class HiMaXBi:
                                             plot_command, model_file, title,
                                             save_settings, log_suffix, colors,
                                             markers, fit_statistic)
-            print('First done.')
             self._plot_spectra_merged(log_prefix, skip_eRASS, table_name,
                                       skip_varabs, self._NH/(1e22), rebin,
                                       rebin_params, rescale_F, rescale_chi,
@@ -2863,6 +2895,8 @@ class HiMaXBi:
                                    varabs_starting_pars, plot_command,
                                    model_file, title, save_settings,
                                    log_suffix, colors, markers, fit_statistic):
+        self._logger.info('Running _plot_spectra_simultaneous (log done by '
+                          'xspec).')
         if self._create_epochs:
             period = 'epoch'
         else:
@@ -2985,6 +3019,7 @@ class HiMaXBi:
                              varabs_starting_pars, plot_command, model_file,
                              title, save_settings, log_suffix, colors,
                              markers, fit_statistic):
+        self._logger.info('Running _plot_spectra_merged (log done by xspec).')
         if self._create_epochs:
             period = 'epoch'
         else:
@@ -3014,6 +3049,8 @@ class HiMaXBi:
                                  varabs_starting_pars, plot_command,
                                  model_file, title, save_settings, log_suffix,
                                  colors, markers, fit_statistic):
+        self._logger.info('Running _plot_spectra_individual (log done by '
+                          'xspec).')
         if self._create_epochs:
             period = 'epoch'
         else:

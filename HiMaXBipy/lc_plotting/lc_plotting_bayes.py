@@ -12,7 +12,7 @@ except ValueError:
     install_cmdstan()
 
 
-def plot_lc_eROday_broken_bayes_old(hdulist, axs, logfile, mjdref, xflag,
+def plot_lc_eROday_broken_bayes_old(hdulist, axs, log, mjdref, xflag,
                                     color, obs_periods, short_time, stan_model,
                                     quantiles, time_rel=0, fexp_cut=0.15,
                                     alpha_bg=0.5):
@@ -20,13 +20,9 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, logfile, mjdref, xflag,
     Lightcurve rebinned to eROdays with countrates optained with Bayesian fit
     assuming Poissionian distribution for counts and log
     '''
-    logger = logging.getLogger('cmdstanpy')
-    logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler(filename=logfile, mode='w')
-    logger.addHandler(handler)
-    handler2 = logging.StreamHandler()
-    handler2.setLevel(logging.WARNING)
-    logger.addHandler(handler2)
+    logger_stan = logging.getLogger('cmdstanpy')
+    logger_stan.setLevel(logging.DEBUG)
+    logger_stan.handlers = log.handlers
     pxmin = []
     pxmax = []
     ymin = 0
@@ -182,10 +178,12 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, logfile, mjdref, xflag,
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
 
+    logger_stan.handlers = []
+
     return pxmin, pxmax, pymin, pymax, time_rel
 
 
-def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
+def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                 color, obs_periods, short_time, stan_model,
                                 quantiles, time_rel=0, fexp_cut=0.15,
                                 alpha_bg=0.5):
@@ -194,14 +192,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     Bayesian fit assuming Poissionian distribution for counts and log;
     fit done for each bin simultaneously
     '''
-    logger = logging.getLogger('cmdstanpy')
-    logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler(filename=logfile, mode='a')
-    handler.setLevel(logging.INFO)
-    logger.addHandler(handler)
-    handler2 = logging.StreamHandler()
-    handler2.setLevel(logging.WARNING)
-    logger.addHandler(handler2)
+    logger_stan = logging.getLogger('cmdstanpy')
+    logger_stan.setLevel(logging.DEBUG)
+    logger_stan.handlers = log.handlers
     pxmin = []
     pxmax = []
     ymin = 0
@@ -323,10 +316,9 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         fit.stan_variables()['amp_frac'], quantiles[0])
     amp_frac_up = np.percentile(
         fit.stan_variables()['amp_frac'], quantiles[2])
-    with open(logfile, mode='a') as file:
-        file.writelines(f'eROday AmpVar={amp_var}+{amp_var_up-amp_var}'
+    logger_stan.warning(f'eROday AmpVar={amp_var}+{amp_var_up-amp_var}'
                         f'-{amp_var-amp_var_low}\n')
-        file.writelines(f'AmpFrac={amp_frac}'
+    logger_stan.warning(f'AmpFrac={amp_frac}'
                         f'+{amp_frac_up-amp_frac}'
                         f'-{amp_frac-amp_frac_low}\n')
     if istart != nrow:
@@ -401,10 +393,12 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
 
+    logger_stan.handlers = []
+
     return pxmin, pxmax, pymin, pymax, time_rel
 
 
-def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
+def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                    mincounts, color, obs_periods,
                                    short_time, stan_model, quantiles,
                                    time_rel=0, fexp_cut=0.15,
@@ -414,13 +408,9 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     Bayesian fit assuming Poissionian distribution for counts and log;
     fit done for each bin simultaneously
     '''
-    logger = logging.getLogger('cmdstanpy')
-    logger.setLevel(logging.DEBUG)
-    handler = logging.FileHandler(filename=logfile, mode='a')
-    logger.addHandler(handler)
-    handler2 = logging.StreamHandler()
-    handler2.setLevel(logging.WARNING)
-    logger.addHandler(handler2)
+    logger_stan = logging.getLogger('cmdstanpy')
+    logger_stan.setLevel(logging.DEBUG)
+    logger_stan.handlers = log.handlers
     pxmin = []
     pxmax = []
     ymin = 0
@@ -565,11 +555,10 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
         fit.stan_variables()['amp_frac'], quantiles[0])
     amp_frac_up = np.percentile(
         fit.stan_variables()['amp_frac'], quantiles[2])
-    with open(logfile, mode='a') as file:
-        file.writelines(f'mincounts {mincounts} AmpVar={amp_var}'
+    logger_stan.warning(f'mincounts {mincounts} AmpVar={amp_var}'
                         f'+{amp_var_up-amp_var}'
                         f'-{amp_var-amp_var_low}\n')
-        file.writelines(f'AmpFrac={amp_frac}'
+    logger_stan.warning(f'AmpFrac={amp_frac}'
                         f'+{amp_frac_up-amp_frac}'
                         f'-{amp_frac-amp_frac_low}\n')
 
@@ -644,6 +633,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, logfile, mjdref, xflag,
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
+
+    logger_stan.handlers = []
 
     return pxmin, pxmax, pymin, pymax, time_rel
 

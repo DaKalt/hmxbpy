@@ -5,7 +5,7 @@ from matplotlib import ticker, rcParams
 import matplotlib.pyplot as plt
 
 
-def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
+def plot_lc_UL(hdulist, ax, log, mjdref, xflag, mincounts, color):
     time = hdulist[1].data.field('TIME')
     delt = hdulist[1].data.field('TIMEDEL')
     cnts = hdulist[1].data.field('COUNTS')
@@ -19,7 +19,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     backrat_med = np.median(backrat)
 
     nrow = len(time)
-    logfile.write(f'Total number of time bins in table: {nrow}\n')
+    log.info(f'Total number of time bins in table: {nrow}\n')
     start_time = time[0]
     end_time = time[-1]+delt[-1]
     time0 = time - start_time
@@ -28,9 +28,9 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     mjds = mjdref + start_time/24./3600.
     mjde = mjdref + end_time/24./3600.
 
-    logfile.write(
+    log.info(
         f'Start of 1st bin : {start_time} {start_time0} MJD: {mjds}\n')
-    logfile.write(f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
+    log.info(f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
     # calculate new rate by error propagation assuming there are enough
     # counts in each bin to assume Gaussian statistics usinf
@@ -121,7 +121,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
                 uplimit.append(1)
             else:
                 uplimit.append(0)
-            logfile.write(
+            log.debug(
                 r'bin number, Start,end time of bin, duration of bin, ' +
                 r'counts, rate, error,fracexp, fractime, fracarea, loop ' +
                 f'start, loop end {nbin} {start_bin} {end_bin} ' +
@@ -166,23 +166,23 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     else:
         uplimit.append(0)
 
-    logfile.write(
+    log.debug(
         f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
         f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
         f'{nexp} {istart} {iend}\n')
     # start of first bin at 0:
     xtime = xtime-xtime[0]+xtime_d[0]
-    logfile.write(f'{xtime} {xtime_d}\n')
+    log.debug(f'{xtime} {xtime_d}\n')
     mjd = np.array(xtime)/3600./24. + mjds
     mjd_d = np.array(xtime_d)/3600./24.
 
-    logfile.write(f'Total counts: {tcounts} +/- {tcount_e}\n')
-    logfile.write(f'Net counts {netcounts} +/- {netcounts_e}\n')
-    logfile.write(f'binsize is {delt[0]}\n')
-    logfile.write(f'Average rate: {trate} +/- {trate_ee}\n')
+    log.info(f'Total counts: {tcounts} +/- {tcount_e}\n')
+    log.info(f'Net counts {netcounts} +/- {netcounts_e}\n')
+    log.info(f'binsize is {delt[0]}\n')
+    log.info(f'Average rate: {trate} +/- {trate_ee}\n')
 
-    logfile.write(f'Total exposure: {ttim}\n')
-    logfile.write(f'Total fract. exposure: {texp}\n')
+    log.info(f'Total exposure: {ttim}\n')
+    log.info(f'Total fract. exposure: {texp}\n')
 
     yrate = np.array(yrate)
     yrate_e = np.array(yrate_e)
@@ -204,7 +204,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     pymax = ymax + ym
 
     # Plot limits
-    logfile.write(f"Plot limits: {pxmin} {pxmax} {pymin} {pymax}\n")
+    log.debug(f"Plot limits: {pxmin} {pxmax} {pymin} {pymax}\n")
 
     if xflag == 1:
         ax.errorbar(xtime, yrate, xerr=xtime_d, yerr=yrate_e, uplims=uplimit,
@@ -216,7 +216,7 @@ def plot_lc_UL(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     return pxmin, pxmax, pymin, pymax
 
 
-def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
+def plot_lc_mincounts(hdulist, ax, log, mjdref, xflag, mincounts, color):
     time = hdulist[1].data.field('TIME')
     delt = hdulist[1].data.field('TIMEDEL')
     cnts = hdulist[1].data.field('COUNTS')
@@ -229,7 +229,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     backrat_med = np.median(backrat)
 
     nrow = len(time)
-    logfile.write(f'Total number of time bins in table: {nrow}\n')
+    log.info(f'Total number of time bins in table: {nrow}\n')
     start_time = time[0]
     end_time = time[-1]+delt[-1]
     time0 = time - start_time
@@ -238,9 +238,9 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     mjds = mjdref + start_time/24./3600.
     mjde = mjdref + end_time/24./3600.
 
-    logfile.write(
+    log.info(
         f'Start of 1st bin : {start_time} {start_time0} MJD: {mjds}\n')
-    logfile.write(f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
+    log.info(f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
     # calculate new rate by error propagation assuming there are enough
     # counts in each bin to assume Gaussian statistics usinf infirmation
@@ -279,7 +279,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     # sn = 2.0
     # xtime_tmp = 0.0
     # xtime_d_start_tmp = 0.0
-    logfile.write(f'Minimum number of counts is {mincounts}\n')
+    log.info(f'Minimum number of counts is {mincounts}\n')
     for i in range(nrow):
         # tmp = time0[i] - start_bin
         tcounts = tcounts + cnts[i]
@@ -339,7 +339,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
             yrate_e.append(nrate_e**0.5/(nexp*delt[0]))
             # nrat_med = np.median(nrat)
 
-            logfile.write(
+            log.debug(
                 r'bin number, Start,end time of bin, duration of bin, ' +
                 r'counts, rate, error,fracexp, fractime, fracarea, loop ' +
                 f'start, loop end {nbin} {start_bin} {end_bin} ' +
@@ -379,13 +379,13 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         ncount_e = counts**0.5
         nback_e = bkg**0.5
         nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
-    logfile.write(
+    log.debug(
         f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
         f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
         f'{nexp} {istart} {iend}\n')
     if counts > mincounts:  # this was tcounts_c which should be 0 all
         # the time at this point #kald
-        logfile.write(f'Condition satisfied with {counts} {bkg}\n')
+        log.debug(f'Condition satisfied with {counts} {bkg}\n')
 
         yrate.append(nrate)
         yrate_e.append(nrate_e**0.5/(nexp*delt[0]))
@@ -393,7 +393,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
         xtime.append(0.5*(time0[istart]+time0[iend]))
         xtime_d.append(0.5*(time0[iend]-time0[istart]))
     else:
-        logfile.write('averaging\n')
+        log.debug('averaging\n')
         for j in range(istart_tmp, iend + 1):
             nexp = nexp + fexp[j]
             counts = counts + cnts[j]
@@ -430,13 +430,13 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     xtime = xtime-xtime[0]+xtime_d[0]
     mjd_d = np.array(xtime_d)/3600./24.
 
-    logfile.write(f'Total counts: {tcounts} +/- {tcount_e}\n')
-    logfile.write(f'Net counts {netcounts} +/- {netcounts_e}\n')
-    logfile.write(f'binsize is {delt[0]}\n')
-    logfile.write(f'Average rate: {trate} +/- {trate_ee}\n')
+    log.info(f'Total counts: {tcounts} +/- {tcount_e}\n')
+    log.info(f'Net counts {netcounts} +/- {netcounts_e}\n')
+    log.info(f'binsize is {delt[0]}\n')
+    log.info(f'Average rate: {trate} +/- {trate_ee}\n')
 
-    logfile.write(f'Total exposure: {ttim}\n')
-    logfile.write(f'Total fract. exposure: {texp}\n')
+    log.info(f'Total exposure: {ttim}\n')
+    log.info(f'Total fract. exposure: {texp}\n')
 
     if xflag == 1:
         xmin = xtime[0] - xtime_d[0]
@@ -458,7 +458,7 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     pymax = ymax + ym
 
     # Plot limits
-    logfile.write(f"Plot limits: {pxmin} {pxmax} {pymin} {pymax}\n")
+    log.debug(f"Plot limits: {pxmin} {pxmax} {pymin} {pymax}\n")
 
     if xflag == 1:
         ax.errorbar(xtime, yrate, xerr=xtime_d, yerr=yrate_e,
@@ -482,11 +482,11 @@ def plot_lc_mincounts(hdulist, ax, logfile, mjdref, xflag, mincounts, color):
     ampl_sig = ampl_max / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
     ampl_sig2 = ampl_max2 / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
 
-    logfile.write(f'AMPL_MAX: {ampl_max}\n')
-    logfile.write(f'Variability V = {variability}\n')
-    logfile.write(f'AMPL_SIG: {ampl_sig}\n')
-    logfile.write(f'AMPL_MAX conservative: {ampl_max2}\n')
-    logfile.write(f'AMPL_SIG2: {ampl_sig2}\n')
+    log.info(f'AMPL_MAX: {ampl_max}\n')
+    log.info(f'Variability V = {variability}\n')
+    log.info(f'AMPL_SIG: {ampl_sig}\n')
+    log.info(f'AMPL_MAX conservative: {ampl_max2}\n')
+    log.info(f'AMPL_SIG2: {ampl_sig2}\n')
 
     return pxmin, pxmax, pymin, pymax
 
@@ -544,7 +544,7 @@ def get_boundaries_broken(in_bounds):
     return out_bounds[0], out_bounds[1], out_bounds[2], out_bounds[3]
 
 
-def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
+def plot_lc_mincounts_broken_new(hdulist, axs, log, mjdref, xflag,
                                  mincounts, color, obs_periods, short_time,
                                  time_rel=0):
     pxmax = []
@@ -581,7 +581,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         backrat_med = np.median(backrat)
 
         nrow = len(time)
-        logfile.write(f'Total number of time bins in table: {nrow}\n')
+        log.info(f'Total number of time bins in table: {nrow}\n')
         start_time = time[0]
         end_time = time[-1]+delt[-1]
         time0 = time - start_time
@@ -590,9 +590,9 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         mjds = mjdref + start_time/24./3600.
         mjde = mjdref + end_time/24./3600.
 
-        logfile.write(
+        log.info(
             f'Start of 1st bin : {start_time} {start_time0} MJD: {mjds}\n')
-        logfile.write(
+        log.info(
             f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
         # calculate new rate by error propagation assuming there are
@@ -632,7 +632,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         # sn = 2.0
         # xtime_tmp = 0.0
         # xtime_d_start_tmp = 0.0
-        logfile.write(f'Minimum number of counts is {mincounts}\n')
+        log.info(f'Minimum number of counts is {mincounts}\n')
         for i in range(nrow):
             # tmp = time0[i] - start_bin
             tcounts = tcounts + cnts[i]
@@ -693,7 +693,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
                 yrate_e.append(nrate_e**0.5/(nexp*delt[0]))
                 # nrat_med = np.median(nrat)
 
-                logfile.write(
+                log.debug(
                     r'bin number, Start,end time of bin, duration of bin, ' +
                     r'counts , rate, error, fracexp, fractime, fracarea, ' +
                     f'loop start, loop end {nbin} {start_bin} {end_bin} ' +
@@ -733,13 +733,13 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
             ncount_e = counts**0.5
             nback_e = bkg**0.5
             nrate_e = (ncount_e**2) + ((nback_e**2)*(backrat_med**2))
-        logfile.write(
+        log.info(
             f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
             f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
             f'{nexp} {istart} {iend}\n')
         if counts > mincounts:  # this was tcounts_c which should be 0
             # all the time at this point #kald
-            logfile.write(f'Condition satisfied with {counts} {bkg}\n')
+            log.debug(f'Condition satisfied with {counts} {bkg}\n')
 
             yrate.append(nrate)
             yrate_e.append(nrate_e**0.5/(nexp*delt[0]))
@@ -747,7 +747,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
             xtime.append(0.5*(time0[istart]+time0[iend]))
             xtime_d.append(0.5*(time0[iend]-time0[istart]))
         else:
-            logfile.write('averaging\n')
+            log.debug('averaging\n')
             for j in range(istart_tmp, iend + 1):
                 nexp = nexp + fexp[j]
                 counts = counts + cnts[j]
@@ -784,13 +784,13 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         xtime = xtime-xtime[0]+xtime_d[0]
         mjd_d = np.array(xtime_d)/3600./24.
 
-        logfile.write(f'Total counts: {tcounts} +/- {tcount_e}\n')
-        logfile.write(f'Net counts {netcounts} +/- {netcounts_e}\n')
-        logfile.write(f'binsize is {delt[0]}\n')
-        logfile.write(f'Average rate: {trate} +/- {trate_ee}\n')
+        log.info(f'Total counts: {tcounts} +/- {tcount_e}\n')
+        log.info(f'Net counts {netcounts} +/- {netcounts_e}\n')
+        log.info(f'binsize is {delt[0]}\n')
+        log.info(f'Average rate: {trate} +/- {trate_ee}\n')
 
-        logfile.write(f'Total exposure: {ttim}\n')
-        logfile.write(f'Total fract. exposure: {texp}\n')
+        log.info(f'Total exposure: {ttim}\n')
+        log.info(f'Total fract. exposure: {texp}\n')
 
         if xflag == 1:
             xmin = xtime[0] - xtime_d[0]
@@ -820,7 +820,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         pymax.append(ymax + ym)
 
         # Plot limits
-        logfile.write(
+        log.debug(
             f"Plot limits: {pxmin[i_ax]} {pxmax[i_ax]} {pymin[i_ax]} " +
             f"{pymax[i_ax]}\n")
 
@@ -849,16 +849,16 @@ def plot_lc_mincounts_broken_new(hdulist, axs, logfile, mjdref, xflag,
         ampl_sig2 = ampl_max2 / \
             np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
 
-        logfile.write(f'AMPL_MAX: {ampl_max}\n')
-        logfile.write(f'Variability V = {variability}\n')
-        logfile.write(f'AMPL_SIG: {ampl_sig}\n')
-        logfile.write(f'AMPL_MAX conservative: {ampl_max2}\n')
-        logfile.write(f'AMPL_SIG2: {ampl_sig2}\n')
+        log.info(f'AMPL_MAX: {ampl_max}\n')
+        log.info(f'Variability V = {variability}\n')
+        log.info(f'AMPL_SIG: {ampl_sig}\n')
+        log.info(f'AMPL_MAX conservative: {ampl_max2}\n')
+        log.info(f'AMPL_SIG2: {ampl_sig2}\n')
 
     return pxmin, pxmax, pymin, pymax, time_rel
 
 
-def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
+def plot_lc_UL_broken_new(hdulist, axs, log, mjdref, xflag, mincounts,
                           color, obs_periods, short_time, time_rel=0):
     pxmax = []
     pxmin = []
@@ -895,7 +895,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
         backrat_med = np.median(backrat)
 
         nrow = len(time)
-        logfile.write(f'Total number of time bins in table: {nrow}\n')
+        log.info(f'Total number of time bins in table: {nrow}\n')
         start_time = time[0]
         end_time = time[-1]+delt[-1]
         time0 = time - start_time
@@ -904,9 +904,9 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
         mjds = mjdref + start_time/24./3600.
         mjde = mjdref + end_time/24./3600.
 
-        logfile.write(
+        log.info(
             f'Start of 1st bin : {start_time} {start_time0} MJD: {mjds}\n')
-        logfile.write(
+        log.info(
             f'End of last bin  : {end_time} {end_time0} MJD: {mjde}\n')
 
         # calculate new rate by error propagation assuming there are
@@ -998,7 +998,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
                     uplimit.append(1)
                 else:
                     uplimit.append(0)
-                logfile.write(
+                log.debug(
                     r'bin number, Start,end time of bin, duration of bin, ' +
                     r'counts , rate, error,fracexp, fractime, fracarea, ' +
                     f'loop start, loop end {nbin} {start_bin} {end_bin} ' +
@@ -1044,23 +1044,23 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
         else:
             uplimit.append(0)
 
-        logfile.write(
+        log.debug(
             f'Start/end time of last bin {nbin} {start_bin} {end_bin} ' +
             f'{end_bin-start_bin} {counts} {nrate/nexp} {nrate_e**0.5/nexp} ' +
             f'{nexp} {istart} {iend}\n')
         # start of first bin at 0:
         xtime = xtime-xtime[0]+xtime_d[0]
-        logfile.write(f'{xtime} {xtime_d}\n')
+        log.debug(f'{xtime} {xtime_d}\n')
         mjd = np.array(xtime)/3600./24. + mjds
         mjd_d = np.array(xtime_d)/3600./24.
 
-        logfile.write(f'Total counts: {tcounts} +/- {tcount_e}\n')
-        logfile.write(f'Net counts {netcounts} +/- {netcounts_e}\n')
-        logfile.write(f'binsize is {delt[0]}\n')
-        logfile.write(f'Average rate: {trate} +/- {trate_ee}\n')
+        log.info(f'Total counts: {tcounts} +/- {tcount_e}\n')
+        log.info(f'Net counts {netcounts} +/- {netcounts_e}\n')
+        log.info(f'binsize is {delt[0]}\n')
+        log.info(f'Average rate: {trate} +/- {trate_ee}\n')
 
-        logfile.write(f'Total exposure: {ttim}\n')
-        logfile.write(f'Total fract. exposure: {texp}\n')
+        log.info(f'Total exposure: {ttim}\n')
+        log.info(f'Total fract. exposure: {texp}\n')
 
         yrate = np.array(yrate)
         yrate_e = np.array(yrate_e)
@@ -1090,7 +1090,7 @@ def plot_lc_UL_broken_new(hdulist, axs, logfile, mjdref, xflag, mincounts,
         pymax.append(ymax + ym)
 
         # Plot limits
-        logfile.write(
+        log.debug(
             f"Plot limits: {pxmin[i_ax]} {pxmax[i_ax]} {pymin[i_ax]} " +
             f"{pymax[i_ax]}\n")
 
@@ -1210,13 +1210,13 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
     big_ax.set_yticklabels([longest_y, longest_y], alpha=0)
 
 
-def plot_lc_mincounts_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag,
+def plot_lc_mincounts_hr(hdulist_1, hdulist_2, axs, log, mjdref, xflag,
                          mincounts, color, obs_periods, short_time,
                          time_rel=0):
     return [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]
 
 
-def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
+def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, log, mjdref, xflag, mincounts,
                   color, obs_periods, short_time, time_rel=0):
     pxmax = []
     pxmin = []
@@ -1638,7 +1638,7 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, logfile, mjdref, xflag, mincounts,
         pymax.append(ymax + ym)
 
         # Plot limits
-        logfile.write(
+        log.debug(
             f"Plot limits: {pxmin[i_ax]} {pxmax[i_ax]} {pymin[i_ax]} " +
             f"{pymax[i_ax]}\n")
 
