@@ -7,7 +7,6 @@ Created on Tue Aug 30 04:23:18 2022
 """
 import fileinput
 import getpass
-import logging
 import os
 import shutil
 import subprocess
@@ -16,6 +15,7 @@ import time
 import warnings
 
 from astropy.io import fits
+from astropy.stats import bayesian_blocks
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
