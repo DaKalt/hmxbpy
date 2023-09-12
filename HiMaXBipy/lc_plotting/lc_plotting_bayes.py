@@ -22,7 +22,7 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, log, mjdref, xflag,
     '''
     logger_stan = logging.getLogger('cmdstanpy')
     logger_stan.setLevel(logging.DEBUG)
-    logger_stan.handlers = log.handlers
+    logger_stan.handlers = log.handlers.copy()
     pxmin = []
     pxmax = []
     ymin = 0
@@ -194,7 +194,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     '''
     logger_stan = logging.getLogger('cmdstanpy')
     logger_stan.setLevel(logging.DEBUG)
-    logger_stan.handlers = log.handlers
+    logger_stan.handlers = log.handlers.copy()
     pxmin = []
     pxmax = []
     ymin = 0
@@ -410,7 +410,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     '''
     logger_stan = logging.getLogger('cmdstanpy')
     logger_stan.setLevel(logging.DEBUG)
-    logger_stan.handlers = log.handlers
+    logger_stan.handlers = log.handlers.copy()
     pxmin = []
     pxmax = []
     ymin = 0
