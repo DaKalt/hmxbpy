@@ -24,6 +24,8 @@ transformed parameters {
     max_rate = max(sc_rate);
     amp_dev = (max_rate - min_rate) / (max_rate + min_rate);
     amp_frac = max_rate / min_rate;
+    array[M] real<lower=0> sc_bg_rate;
+    sc_bg_rate = add(sc_rate, bg_rate);
 }
 model {
     for (m in 1:M) {

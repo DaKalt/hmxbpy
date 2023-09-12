@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+
+@author: David Kaltenbrunner
+"""
 import numpy as np
 from HiMaXBipy.io.package_data import round_to_1
 import matplotlib.ticker as plticker

@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+
+@author: David Kaltenbrunner
+"""
 from setuptools import setup
 #from distutils.core import setup
 
@@ -35,7 +41,7 @@ setup(
         'HiMaXBipy/tex_style'
 
     ],
-    version='v1.0.141',
+    version='v1.0.142',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',

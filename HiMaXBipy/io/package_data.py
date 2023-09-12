@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+
+@author: David Kaltenbrunner
+"""
 import pkg_resources
 from math import log10, floor
 import os

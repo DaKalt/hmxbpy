@@ -15,6 +15,8 @@ transformed parameters {
     sc_rate = 10 ^ log_cr_sc;
     real<lower=0> bg_rate;
     bg_rate = 10 ^ log_cr_bg;
+    real<lower=0> sc_bg_rate;
+    sc_bg_rate = sc_rate + bg_rate;
 }
 model {
     for (n in 1:N) {

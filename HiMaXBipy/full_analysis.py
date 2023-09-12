@@ -15,7 +15,6 @@ import time
 import warnings
 
 from astropy.io import fits
-from astropy.stats import bayesian_blocks
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
@@ -1457,7 +1456,7 @@ class HiMaXBi:
         xflag = 0
         pxmin, pxmax, pymin, pymax = 0, 0, 0, 0
 
-        logname_full = f'self._working_dir/logfiles/lightcurves/{logname}'
+        logname_full = f'{self._working_dir}/logfiles/lightcurves/{logname}'
         logstate = setup_logfile(self._logger, logname_full)
 
         for i, period in enumerate(self._obs_periods):
@@ -2197,7 +2196,7 @@ class HiMaXBi:
             Sets the borders of the figure (top, bottom, left, right).
             The default is [0.97, 0.1, 0.05, 0.98].
         '''
-        self._logger.info('Running plot_lc_HR.')
+        self._logger.info(f'Running plot_lc_HR in mode {mode}.')
         if type(logfile) != str:
             raise Exception('logdir must be a string.')
         if (type(mincounts) != str and type(mincounts) != float

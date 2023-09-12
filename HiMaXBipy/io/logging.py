@@ -1,7 +1,10 @@
-import logging
-# TODO do proper logging here and define function to add handler with logname as well as to remove it
-import logging
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 
+@author: David Kaltenbrunner
+"""
+import logging
 
 def setup_logfile(log, logname):
     handler = logging.FileHandler(filename=logname, mode='w')

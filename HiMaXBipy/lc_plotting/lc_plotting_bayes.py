@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 11 13:23:18 2022
+
+@author: David Kaltenbrunner
+"""
+from astropy.stats import bayesian_blocks
 from cmdstanpy import cmdstan_path, install_cmdstan, CmdStanModel
 import numpy as np
 
@@ -186,7 +194,8 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, log, mjdref, xflag,
 def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                 color, obs_periods, short_time, stan_model,
                                 quantiles, time_rel=0, fexp_cut=0.15,
-                                alpha_bg=0.5):
+                                alpha_bg=0.5, bblocks=False, bbp0=0.01,
+                                bbmode='both'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
     Bayesian fit assuming Poissionian distribution for counts and log;
@@ -307,6 +316,12 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                             quantiles[1], axis=0)
     bg_rate_upper = np.percentile(fit.stan_variables()['bg_rate'],
                                   quantiles[2], axis=0)
+    sc_bg_rate_lower = np.percentile(fit.stan_variables()['sc_bg_rate'],
+                                     quantiles[0], axis=0)
+    sc_bg_rate = np.percentile(fit.stan_variables()['sc_bg_rate'],
+                               quantiles[1], axis=0)
+    sc_bg_rate_upper = np.percentile(fit.stan_variables()['sc_bg_rate'],
+                                     quantiles[2], axis=0)
 
     amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
     amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
@@ -334,6 +349,14 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     bg_rate = np.array(bg_rate)
     bg_rate_lower = np.array(bg_rate_lower)
     bg_rate_upper = np.array(bg_rate_upper)
+    sc_bg_rate = np.array(sc_bg_rate)
+    sc_bg_rate_lower = np.array(sc_bg_rate_lower)
+    sc_bg_rate_upper = np.array(sc_bg_rate_upper)
+    sc_rate_err = [sc_rate + (-sc_rate_lower),
+                   sc_rate_upper + (-sc_rate)]
+    bg_rate_err = [bg_rate + (-bg_rate_lower),
+                   bg_rate_upper + (-bg_rate)]
+    t = xtime.copy()
 
     for i_ax, ax in enumerate(axs):
         if xflag == 1:
@@ -367,31 +390,35 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
         pxmax.append(xmax + xm)
 
         if xflag == 1:
-            ax.errorbar(xtime_short, sc_rate, xerr=xtime_d,
-                        yerr=[sc_rate + (-sc_rate_lower),
-                              sc_rate_upper + (-sc_rate)],
-                        linestyle='None', color=color, fmt='o',
-                        zorder=2)
-            ax.errorbar(xtime_short, bg_rate, xerr=xtime_d,
-                        yerr=[bg_rate + (-bg_rate_lower),
-                              bg_rate_upper + (-bg_rate)],
-                        linestyle='None', color=color, fmt='x',
-                        zorder=1, alpha=alpha_bg)
+            t = xtime_short
+            terr = xtime_d
         else:
-            ax.errorbar(mjd_short, sc_rate, xerr=mjd_d,
-                        yerr=[sc_rate + (-sc_rate_lower),
-                              sc_rate_upper + (-sc_rate)],
-                        linestyle='None', color=color, fmt='o',
-                        zorder=2)
-            ax.errorbar(mjd_short, bg_rate, xerr=mjd_d,
-                        yerr=[bg_rate + (-bg_rate_lower),
-                              bg_rate_upper + (-bg_rate)],
-                        linestyle='None', color=color, fmt='x',
-                        zorder=1, alpha=alpha_bg)
+            t = mjd_short
+            terr = mjd_d
+        ax.errorbar(t, sc_rate, xerr=terr,
+                    yerr=sc_rate_err,
+                    linestyle='None', color=color, fmt='o',
+                    zorder=2)
+        ax.errorbar(t, bg_rate, xerr=terr,
+                    yerr=bg_rate_err,
+                    linestyle='None', color=color, fmt='x',
+                    zorder=1, alpha=alpha_bg)
 
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
+
+    if bblocks:
+        if bbmode == 'sc' or bbmode == 'both':
+            t_blocked = bayesian_blocks(t, sc_rate, sigma=sc_rate_err,
+                                        fitness='measure', p0=bbp0)
+            # TODO fit to blocked and plot sc_rate here
+        elif bbmode == 'sum':
+            _ = 0
+            # TODO block sc_bg_rate here, fit and plot sc_bg_rate
+        if bbmode == 'both':
+            _ = 0
+            # TODO block bg_rate here, fit and plot bg_rate
 
     logger_stan.handlers = []
 
@@ -402,7 +429,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                    mincounts, color, obs_periods,
                                    short_time, stan_model, quantiles,
                                    time_rel=0, fexp_cut=0.15,
-                                   alpha_bg=0.5):
+                                   alpha_bg=0.5, bblocks=False, bbp0=0.01,
+                                   bbmode='both'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
     Bayesian fit assuming Poissionian distribution for counts and log;
@@ -546,6 +574,12 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                             quantiles[1], axis=0)
     bg_rate_upper = np.percentile(fit.stan_variables()['bg_rate'],
                                   quantiles[2], axis=0)
+    sc_bg_rate_lower = np.percentile(fit.stan_variables()['sc_bg_rate'],
+                                     quantiles[0], axis=0)
+    sc_bg_rate = np.percentile(fit.stan_variables()['sc_bg_rate'],
+                               quantiles[1], axis=0)
+    sc_bg_rate_upper = np.percentile(fit.stan_variables()['sc_bg_rate'],
+                                     quantiles[2], axis=0)
 
     amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
     amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
@@ -575,6 +609,9 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     bg_rate = np.array(bg_rate)
     bg_rate_lower = np.array(bg_rate_lower)
     bg_rate_upper = np.array(bg_rate_upper)
+    sc_bg_rate = np.array(sc_bg_rate)
+    sc_bg_rate_lower = np.array(sc_bg_rate_lower)
+    sc_bg_rate_upper = np.array(sc_bg_rate_upper)
 
     for i_ax, ax in enumerate(axs):
         if xflag == 1:
