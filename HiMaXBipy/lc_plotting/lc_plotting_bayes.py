@@ -412,7 +412,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
 
     if bblocks:
         if bbmode == 'sc' or bbmode == 'both':
-            err = np.max(sc_rate_err, axis=1)
+            err = np.max(sc_rate_err, axis=0)
             err = np.min([sc_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_rate, sigma=err,
                                         fitness='measure', p0=bbp0)
@@ -465,7 +465,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                 ax.stairs(sc_rate_bb, t_blocked, color=color, zorder=2,
                           linestyle='--')
         elif bbmode == 'sum':
-            err = np.max(sc_bg_rate_err, axis=1)
+            err = np.max(sc_bg_rate_err, axis=0)
             err = np.min([sc_bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_bg_rate, sigma=err,
                                         fitness='measure', p0=bbp0)
@@ -518,7 +518,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                 ax.stairs(sc_bg_rate_bb, t_blocked, color=color, zorder=2,
                           linestyle='--')
         if bbmode == 'both':
-            err = np.max(bg_rate_err, axis=1)
+            err = np.max(bg_rate_err, axis=0)
             err = np.min([bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, bg_rate, sigma=err,
                                         fitness='measure', p0=bbp0)
@@ -823,7 +823,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
 
     if bblocks:
         if bbmode == 'sc' or bbmode == 'both':
-            err = np.max(sc_rate_err, axis=1)
+            err = np.max(sc_rate_err, axis=0)
             err = np.min([sc_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_rate, sigma=err,
                                         fitness='measure', p0=bbp0)
@@ -876,7 +876,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                 ax.stairs(sc_rate_bb, t_blocked, color=color, zorder=2,
                           linestyle='--')
         elif bbmode == 'sum':
-            err = np.max(sc_bg_rate_err, axis=1)
+            err = np.max(sc_bg_rate_err, axis=0)
             err = np.min([sc_bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_bg_rate, sigma=err,
                                         fitness='measure', p0=bbp0)
@@ -929,7 +929,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                 ax.stairs(sc_bg_rate_bb, t_blocked, color=color, zorder=2,
                           linestyle='--')
         if bbmode == 'both':
-            err = np.max(bg_rate_err, axis=1)
+            err = np.max(bg_rate_err, axis=0)
             err = np.min([bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, bg_rate, sigma=err,
                                         fitness='measure', p0=bbp0)
