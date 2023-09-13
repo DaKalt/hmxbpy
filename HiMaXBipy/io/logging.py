@@ -6,12 +6,19 @@
 """
 import logging
 
+
 def setup_logfile(log, logname):
     handler = logging.FileHandler(filename=logname, mode='w')
     handler.setLevel(logging.INFO)
     log_state = log.handlers.copy()
     log.addHandler(handler)
     return log_state
+
+
+def set_loglevel(log, level):
+    log.setLevel(level)
+    for handler in log.handlers:
+        handler.setLevel(level)
 
 
 def setup_logger(name, working_dir):

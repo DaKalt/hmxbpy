@@ -22,7 +22,7 @@ import scipy.stats
 from xspec import AllData, AllModels, Fit, Model, Plot, Xset
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir
-from HiMaXBipy.io.logging import setup_logfile, setup_logger
+from HiMaXBipy.io.logging import setup_logfile, setup_logger, set_loglevel
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
     plot_lc_mincounts_broken_new, format_axis_broken_new, plot_lc_UL_hr,\
@@ -65,10 +65,6 @@ class HiMaXBi:
         fix_path : bool
             If set true, replaces '*/galaxy' by 'data40s/galaxy' in
             paths
-
-        Returns
-        -------
-        None.
 
         '''
         if type(src_name) == str:
@@ -134,6 +130,15 @@ class HiMaXBi:
 
         self._logger = setup_logger('HiMaXBipy', self._working_dir_full)
 
+    def change_LogLevel(level):
+        '''Change the level of all logs (files and stdout) to level.
+        Parameters
+        ----------
+        level : Level as described by logging package
+
+        '''
+        set_loglevel(self._logger, level)
+
     def _replace_in_sh(self, path, replacements):
         '''
         Parameters
@@ -147,7 +152,7 @@ class HiMaXBi:
 
         Returns
         -------
-        None.
+        Name of the new sh file as a string.
 
         '''
         new_sh = path[:-3] + '_modified.sh'
@@ -350,7 +355,7 @@ class HiMaXBi:
             Name of the skytile in which the source lies.
 
         '''
-        self._logger.info('Skytile set to {skytile}.')
+        self._logger.info(f'Skytile set to {skytile}.')
         if type(skytile) == str:
             self._skytile = skytile
             self._LC_extracted = False
