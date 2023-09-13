@@ -398,7 +398,7 @@ class HiMaXBi:
             self._ownership = 'm'
         else:
             self._ownership = 'x'
-            self._logger.warning('WARNING: Unknown ownership.')
+            self._logger.warning('Unknown ownership.')
         temp1 = filelist
         temp3 = ''
         while temp1.find(' ') != -1:
@@ -457,7 +457,7 @@ class HiMaXBi:
             raise Exception('grouping must be an integer >= 1.')
         if float(grouping) != int(grouping):
             self._logger.warning(
-                'WARNING: grouping is treated as an integer. Float values will'
+                'grouping is treated as an integer. Float values will'
                 ' be rounded down to the next integer.')
         self._grouping = int(grouping)
 
@@ -1443,7 +1443,7 @@ class HiMaXBi:
         if np.array(eRASSi) != np.sort(eRASSi):
             raise Exception('eRASSi must be sorted ascending.')
         if eRASSi != []:
-            self._logger.warning('WARNING: Use of eRASSi is currently not '
+            self._logger.warning('Use of eRASSi is currently not '
                                  'supported.')
         os.chdir(self._working_dir_full + '/working/')
 
@@ -1681,7 +1681,7 @@ class HiMaXBi:
             each section. The default is 3.
         E_bins : array-like (n,2), optional
             Sets energy bins that should be analysed. For each bin E_min
-            and E_max must be given in keV. The default is [[0.2, 2.0], 
+            and E_max must be given in keV. The default is [[0.2, 2.0],
             [2.0, 8.0]]
         lc_binning : str or float, optional
             Sets initial lc binsize in seconds. The default is -1
@@ -2109,7 +2109,8 @@ class HiMaXBi:
                              separate_TM=False, vlines=[], ticknumber_y=5,
                              ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
                              tilt=45, diag_color="k", short_time=True,
-                             fig_borders=[0.97, 0.1, 0.05, 0.98]):
+                             fig_borders=[0.97, 0.1, 0.05, 0.98],
+                             bbp0=0.01, bbmode='both'):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
 
@@ -2123,8 +2124,10 @@ class HiMaXBi:
             as an upper limit as well as minimum number of counts per
             bin for mode mincounts/mincounts_ul. The default is '10'.
         mode : str, optional
-            Type of LC to be produced. Either 'scan', 'mincounts' or
-            'mincounts_scan'. The default is 'mincounts_scan'.
+            Type of LC to be produced. Either 'scan', 'mincounts',
+            'mincounts_scan', 'mincounts_bb' (mincounts and bayesian
+            blocks overlay) or 'scan_bb' (scan with bayesian blocks
+            overlay). The default is 'mincounts_scan'.
         show_eRASS : bool, optional
             True to show start/end dates of eRASSi as vertical lines.
             The default is True.
@@ -2200,6 +2203,14 @@ class HiMaXBi:
         fig_borders : array-like (n,1), optional
             Sets the borders of the figure (top, bottom, left, right).
             The default is [0.97, 0.1, 0.05, 0.98].
+        bbp0 : float, optional
+            Value used for p0 when running astropy's bayesian blocks.
+            The default is '0.01'.
+        bbmode : str, optional
+            Mode which bayesian block contours to draw. Either 'sc'
+            (source counts only), 'both' (one overlay for source and
+            background counts each) or 'sum' (overlay for sc+bg counts).
+            The default is 'both'.
         '''
         self._logger.info(f'Running plot_lc_HR in mode {mode}.')
         if type(logfile) != str:
@@ -2215,10 +2226,14 @@ class HiMaXBi:
         if type(mode) != str:
             raise Exception('mode must be a string.')
         else:
-            if (mode != 'scan' and mode != 'mincounts'
-                    and mode != 'mincounts_scan'):
-                raise Exception('mode must be \'scan\', \'mincounts\' or '
-                                '\'mincounts_scan\'')
+            if (mode != 'scan'
+                and mode != 'mincounts'
+                and mode != 'mincounts_scan'
+                and mode != 'mincounts_bb'
+                    and mode != 'scan_bb'):
+                raise Exception('mode must be \'scan\', \'mincounts\', '
+                                '\'mincounts_scan\', \'mincounts_bb\' or'
+                                '\'scan_bb\'.')
         if type(fracexp) != str and type(fracexp) != float:
             raise Exception('mincounts must be a string or float.')
         else:
@@ -2304,13 +2319,22 @@ class HiMaXBi:
                 if type(entry) != float:
                     raise Exception(
                         'Entries in fig_borders need to be of type float.')
+        if type(bbp0) != float:
+            raise Exception('tilt must be a float.')
+        if type(bbmode) != str:
+            raise Exception('bbmode must be a str.')
+        else:
+            if (bbmode != 'sc'
+                and bbmode != 'both'
+                and bbmode != 'sum':
+                raise Exception('bbmode must be \'sc\', \'both\' or \'sum\'')
 
         os.chdir(self._working_dir_full + '/working/')
 
         if stan_model == '':
-            stan_model = self._working_dir_full + '/working/lc_model_simu.stan'
+            stan_model=self._working_dir_full + '/working/lc_model_simu.stan'
         if np.shape(quantiles) == (0,):
-            quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
+            quantiles=scipy.stats.norm().cdf([-1, 0, 1]) * 100
 
         if lc_binning != -1:
             self.set_LC_binning(lc_binning=lc_binning)
@@ -2319,86 +2343,86 @@ class HiMaXBi:
         if not self._LC_extracted and not self._debugging:
             self._extract_lc()
         if self._debugging:
-            self._LC_extracted = True
+            self._LC_extracted=True
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()
-        localtime = time.asctime(time.localtime(time.time()))
+        localtime=time.asctime(time.localtime(time.time()))
 
-        user = getpass.getuser()
+        user=getpass.getuser()
         plt.rc('text', usetex=True)
         plt.rc('font', family=label_style, size=label_size)
 
         if separate_TM:
-            TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
+            TM_list=[0, 1, 2, 3, 4, 5, 6, 7]
         else:
-            TM_list = [0]
-        time_rel = 0
-        pxmin = []
-        pxmax = []
-        pymin = 0
-        pymax = 0
-        xflag = 0
+            TM_list=[0]
+        time_rel=0
+        pxmin=[]
+        pxmax=[]
+        pymin=0
+        pymax=0
+        xflag=0
 
         for bin_e in self._energy_bins:
             if logfile == '':
-                logfile = f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}.log'
-            logfile = self._working_dir_full + '/logfiles/lightcurves/' + logfile
-            logstate = setup_logfile(self._logger, logfile)
+                logfile=f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}.log'
+            logfile=self._working_dir_full + '/logfiles/lightcurves/' + logfile
+            logstate=setup_logfile(self._logger, logfile)
             if os.path.exists(logfile):
                 os.remove(logfile)
             for TM in TM_list:
                 if fileid == '':
-                    pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
+                    pfile=(f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
                              f'fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                             'brokenLC_bayes')
-                    outfile = (f'{self._working_dir}/results/lightcurves/'
+                             f'brokenLC_bayes_{mode}')
+                    outfile=(f'{self._working_dir}/results/lightcurves/'
                                f'{self._src_name}_{self._skytile}_LC_TM{TM}20_'
                                f'fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                               'brokenLC_bayes')
+                               f'brokenLC_bayes_{mode}')
                 else:
-                    pfile = (f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                             'brokenLC_bayes')
-                    outfile = (f'{self._working_dir}/results/lightcurves/'
+                    pfile=(f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
+                             f'brokenLC_bayes_{mode}')
+                    outfile=(f'{self._working_dir}/results/lightcurves/'
                                f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                               'brokenLC_bayes')
-                replacements = [['@esass_location', self._esass],
+                               f'brokenLC_bayes_{mode}')
+                replacements=[['@esass_location', self._esass],
                                 ['@infile',
                                  f'./{self._src_name}_{self._skytile}_eROSITA_'
                                  f'PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_'
                                  f'{TM}20_LightCurve_00001.fits'],
                                 ['@pfile', f'{pfile}.fits'],
                                 ['@selection', f'FRACEXP>{fracexp}']]
-                sh_file = self._working_dir_full + '/working/fselect_lc.sh'
-                sh_file = self._replace_in_sh(sh_file, replacements)
-                process = subprocess.Popen(
+                sh_file=self._working_dir_full + '/working/fselect_lc.sh'
+                sh_file=self._replace_in_sh(sh_file, replacements)
+                process=subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
 
-                fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
+                fig1=plt.figure(figsize=(figsize[0], figsize[1]))
 
-                ncols, nrows = len(self._obs_periods), 1
+                ncols, nrows=len(self._obs_periods), 1
 
-                big_ax = fig1.add_subplot(111)
+                big_ax=fig1.add_subplot(111)
                 big_ax.set_frame_on(False)
                 big_ax.patch.set_facecolor("none")
 
-                axs = []
+                axs=[]
                 for _ in self._obs_periods:
-                    ax = fig1.add_subplot(111)
+                    ax=fig1.add_subplot(111)
                     axs.append(ax)
 
-                hdulist = fits.open(f'{pfile}.fits')
+                hdulist=fits.open(f'{pfile}.fits')
 
                 if time_axis == 'mjd':
-                    xflag = 2
+                    xflag=2
                 elif time_axis == 's':
-                    xflag = 1
+                    xflag=1
 
                 if colors == []:
-                    colors = ['lightblue', 'black']
+                    colors=['lightblue', 'black']
 
                 if mode == 'scan':
-                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
+                    pxmin, pxmax, pymin, pymax, time_rel=plot_lc_eROday_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, color=colors[1],
                         obs_periods=self._obs_periods, short_time=short_time,
@@ -2406,7 +2430,7 @@ class HiMaXBi:
                         time_rel=time_rel, fexp_cut=float(fracexp),
                         alpha_bg=alpha_bg)
                 elif mode == 'mincounts':
-                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_bayes(
+                    pxmin, pxmax, pymin, pymax, time_rel=plot_lc_mincounts_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
@@ -2414,24 +2438,42 @@ class HiMaXBi:
                         quantiles=quantiles, time_rel=time_rel,
                         fexp_cut=float(fracexp), alpha_bg=alpha_bg)
                 elif mode == 'mincounts_scan':
-                    pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
+                    pxmin1, pxmax1, pymin1, pymax1, time_rel=plot_lc_eROday_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, color=colors[0],
                         obs_periods=self._obs_periods, short_time=short_time,
                         stan_model=stan_model, quantiles=quantiles,
                         time_rel=time_rel, fexp_cut=float(fracexp),
                         alpha_bg=alpha_bg)
-                    pxmin2, pxmax2, pymin2, pymax2, time_rel = plot_lc_mincounts_broken_bayes(
+                    pxmin2, pxmax2, pymin2, pymax2, time_rel=plot_lc_mincounts_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time, stan_model=stan_model,
                         quantiles=quantiles, time_rel=time_rel,
                         fexp_cut=float(fracexp), alpha_bg=alpha_bg)
-                    pymin = min([pymin1, pymin2])
-                    pymax = max([pymax1, pymax2])
-                    pxmin = np.min([pxmin1, pxmin2], axis=0)
-                    pxmax = np.max([pxmax1, pxmax2], axis=0)
+                    pymin=min([pymin1, pymin2])
+                    pymax=max([pymax1, pymax2])
+                    pxmin=np.min([pxmin1, pxmin2], axis=0)
+                    pxmax=np.max([pxmax1, pxmax2], axis=0)
+                elif mode == 'mincounts_bb':
+                    pxmin, pxmax, pymin, pymax, time_rel=plot_lc_mincounts_broken_bayes(
+                        hdulist=hdulist, axs=axs, log=self._logger,
+                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+                        color=colors[1], obs_periods=self._obs_periods,
+                        short_time=short_time, stan_model=stan_model,
+                        quantiles=quantiles, time_rel=time_rel,
+                        fexp_cut=float(fracexp), alpha_bg=alpha_bg,
+                        bblocks=True, bbmode=bbmode, bbp0=bbp0)
+                elif mode == 'scan_bb':
+                    pxmin, pxmax, pymin, pymax, time_rel=plot_lc_eROday_broken_bayes(
+                        hdulist=hdulist, axs=axs, log=self._logger,
+                        mjdref=self._mjdref, xflag=xflag, color=colors[1],
+                        obs_periods=self._obs_periods, short_time=short_time,
+                        stan_model=stan_model, quantiles=quantiles,
+                        time_rel=time_rel, fexp_cut=float(fracexp),
+                        alpha_bg=alpha_bg, bblocks=True, bbmode=bbmode,
+                        bbp0=bbp0)
 
                 hdulist.close()
 
@@ -2495,17 +2537,17 @@ class HiMaXBi:
 
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
-                wspace = 8.0 / figsize[0] * 0.05
+                wspace=8.0 / figsize[0] * 0.05
                 fig1.subplots_adjust(
                     wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
                     left=fig_borders[2], right=fig_borders[3])
 
-                width_ratios = []
-                height_ratios = [1]
+                width_ratios=[]
+                height_ratios=[1]
                 for i_ax in range(len(axs)):
                     width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
 
-                gs = gridspec.GridSpec(ncols=ncols,
+                gs=gridspec.GridSpec(ncols=ncols,
                                        nrows=nrows,
                                        height_ratios=height_ratios,
                                        width_ratios=width_ratios)
@@ -2513,23 +2555,23 @@ class HiMaXBi:
                 for i_ax, ax in enumerate(axs):
                     ax.set_position(gs[i_ax].get_position(fig1))
 
-                self._width_ratios = width_ratios
-                self._fig = fig1
-                self._axes = axs
-                self._big_ax = big_ax
+                self._width_ratios=width_ratios
+                self._fig=fig1
+                self._axes=axs
+                self._big_ax=big_ax
 
-                pltfile = outfile + ".pdf"
+                pltfile=outfile + ".pdf"
                 plt.savefig(pltfile)
-                pltfile = outfile + ".eps"
+                pltfile=outfile + ".eps"
                 plt.savefig(pltfile)
-                pltfile = outfile + ".png"
+                pltfile=outfile + ".png"
                 plt.savefig(pltfile)
 
-            self._logger.handlers = logstate
+            self._logger.handlers=logstate
 
     def _extract_spectrum(self, logname, mode, filelist, epoch):
         self._logger.debug(f'Extracting spectrum for {filelist}.')
-        replacements = [['@source_name', self._src_name],
+        replacements=[['@source_name', self._src_name],
                         ['@main_name', self._working_dir],
                         ['@result_dir', '.'],
                         ['@region_code', self._skytile],
@@ -2540,18 +2582,18 @@ class HiMaXBi:
                         ['@group', self._grouping],
                         ['@mode', mode],
                         ['@epoch', epoch]]
-        sh_file = self._working_dir_full + '/working/extract_spectrum.sh'
-        sh_file = self._replace_in_sh(sh_file, replacements)
-        process = subprocess.Popen(
+        sh_file=self._working_dir_full + '/working/extract_spectrum.sh'
+        sh_file=self._replace_in_sh(sh_file, replacements)
+        process=subprocess.Popen(
             [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
 
         # iterate on the stdout line by line
-        logstate = setup_logfile(self._logger, logname)
+        logstate=setup_logfile(self._logger, logname)
         for line in process.stdout.readlines():
             # to fix weird b'something' format
             self._logger.debug(str(line)[2:-3] + '\n')
-        self._logger.handlers = logstate
+        self._logger.handlers=logstate
 
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='.log', Z=-1, distance=-1,
@@ -2699,7 +2741,7 @@ class HiMaXBi:
             raise Exception('NH must be a string or float.')
         else:
             try:
-                NH = float(NH)
+                NH=float(NH)
                 if NH <= 0 and not NH == -1.:
                     raise Exception('NH must be > 0.')
             except ValueError:
@@ -2757,8 +2799,8 @@ class HiMaXBi:
                     'not supported yet.)')
             if fit_statistic == 'chi':
                 if self._grouping < 20:
-                    self._grouping = 20
-                    self._logger.warning('WARNING: Grouping set to 20 due to '
+                    self._grouping=20
+                    self._logger.warning('Grouping set to 20 due to '
                                          'chi fit-statistic usage.')
         if type(colors) != list and type(colors) != np.ndarray:
             raise Exception('colors must be array-like')
@@ -2821,7 +2863,7 @@ class HiMaXBi:
                 if entry <= 0:
                     raise Exception(
                         'The entries of skip_eRASS need to be >0.')
-        skip_eRASS = np.array(skip_eRASS)
+        skip_eRASS=np.array(skip_eRASS)
 
         # For RMF and ARF files to work as intended
         os.chdir(self._working_dir_full + '/working/')
@@ -2833,17 +2875,17 @@ class HiMaXBi:
         if not self._LC_extracted and not self._debugging:  # for debugging
             self._extract_lc()
         if self._debugging:
-            self._LC_extracted = True
+            self._LC_extracted=True
             self._find_obs_periods(60 * 60 * 24 * 30)
             self._eRASS_vs_epoch()
         if not self._NH_set:
-            self._logger.warning('WARNING: Source specific NH not set yet. '
+            self._logger.warning('Source specific NH not set yet. '
                                  'Consider rerunning the script with a value '
                                  'given.')
 
-        table_name = self._working_dir + '/results/spectra/' + \
+        table_name=self._working_dir + '/results/spectra/' + \
             log_prefix  # not sure if this works the inteded way
-        log_prefix = self._working_dir + '/logfiles/spectra/' + log_prefix
+        log_prefix=self._working_dir + '/logfiles/spectra/' + log_prefix
         if mode == 'all':
             self._plot_spectra_simultaneous(table_name, log_prefix,
                                             skip_varabs, self._NH/(1e22),
@@ -2902,28 +2944,28 @@ class HiMaXBi:
         self._logger.info('Running _plot_spectra_simultaneous (log done by '
                           'xspec).')
         if self._create_epochs:
-            period = 'epoch'
+            period='epoch'
         else:
-            period = f'e{self._ownership}'
-        file_list_xspec = ''
+            period=f'e{self._ownership}'
+        file_list_xspec=''
         for epoch_counter in range(len(self._period_names)):
             if (period != 'epoch'
                     and (skip_eRASS == int(self._period_names[epoch_counter]
                                            [-1])).any()):
                 continue
-            start = ((self._obs_periods[epoch_counter][0] - self._mjdref) * 24.
+            start=((self._obs_periods[epoch_counter][0] - self._mjdref) * 24.
                      * 3600.)
-            stop = ((self._obs_periods[epoch_counter][1] - self._mjdref) * 24.
+            stop=((self._obs_periods[epoch_counter][1] - self._mjdref) * 24.
                     * 3600.)
-            replacements = [['@esass_location', self._esass],
+            replacements=[['@esass_location', self._esass],
                             ['@infiles', self._filelist],
                             ['@outfile',
                                 f'./{self._period_names[epoch_counter]}_'
                                 'simultaneous.fits'],
                             ['@start', f'{start}'], ['@stop', f'{stop}']]
-            sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
-            sh_file = self._replace_in_sh(sh_file, replacements)
-            process = subprocess.Popen(
+            sh_file=self._working_dir_full + '/working/trim_eventfile.sh'
+            sh_file=self._replace_in_sh(sh_file, replacements)
+            process=subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
 
@@ -2954,39 +2996,39 @@ class HiMaXBi:
                                colors, markers, fit_statistic)
 
         if self._create_epochs:
-            file_list_xspec = ''
+            file_list_xspec=''
             for epoch_counter in range(len(self._ero_starttimes)):
                 if (skip_eRASS
                         == int(self._period_names[epoch_counter][-1])).any():
                     continue
                 if epoch_counter == 0:
-                    epoch = '0_1'
-                    start = (58500 - self._mjdref) * 24. * 3600.
-                    stop = ((self._ero_starttimes[epoch_counter + 1]
+                    epoch='0_1'
+                    start=(58500 - self._mjdref) * 24. * 3600.
+                    stop=((self._ero_starttimes[epoch_counter + 1]
                              - self._mjdref) * 3600. * 24.)
                 elif epoch_counter == len(self._ero_starttimes) - 1:
-                    epoch = f'{epoch_counter + 1}'
-                    start = ((self._ero_starttimes[epoch_counter]
+                    epoch=f'{epoch_counter + 1}'
+                    start=((self._ero_starttimes[epoch_counter]
                               - self._mjdref) * 3600. * 24.)
-                    stop = ((self._ero_starttimes[epoch_counter] + 200
+                    stop=((self._ero_starttimes[epoch_counter] + 200
                              - self._mjdref) * 3600. * 24.)
                 else:
-                    epoch = f'{epoch_counter + 1}'
-                    start = ((self._ero_starttimes[epoch_counter]
+                    epoch=f'{epoch_counter + 1}'
+                    start=((self._ero_starttimes[epoch_counter]
                               - self._mjdref) * 3600. * 24.)
-                    stop = ((self._ero_starttimes[epoch_counter + 1]
+                    stop=((self._ero_starttimes[epoch_counter + 1]
                              - self._mjdref) * 3600. * 24.)
 
-                replacements = [['@esass_location', self._esass],
+                replacements=[['@esass_location', self._esass],
                                 ['@infiles', self._filelist],
                                 ['@outfile',
                                  f'./e{self._ownership}{epoch}_simultaneous'
                                  '.fits'],
                                 ['@start', f'{start}'],
                                 ['@stop', f'{stop}']]
-                sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
-                sh_file = self._replace_in_sh(sh_file, replacements)
-                process = subprocess.Popen(
+                sh_file=self._working_dir_full + '/working/trim_eventfile.sh'
+                sh_file=self._replace_in_sh(sh_file, replacements)
+                process=subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
 
@@ -3025,17 +3067,17 @@ class HiMaXBi:
                              markers, fit_statistic):
         self._logger.info('Running _plot_spectra_merged (log done by xspec).')
         if self._create_epochs:
-            period = 'epoch'
+            period='epoch'
         else:
-            period = f'e{self._ownership}'
-        suffix = ''
+            period=f'e{self._ownership}'
+        suffix=''
         for entry in self._period_names:
             suffix += entry[len(period):]
         self._extract_spectrum(f'{log_prefix}_merged_{period}{suffix}'
                                f'{log_suffix}', 'merged', self._filelist,
                                f'{period}{suffix}')
 
-        file_list_xspec = (f'./{self._src_name}_{self._skytile}_{period}'
+        file_list_xspec=(f'./{self._src_name}_{self._skytile}_{period}'
                            f'{suffix}_eROSITA_merged_PATall_TMon020_SourceSpec'
                            f'_00001_g{self._grouping}.fits')
 
@@ -3056,19 +3098,19 @@ class HiMaXBi:
         self._logger.info('Running _plot_spectra_individual (log done by '
                           'xspec).')
         if self._create_epochs:
-            period = 'epoch'
+            period='epoch'
         else:
-            period = f'e{self._ownership}'
+            period=f'e{self._ownership}'
         for epoch_counter in range(len(self._period_names)):
             if (period != 'epoch'
                     and (skip_eRASS == int(self._period_names[epoch_counter]
                                            [-1])).any()):
                 continue
-            start = ((self._obs_periods[epoch_counter][0] - self._mjdref) * 24.
+            start=((self._obs_periods[epoch_counter][0] - self._mjdref) * 24.
                      * 3600.)
-            stop = ((self._obs_periods[epoch_counter][1] - self._mjdref) * 24.
+            stop=((self._obs_periods[epoch_counter][1] - self._mjdref) * 24.
                     * 3600.)
-            replacements = [['@esass_location', self._esass],
+            replacements=[['@esass_location', self._esass],
                             ['@infiles', self._filelist],
                             ['@outfile',
                             f'./{self._period_names[epoch_counter]}_'
@@ -3076,9 +3118,9 @@ class HiMaXBi:
                             ['@start',
                                 f'{start}'],
                             ['@stop', f'{stop}']]
-            sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
-            sh_file = self._replace_in_sh(sh_file, replacements)
-            process = subprocess.Popen(
+            sh_file=self._working_dir_full + '/working/trim_eventfile.sh'
+            sh_file=self._replace_in_sh(sh_file, replacements)
+            process=subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
 
@@ -3089,12 +3131,12 @@ class HiMaXBi:
                                    'individual.fits',
                                    f'{self._period_names[epoch_counter]}')
 
-            file_list_xspec = (f'./{self._src_name}_{self._skytile}_'
+            file_list_xspec=(f'./{self._src_name}_{self._skytile}_'
                                f'{self._period_names[epoch_counter]}_eROSITA_'
                                'individual_PATall_TMon020_SourceSpec_00001_'
                                f'g{self._grouping}.fits')
 
-            temp_name = f'{self._period_names[epoch_counter][len(period):]}'
+            temp_name=f'{self._period_names[epoch_counter][len(period):]}'
             self._standard_spec_an(False, skip_eRASS, table_name, 'individual '
                                    f'{temp_name}', file_list_xspec,
                                    skip_varabs, absorption, rebin,
@@ -3109,31 +3151,31 @@ class HiMaXBi:
                         == int(self._period_names[epoch_counter][-1])).any():
                     continue
                 if epoch_counter == 0:
-                    epoch = '0_1'
-                    start = (58500 - self._mjdref) / 24. / 3600.
-                    stop = (self._ero_starttimes[epoch_counter + 1]
+                    epoch='0_1'
+                    start=(58500 - self._mjdref) / 24. / 3600.
+                    stop=(self._ero_starttimes[epoch_counter + 1]
                             - self._mjdref) * 3600. * 24.
                 elif epoch_counter == len(self._ero_starttimes) - 1:
-                    epoch = f'{epoch_counter + 1}'
-                    start = (self._ero_starttimes[epoch_counter]
+                    epoch=f'{epoch_counter + 1}'
+                    start=(self._ero_starttimes[epoch_counter]
                              - self._mjdref) * 3600. * 24.
-                    stop = (self._ero_starttimes[epoch_counter] + 200
+                    stop=(self._ero_starttimes[epoch_counter] + 200
                             - self._mjdref) * 3600. * 24.
                 else:
-                    epoch = f'{epoch_counter + 1}'
-                    start = (self._ero_starttimes[epoch_counter]
+                    epoch=f'{epoch_counter + 1}'
+                    start=(self._ero_starttimes[epoch_counter]
                              - self._mjdref) * 3600. * 24.
-                    stop = (self._ero_starttimes[epoch_counter + 1]
+                    stop=(self._ero_starttimes[epoch_counter + 1]
                             - self._mjdref) * 3600. * 24.
 
-                replacements = [['@esass_location', self._esass],
+                replacements=[['@esass_location', self._esass],
                                 ['@infiles', self._filelist],
                                 ['@outfile', f'./e{self._ownership}{epoch}_'
                                 'individual.fits'],
                                 ['@start', f'{start}'], ['@stop', f'{stop}']]
-                sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
-                sh_file = self._replace_in_sh(sh_file, replacements)
-                process = subprocess.Popen(
+                sh_file=self._working_dir_full + '/working/trim_eventfile.sh'
+                sh_file=self._replace_in_sh(sh_file, replacements)
+                process=subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
 
@@ -3143,12 +3185,12 @@ class HiMaXBi:
                                        f'{epoch}_individual.fits',
                                        f'e{self._ownership}{epoch}')
 
-                file_list_xspec = (f'./{self._src_name}_{self._skytile}_e'
+                file_list_xspec=(f'./{self._src_name}_{self._skytile}_e'
                                    f'{self._ownership}{epoch}_eROSITA_'
                                    'individual_PATall_TMon020_SourceSpec_00001'
                                    f'_g{self._grouping}.fits')
 
-                temp_name = self._period_names[epoch_counter][len(period):]
+                temp_name=self._period_names[epoch_counter][len(period):]
                 self._standard_spec_an(False, skip_eRASS, table_name,
                                        f'individual {temp_name}',
                                        file_list_xspec, skip_varabs,
@@ -3166,19 +3208,19 @@ class HiMaXBi:
                           varabs_starting_pars, plot_command, model_file,
                           title, save_settings, log_suffix, colors, markers,
                           fit_statistic):
-        bands = {}
+        bands={}
         if separate:
-            list_visibles = range(1, len(file_list.split(sep=' ')) + 1)
+            list_visibles=range(1, len(file_list.split(sep=' ')) + 1)
         else:
-            list_visibles = [-1]
+            list_visibles=[-1]
         for t, energy_bin in enumerate(self._energy_bins):
             for visible in list_visibles:
                 if mode.find(' ') == -1:
-                    bands[f'table_{t}'] = open(f'{table_name}_{mode}_'
+                    bands[f'table_{t}']=open(f'{table_name}_{mode}_'
                                                f'{energy_bin[0]}keV_'
                                                f'{energy_bin[1]}keV.tex', 'w')
                 else:
-                    bands[f'table_{t}'] = open(f'{table_name}_'
+                    bands[f'table_{t}']=open(f'{table_name}_'
                                                f'{mode.split()[0]}_'
                                                f'{energy_bin[0]}keV_'
                                                f'{energy_bin[1]}keV_{period}'
@@ -3205,11 +3247,11 @@ class HiMaXBi:
                     Xset.restore(self._working_dir + model_file)
 
                 if mode.find(' ') != -1:
-                    epoch = f'{period}{mode.split()[1]} {mode.split()[0]}'
+                    epoch=f'{period}{mode.split()[1]} {mode.split()[0]}'
                 elif mode.find('_') != -1:
-                    epoch = f'merged {mode.split(sep="_")[1]}'
+                    epoch=f'merged {mode.split(sep="_")[1]}'
                 else:
-                    epoch = f'{mode}'
+                    epoch=f'{mode}'
 
                 spec_model(Xset, AllModels, AllData, Model, Fit, Plot,
                            self._working_dir, bands[f'table_{t}'], self._Z,
@@ -3222,9 +3264,9 @@ class HiMaXBi:
                            colors, markers, fit_statistic)
 
                 if skip_varabs:
-                    parts = ['1', '3_1', '3_2']
+                    parts=['1', '3_1', '3_2']
                 else:
-                    parts = ['1', '2', '3_1', '3_2', '3_3', '3_4']
+                    parts=['1', '2', '3_1', '3_2', '3_3', '3_4']
 
                 for part in parts:
                     for extension in ['.ps', '.qdp', '.pco']:
@@ -3281,10 +3323,10 @@ class HiMaXBi:
                                       f'{log_suffix}')
 
                 if mode.find(' ') == -1:
-                    xcm_name = (f'{table_name}_{mode}_{energy_bin[0]}keV_'
+                    xcm_name=(f'{table_name}_{mode}_{energy_bin[0]}keV_'
                                 f'{energy_bin[1]}keV.xcm')
                 else:
-                    xcm_name = (f'{table_name}_{mode.split()[0]}_'
+                    xcm_name=(f'{table_name}_{mode.split()[0]}_'
                                 f'{energy_bin[0]}keV_{energy_bin[1]}keV_'
                                 f'{period}{mode.split()[1]}.xcm')
                 if save_settings:

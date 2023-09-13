@@ -356,6 +356,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                    sc_rate_upper + (-sc_rate)]
     bg_rate_err = [bg_rate + (-bg_rate_lower),
                    bg_rate_upper + (-bg_rate)]
+    sc_bg_rate_err = [sc_bg_rate + (-sc_bg_rate_lower),
+                      sc_bg_rate_upper + (-sc_bg_rate)]
     t = xtime.copy()
 
     for i_ax, ax in enumerate(axs):
@@ -398,11 +400,11 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
         ax.errorbar(t, sc_rate, xerr=terr,
                     yerr=sc_rate_err,
                     linestyle='None', color=color, fmt='o',
-                    zorder=2)
+                    zorder=4)
         ax.errorbar(t, bg_rate, xerr=terr,
                     yerr=bg_rate_err,
                     linestyle='None', color=color, fmt='x',
-                    zorder=1, alpha=alpha_bg)
+                    zorder=3, alpha=alpha_bg)
 
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
@@ -410,15 +412,164 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
 
     if bblocks:
         if bbmode == 'sc' or bbmode == 'both':
-            t_blocked = bayesian_blocks(t, sc_rate, sigma=sc_rate_err,
+            err = np.max(sc_rate_err, axis=1)
+            err = np.min([sc_rate, err], axis=0)
+            t_blocked = bayesian_blocks(t, sc_rate, sigma=err,
                                         fitness='measure', p0=bbp0)
-            # TODO fit to blocked and plot sc_rate here
+            dts_bb = []
+            scs_bb = []
+            fexps_bb = []
+            bgs_bb = []
+            bgrats_bb = []
+            for i in range(len(t_blocked) - 1):
+                if xflag == 1:
+                    tstart = t_blocked[i] + time_rel
+                    tend = t_blocked[i+1] + time_rel
+                else:
+                    tstart = (t_blocked[i] + time_rel - mjdref) * 24. * 3600.
+                    tend = (t_blocked[i+1] + time_rel - mjdref) * 24. * 3600.
+                dts_bb.append(delt[(time >= tstart)*(time <= tend)].tolist())
+                scs_bb.append(cnts[(time >= tstart)*(time <= tend)].tolist())
+                fexps_bb.append(fexp[(time >= tstart)*(time <= tend)].tolist())
+                bgs_bb.append(back[(time >= tstart)*(time <= tend)].tolist())
+                bgrats_bb.append(
+                    backrat[(time >= tstart)*(time <= tend)].tolist())
+
+            N_bb = 0
+            for k in range(len(scs_bb)):
+                if len(scs_bb[k]) > N_bb:
+                    N_bb = len(scs_bb[k])
+            for k in range(len(scs_bb)):
+                while len(scs_bb[k]) < N_bb:
+                    dts_bb[k].append(0)
+                    scs_bb[k].append(0)
+                    fexps_bb[k].append(0)
+                    bgs_bb[k].append(0)
+                    bgrats_bb[k].append(0)
+
+            data = {}
+            data['N'] = N_bb
+            data['M'] = len(scs_bb)
+            data['dt'] = np.array(dts_bb)
+            data['sc'] = np.array(scs_bb)
+            data['frac_exp'] = np.array(fexps_bb)
+            data['bg'] = np.array(bgs_bb)
+            data['bg_ratio'] = np.array(bgrats_bb)
+
+            # loading stan model
+            model = CmdStanModel(stan_file=stan_model)
+            fit = model.sample(data=data, show_progress=False)
+            sc_rate_bb = np.percentile(fit.stan_variables()['sc_rate'],
+                                       quantiles[1], axis=0)
+            for ax in axs:
+                ax.stairs(sc_rate_bb, t_blocked, color=color, zorder=2,
+                          linestyle='--')
         elif bbmode == 'sum':
-            _ = 0
-            # TODO block sc_bg_rate here, fit and plot sc_bg_rate
+            err = np.max(sc_bg_rate_err, axis=1)
+            err = np.min([sc_bg_rate, err], axis=0)
+            t_blocked = bayesian_blocks(t, sc_bg_rate, sigma=err,
+                                        fitness='measure', p0=bbp0)
+            dts_bb = []
+            scs_bb = []
+            fexps_bb = []
+            bgs_bb = []
+            bgrats_bb = []
+            for i in range(len(t_blocked) - 1):
+                if xflag == 1:
+                    tstart = t_blocked[i] + time_rel
+                    tend = t_blocked[i+1] + time_rel
+                else:
+                    tstart = (t_blocked[i] + time_rel - mjdref) * 24. * 3600.
+                    tend = (t_blocked[i+1] + time_rel - mjdref) * 24. * 3600.
+                dts_bb.append(delt[(time >= tstart)*(time <= tend)].tolist())
+                scs_bb.append(cnts[(time >= tstart)*(time <= tend)].tolist())
+                fexps_bb.append(fexp[(time >= tstart)*(time <= tend)].tolist())
+                bgs_bb.append(back[(time >= tstart)*(time <= tend)].tolist())
+                bgrats_bb.append(
+                    backrat[(time >= tstart)*(time <= tend)].tolist())
+
+            N_bb = 0
+            for k in range(len(scs_bb)):
+                if len(scs_bb[k]) > N_bb:
+                    N_bb = len(scs_bb[k])
+            for k in range(len(scs_bb)):
+                while len(scs_bb[k]) < N_bb:
+                    dts_bb[k].append(0)
+                    scs_bb[k].append(0)
+                    fexps_bb[k].append(0)
+                    bgs_bb[k].append(0)
+                    bgrats_bb[k].append(0)
+
+            data = {}
+            data['N'] = N_bb
+            data['M'] = len(scs_bb)
+            data['dt'] = np.array(dts_bb)
+            data['sc'] = np.array(scs_bb)
+            data['frac_exp'] = np.array(fexps_bb)
+            data['bg'] = np.array(bgs_bb)
+            data['bg_ratio'] = np.array(bgrats_bb)
+
+            # loading stan model
+            model = CmdStanModel(stan_file=stan_model)
+            fit = model.sample(data=data, show_progress=False)
+            sc_bg_rate_bb = np.percentile(fit.stan_variables()['sc_bg_rate'],
+                                          quantiles[1], axis=0)
+            for ax in axs:
+                ax.stairs(sc_bg_rate_bb, t_blocked, color=color, zorder=2,
+                          linestyle='--')
         if bbmode == 'both':
-            _ = 0
-            # TODO block bg_rate here, fit and plot bg_rate
+            err = np.max(bg_rate_err, axis=1)
+            err = np.min([bg_rate, err], axis=0)
+            t_blocked = bayesian_blocks(t, bg_rate, sigma=err,
+                                        fitness='measure', p0=bbp0)
+            dts_bb = []
+            scs_bb = []
+            fexps_bb = []
+            bgs_bb = []
+            bgrats_bb = []
+            for i in range(len(t_blocked) - 1):
+                if xflag == 1:
+                    tstart = t_blocked[i] + time_rel
+                    tend = t_blocked[i+1] + time_rel
+                else:
+                    tstart = (t_blocked[i] + time_rel - mjdref) * 24. * 3600.
+                    tend = (t_blocked[i+1] + time_rel - mjdref) * 24. * 3600.
+                dts_bb.append(delt[(time >= tstart)*(time <= tend)].tolist())
+                scs_bb.append(cnts[(time >= tstart)*(time <= tend)].tolist())
+                fexps_bb.append(fexp[(time >= tstart)*(time <= tend)].tolist())
+                bgs_bb.append(back[(time >= tstart)*(time <= tend)].tolist())
+                bgrats_bb.append(
+                    backrat[(time >= tstart)*(time <= tend)].tolist())
+
+            N_bb = 0
+            for k in range(len(scs_bb)):
+                if len(scs_bb[k]) > N_bb:
+                    N_bb = len(scs_bb[k])
+            for k in range(len(scs_bb)):
+                while len(scs_bb[k]) < N_bb:
+                    dts_bb[k].append(0)
+                    scs_bb[k].append(0)
+                    fexps_bb[k].append(0)
+                    bgs_bb[k].append(0)
+                    bgrats_bb[k].append(0)
+
+            data = {}
+            data['N'] = N_bb
+            data['M'] = len(scs_bb)
+            data['dt'] = np.array(dts_bb)
+            data['sc'] = np.array(scs_bb)
+            data['frac_exp'] = np.array(fexps_bb)
+            data['bg'] = np.array(bgs_bb)
+            data['bg_ratio'] = np.array(bgrats_bb)
+
+            # loading stan model
+            model = CmdStanModel(stan_file=stan_model)
+            fit = model.sample(data=data, show_progress=False)
+            bg_rate_bb = np.percentile(fit.stan_variables()['bg_rate'],
+                                       quantiles[1], axis=0)
+            for ax in axs:
+                ax.stairs(bg_rate_bb, t_blocked, color=color, zorder=2,
+                          linestyle='--')
 
     logger_stan.handlers = []
 
@@ -580,6 +731,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                quantiles[1], axis=0)
     sc_bg_rate_upper = np.percentile(fit.stan_variables()['sc_bg_rate'],
                                      quantiles[2], axis=0)
+    t = xtime.copy()
 
     amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
     amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
@@ -612,6 +764,12 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     sc_bg_rate = np.array(sc_bg_rate)
     sc_bg_rate_lower = np.array(sc_bg_rate_lower)
     sc_bg_rate_upper = np.array(sc_bg_rate_upper)
+    sc_rate_err = [sc_rate + (-sc_rate_lower),
+                   sc_rate_upper + (-sc_rate)]
+    bg_rate_err = [bg_rate + (-bg_rate_lower),
+                   bg_rate_upper + (-bg_rate)]
+    sc_bg_rate_err = [sc_bg_rate + (-sc_bg_rate_lower),
+                      sc_bg_rate_upper + (-sc_bg_rate)]
 
     for i_ax, ax in enumerate(axs):
         if xflag == 1:
@@ -645,44 +803,185 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         pxmax.append(xmax + xm)
 
         if xflag == 1:
-            ax.errorbar(xtime_short, sc_rate, xerr=xtime_d,
-                        yerr=[sc_rate + (-sc_rate_lower),
-                              sc_rate_upper + (-sc_rate)],
-                        linestyle='None', color=color, fmt='o',
-                        zorder=4)
-            ax.errorbar(xtime_short, bg_rate, xerr=xtime_d,
-                        yerr=[bg_rate + (-bg_rate_lower),
-                              bg_rate_upper + (-bg_rate)],
-                        linestyle='None', color=color, fmt='x',
-                        zorder=3, alpha=alpha_bg)
+            t = xtime_short
+            terr = xtime_d
         else:
-            ax.errorbar(mjd_short, sc_rate, xerr=mjd_d,
-                        yerr=[sc_rate + (-sc_rate_lower),
-                              sc_rate_upper + (-sc_rate)],
-                        linestyle='None', color=color, fmt='o',
-                        zorder=4)
-            ax.errorbar(mjd_short, bg_rate, xerr=mjd_d,
-                        yerr=[bg_rate + (-bg_rate_lower),
-                              bg_rate_upper + (-bg_rate)],
-                        linestyle='None', color=color, fmt='x',
-                        zorder=3, alpha=alpha_bg)
+            t = mjd_short
+            terr = mjd_d
+        ax.errorbar(t, sc_rate, xerr=terr,
+                    yerr=sc_rate_err,
+                    linestyle='None', color=color, fmt='o',
+                    zorder=4)
+        ax.errorbar(t, bg_rate, xerr=terr,
+                    yerr=bg_rate_err,
+                    linestyle='None', color=color, fmt='x',
+                    zorder=3, alpha=alpha_bg)
 
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
     pymax = ymax + (ymax-ymin)*0.05
 
+    if bblocks:
+        if bbmode == 'sc' or bbmode == 'both':
+            err = np.max(sc_rate_err, axis=1)
+            err = np.min([sc_rate, err], axis=0)
+            t_blocked = bayesian_blocks(t, sc_rate, sigma=err,
+                                        fitness='measure', p0=bbp0)
+            dts_bb = []
+            scs_bb = []
+            fexps_bb = []
+            bgs_bb = []
+            bgrats_bb = []
+            for i in range(len(t_blocked) - 1):
+                if xflag == 1:
+                    tstart = t_blocked[i] + time_rel
+                    tend = t_blocked[i+1] + time_rel
+                else:
+                    tstart = (t_blocked[i] + time_rel - mjdref) * 24. * 3600.
+                    tend = (t_blocked[i+1] + time_rel - mjdref) * 24. * 3600.
+                dts_bb.append(delt[(time >= tstart)*(time <= tend)].tolist())
+                scs_bb.append(cnts[(time >= tstart)*(time <= tend)].tolist())
+                fexps_bb.append(fexp[(time >= tstart)*(time <= tend)].tolist())
+                bgs_bb.append(back[(time >= tstart)*(time <= tend)].tolist())
+                bgrats_bb.append(
+                    backrat[(time >= tstart)*(time <= tend)].tolist())
+
+            N_bb = 0
+            for k in range(len(scs_bb)):
+                if len(scs_bb[k]) > N_bb:
+                    N_bb = len(scs_bb[k])
+            for k in range(len(scs_bb)):
+                while len(scs_bb[k]) < N_bb:
+                    dts_bb[k].append(0)
+                    scs_bb[k].append(0)
+                    fexps_bb[k].append(0)
+                    bgs_bb[k].append(0)
+                    bgrats_bb[k].append(0)
+
+            data = {}
+            data['N'] = N_bb
+            data['M'] = len(scs_bb)
+            data['dt'] = np.array(dts_bb)
+            data['sc'] = np.array(scs_bb)
+            data['frac_exp'] = np.array(fexps_bb)
+            data['bg'] = np.array(bgs_bb)
+            data['bg_ratio'] = np.array(bgrats_bb)
+
+            # loading stan model
+            model = CmdStanModel(stan_file=stan_model)
+            fit = model.sample(data=data, show_progress=False)
+            sc_rate_bb = np.percentile(fit.stan_variables()['sc_rate'],
+                                       quantiles[1], axis=0)
+            for ax in axs:
+                ax.stairs(sc_rate_bb, t_blocked, color=color, zorder=2,
+                          linestyle='--')
+        elif bbmode == 'sum':
+            err = np.max(sc_bg_rate_err, axis=1)
+            err = np.min([sc_bg_rate, err], axis=0)
+            t_blocked = bayesian_blocks(t, sc_bg_rate, sigma=err,
+                                        fitness='measure', p0=bbp0)
+            dts_bb = []
+            scs_bb = []
+            fexps_bb = []
+            bgs_bb = []
+            bgrats_bb = []
+            for i in range(len(t_blocked) - 1):
+                if xflag == 1:
+                    tstart = t_blocked[i] + time_rel
+                    tend = t_blocked[i+1] + time_rel
+                else:
+                    tstart = (t_blocked[i] + time_rel - mjdref) * 24. * 3600.
+                    tend = (t_blocked[i+1] + time_rel - mjdref) * 24. * 3600.
+                dts_bb.append(delt[(time >= tstart)*(time <= tend)].tolist())
+                scs_bb.append(cnts[(time >= tstart)*(time <= tend)].tolist())
+                fexps_bb.append(fexp[(time >= tstart)*(time <= tend)].tolist())
+                bgs_bb.append(back[(time >= tstart)*(time <= tend)].tolist())
+                bgrats_bb.append(
+                    backrat[(time >= tstart)*(time <= tend)].tolist())
+
+            N_bb = 0
+            for k in range(len(scs_bb)):
+                if len(scs_bb[k]) > N_bb:
+                    N_bb = len(scs_bb[k])
+            for k in range(len(scs_bb)):
+                while len(scs_bb[k]) < N_bb:
+                    dts_bb[k].append(0)
+                    scs_bb[k].append(0)
+                    fexps_bb[k].append(0)
+                    bgs_bb[k].append(0)
+                    bgrats_bb[k].append(0)
+
+            data = {}
+            data['N'] = N_bb
+            data['M'] = len(scs_bb)
+            data['dt'] = np.array(dts_bb)
+            data['sc'] = np.array(scs_bb)
+            data['frac_exp'] = np.array(fexps_bb)
+            data['bg'] = np.array(bgs_bb)
+            data['bg_ratio'] = np.array(bgrats_bb)
+
+            # loading stan model
+            model = CmdStanModel(stan_file=stan_model)
+            fit = model.sample(data=data, show_progress=False)
+            sc_bg_rate_bb = np.percentile(fit.stan_variables()['sc_bg_rate'],
+                                          quantiles[1], axis=0)
+            for ax in axs:
+                ax.stairs(sc_bg_rate_bb, t_blocked, color=color, zorder=2,
+                          linestyle='--')
+        if bbmode == 'both':
+            err = np.max(bg_rate_err, axis=1)
+            err = np.min([bg_rate, err], axis=0)
+            t_blocked = bayesian_blocks(t, bg_rate, sigma=err,
+                                        fitness='measure', p0=bbp0)
+            dts_bb = []
+            scs_bb = []
+            fexps_bb = []
+            bgs_bb = []
+            bgrats_bb = []
+            for i in range(len(t_blocked) - 1):
+                if xflag == 1:
+                    tstart = t_blocked[i] + time_rel
+                    tend = t_blocked[i+1] + time_rel
+                else:
+                    tstart = (t_blocked[i] + time_rel - mjdref) * 24. * 3600.
+                    tend = (t_blocked[i+1] + time_rel - mjdref) * 24. * 3600.
+                dts_bb.append(delt[(time >= tstart)*(time <= tend)].tolist())
+                scs_bb.append(cnts[(time >= tstart)*(time <= tend)].tolist())
+                fexps_bb.append(fexp[(time >= tstart)*(time <= tend)].tolist())
+                bgs_bb.append(back[(time >= tstart)*(time <= tend)].tolist())
+                bgrats_bb.append(
+                    backrat[(time >= tstart)*(time <= tend)].tolist())
+
+            N_bb = 0
+            for k in range(len(scs_bb)):
+                if len(scs_bb[k]) > N_bb:
+                    N_bb = len(scs_bb[k])
+            for k in range(len(scs_bb)):
+                while len(scs_bb[k]) < N_bb:
+                    dts_bb[k].append(0)
+                    scs_bb[k].append(0)
+                    fexps_bb[k].append(0)
+                    bgs_bb[k].append(0)
+                    bgrats_bb[k].append(0)
+
+            data = {}
+            data['N'] = N_bb
+            data['M'] = len(scs_bb)
+            data['dt'] = np.array(dts_bb)
+            data['sc'] = np.array(scs_bb)
+            data['frac_exp'] = np.array(fexps_bb)
+            data['bg'] = np.array(bgs_bb)
+            data['bg_ratio'] = np.array(bgrats_bb)
+
+            # loading stan model
+            model = CmdStanModel(stan_file=stan_model)
+            fit = model.sample(data=data, show_progress=False)
+            bg_rate_bb = np.percentile(fit.stan_variables()['bg_rate'],
+                                       quantiles[1], axis=0)
+            for ax in axs:
+                ax.stairs(bg_rate_bb, t_blocked, color=color, zorder=2,
+                          linestyle='--')
+
     logger_stan.handlers = []
 
     return pxmin, pxmax, pymin, pymax, time_rel
-
-
-# TODO: implement bayesian blocks
-'''Notes for Bayesian blocks test
-from astropy.stats import bayesian blocks
-t_blocked = bayesian_blocks(t, a, fitness='measures', sigma=np.sqrt(a), gamma=0.5)
-used this with random generated, positive a and uniform t but uniformity of t should not matter
-except for the first and last values t_blocked always is exactly in the centre between original timebins when there is a change
-seems reasonable to use fitness 'measures' with lightcurve, because 'events' would miss the fact that fracexp changes
-need to test various values for gamma or p0 (not sure how this one works yet)
-for sigma maybe use the maximum value of upper and lower errorbar or sqrt((upper^2+lower^2)/2)? Talk about this with Chandreyee or TODO read about it
-'''
