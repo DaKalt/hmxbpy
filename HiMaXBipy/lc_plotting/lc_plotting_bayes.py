@@ -415,7 +415,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.max(sc_rate_err, axis=0)
             err = np.min([sc_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_rate, sigma=err,
-                                        fitness='measure', p0=bbp0)
+                                        fitness='measures', p0=bbp0)
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -468,7 +468,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.max(sc_bg_rate_err, axis=0)
             err = np.min([sc_bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_bg_rate, sigma=err,
-                                        fitness='measure', p0=bbp0)
+                                        fitness='measures', p0=bbp0)
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -521,7 +521,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.max(bg_rate_err, axis=0)
             err = np.min([bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, bg_rate, sigma=err,
-                                        fitness='measure', p0=bbp0)
+                                        fitness='measures', p0=bbp0)
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -826,7 +826,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.max(sc_rate_err, axis=0)
             err = np.min([sc_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_rate, sigma=err,
-                                        fitness='measure', p0=bbp0)
+                                        fitness='measures', p0=bbp0)
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -879,7 +879,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.max(sc_bg_rate_err, axis=0)
             err = np.min([sc_bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_bg_rate, sigma=err,
-                                        fitness='measure', p0=bbp0)
+                                        fitness='measures', p0=bbp0)
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -932,7 +932,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.max(bg_rate_err, axis=0)
             err = np.min([bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, bg_rate, sigma=err,
-                                        fitness='measure', p0=bbp0)
+                                        fitness='measures', p0=bbp0)
             dts_bb = []
             scs_bb = []
             fexps_bb = []
