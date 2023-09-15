@@ -19,7 +19,13 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
 import scipy.stats
-from xspec import AllData, AllModels, Fit, Model, Plot, Xset
+try:
+    from xspec import AllData, AllModels, Fit, Model, Plot, Xset
+except ModuleNotFoundError:
+    raise Exception('xspec needs to be installed before using this package. '
+                    'xspec is fully integrated in the general build of '
+                    'Heasoft, follow instruction on '
+                    'http://heasarc.gsfc.nasa.gov/lheasoft/install.html')
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir
 from HiMaXBipy.io.logging import setup_logfile, setup_logger, set_loglevel
@@ -130,7 +136,7 @@ class HiMaXBi:
 
         self._logger = setup_logger('HiMaXBipy', self._working_dir_full)
 
-    def change_LogLevel(level):
+    def change_LogLevel(self, level):
         '''Change the level of all logs (files and stdout) to level.
         Parameters
         ----------

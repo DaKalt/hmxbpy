@@ -38,7 +38,7 @@ setup(
         'HiMaXBipy/sh_files',
         'HiMaXBipy/spectral_analysis',
         'HiMaXBipy/stan_files',
-        'HiMaXBipy/tex_style'
+        'HiMaXBipy/tex_style',
 
     ],
     version='v1.0.148',
@@ -52,7 +52,6 @@ setup(
 
     requires=[
         'xspec',
-        'cmdstanpy'
     ],
 
     install_requires=[
@@ -60,6 +59,7 @@ setup(
         'matplotlib>=3.5.1',
         'astropy>=5.1',
         'scipy>=1.7.3',
-        'bxa>=4.0.7'
+        'bxa>=4.0.7',
+        'cmdstanpy>=1.1.0',
     ],
 )
