@@ -20,10 +20,10 @@ transformed parameters {
     real<lower=0> amp_frac;
     real<lower=0> med_rate;
     real<lower=0> max_rate;
-    med_rate = quantile(sc_rate,0.5);
+    min_rate = min(sc_rate);
     max_rate = max(sc_rate);
-    amp_dev = (max_rate - med_rate) / (max_rate + med_rate);
-    amp_frac = max_rate / med_rate;
+    amp_dev = (max_rate - min_rate) / (max_rate + min_rate);
+    amp_frac = max_rate / min_rate;
     array[M] real<lower=0> sc_bg_rate;
     for (m in 1:M) {
         sc_bg_rate[m] = sc_rate[m] + bg_rate[m];

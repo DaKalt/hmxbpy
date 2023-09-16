@@ -3350,8 +3350,9 @@ class HiMaXBi:
         Runs entire analysis chain with standard settings.
 
         '''
-        self.plot_lc_full()
-        self.plot_lc_parts()
+        # self.plot_lc_full()
+        # self.plot_lc_parts()
+        self.debug = False
         self.plot_lc_broken()
         self.plot_spectra()
         self.plot_lc_bayes_broken()
