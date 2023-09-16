@@ -18,7 +18,7 @@ transformed parameters {
     bg_rate = 10 ^ log_cr_bg;
     real<lower=0, upper=1> amp_dev;
     real<lower=0> amp_frac;
-    real<lower=0> med_rate;
+    real<lower=0> min_rate;
     real<lower=0> max_rate;
     min_rate = min(sc_rate);
     max_rate = max(sc_rate);
