@@ -342,7 +342,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.warning(f'eROday AmpVar(min)={amp_dev_min}+'
                         f'{amp_dev_min_up-amp_dev_min}'
                         f'-{amp_dev_min-amp_dev_min_low}\n')
-    logger_stan.warning(f'AmpFrac(min)={amp_frac_min}'
+    logger_stan.warning(f'eROday AmpFrac(min)={amp_frac_min}'
                         f'+{amp_frac_min_up-amp_frac_min}'
                         f'-{amp_frac_min-amp_frac_min_low}\n')
 
@@ -361,12 +361,42 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.warning(f'eROday AmpVar(med)={amp_dev_med}+'
                         f'{amp_dev_med_up-amp_dev_med}'
                         f'-{amp_dev_med-amp_dev_med_low}\n')
-    logger_stan.warning(f'AmpFrac(med)={amp_frac_med}'
+    logger_stan.warning(f'eROday AmpFrac(med)={amp_frac_med}'
                         f'+{amp_frac_med_up-amp_frac_med}'
                         f'-{amp_frac_med-amp_frac_med_low}\n')
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
+
+    # average rate:
+    data_av = {}
+    data_av['N'] = len(delt)
+    data_av['M'] = 1
+    data_av['dt'] = delt
+    data_av['sc'] = np.array(cnts)
+    data_av['frac_exp'] = np.array(fexp)
+    data_av['bg'] = np.array(back)
+    data_av['bg_ratio'] = np.array(backrat)
+
+    fit_av = model.sample(data=data_av, show_progress=False)
+    sc_rate_av_lower = np.percentile(fit_av.stan_variables()['sc_rate'],
+                                     quantiles[0], axis=0)
+    sc_rate_av = np.percentile(fit_av.stan_variables()['sc_rate'],
+                               quantiles[1], axis=0)
+    sc_rate_av_upper = np.percentile(fit_av.stan_variables()['sc_rate'],
+                                     quantiles[2], axis=0)
+    bg_rate_av_lower = np.percentile(fit_av.stan_variables()['bg_rate'],
+                                     quantiles[0], axis=0)
+    bg_rate_av = np.percentile(fit_av.stan_variables()['bg_rate'],
+                               quantiles[1], axis=0)
+    bg_rate_av_upper = np.percentile(fit_av.stan_variables()['bg_rate'],
+                                     quantiles[2], axis=0)
+    logger_stan.warning(f'Average Source Rate={sc_rate_av}'
+                        f'+{sc_rate_av_upper-sc_rate_av}'
+                        f'-{sc_rate_av-sc_rate_av_lower}')
+    logger_stan.warning(f'Average Background Rate={bg_rate_av}'
+                        f'+{bg_rate_av_upper-bg_rate_av}'
+                        f'-{bg_rate_av-bg_rate_av_lower}')
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)
@@ -779,7 +809,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.warning(f'mincounts {mincounts} AmpVar(min)={amp_dev_min}'
                         f'+{amp_dev_min_up-amp_dev_min}'
                         f'-{amp_dev_min-amp_dev_min_low}\n')
-    logger_stan.warning(f'AmpFrac(min)={amp_frac_min}'
+    logger_stan.warning(f'mincounts {mincounts} AmpFrac(min)={amp_frac_min}'
                         f'+{amp_frac_min_up-amp_frac_min}'
                         f'-{amp_frac_min-amp_frac_min_low}\n')
 
@@ -795,15 +825,45 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         fit.stan_variables()['amp_frac_med'], quantiles[0])
     amp_frac_med_up = np.percentile(
         fit.stan_variables()['amp_frac_med'], quantiles[2])
-    logger_stan.warning(f'eROday AmpVar(med)={amp_dev_med}+'
+    logger_stan.warning(f'mincounts {mincounts} AmpVar(med)={amp_dev_med}+'
                         f'{amp_dev_med_up-amp_dev_med}'
                         f'-{amp_dev_med-amp_dev_med_low}\n')
-    logger_stan.warning(f'AmpFrac(med)={amp_frac_med}'
+    logger_stan.warning(f'mincounts {mincounts} AmpFrac(med)={amp_frac_med}'
                         f'+{amp_frac_med_up-amp_frac_med}'
                         f'-{amp_frac_med-amp_frac_med_low}\n')
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
+
+    # average rate:
+    data_av = {}
+    data_av['N'] = len(delt)
+    data_av['M'] = 1
+    data_av['dt'] = delt
+    data_av['sc'] = np.array(cnts)
+    data_av['frac_exp'] = np.array(fexp)
+    data_av['bg'] = np.array(back)
+    data_av['bg_ratio'] = np.array(backrat)
+
+    fit_av = model.sample(data=data_av, show_progress=False)
+    sc_rate_av_lower = np.percentile(fit_av.stan_variables()['sc_rate'],
+                                     quantiles[0], axis=0)
+    sc_rate_av = np.percentile(fit_av.stan_variables()['sc_rate'],
+                               quantiles[1], axis=0)
+    sc_rate_av_upper = np.percentile(fit_av.stan_variables()['sc_rate'],
+                                     quantiles[2], axis=0)
+    bg_rate_av_lower = np.percentile(fit_av.stan_variables()['bg_rate'],
+                                     quantiles[0], axis=0)
+    bg_rate_av = np.percentile(fit_av.stan_variables()['bg_rate'],
+                               quantiles[1], axis=0)
+    bg_rate_av_upper = np.percentile(fit_av.stan_variables()['bg_rate'],
+                                     quantiles[2], axis=0)
+    logger_stan.warning(f'Average Source Rate={sc_rate_av}'
+                        f'+{sc_rate_av_upper-sc_rate_av}'
+                        f'-{sc_rate_av-sc_rate_av_lower}')
+    logger_stan.warning(f'Average Background Rate={bg_rate_av}'
+                        f'+{bg_rate_av_upper-bg_rate_av}'
+                        f'-{bg_rate_av-bg_rate_av_lower}')
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)

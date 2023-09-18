@@ -1,4 +1,3 @@
-//#TODO needs testing
 functions {
     int is_even(int k) {
         return 2 * (k %/% 2) == k;
