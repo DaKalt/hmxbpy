@@ -839,11 +839,11 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     data_av = {}
     data_av['N'] = len(delt)
     data_av['M'] = 1
-    data_av['dt'] = delt
-    data_av['sc'] = np.array(cnts)
-    data_av['frac_exp'] = np.array(fexp)
-    data_av['bg'] = np.array(back)
-    data_av['bg_ratio'] = np.array(backrat)
+    data_av['dt'] = np.array([delt])
+    data_av['sc'] = np.array([cnts], dtype=int)
+    data_av['frac_exp'] = np.array([fexp])
+    data_av['bg'] = np.array([back], dtype=int)
+    data_av['bg_ratio'] = np.array([backrat])
 
     fit_av = model.sample(data=data_av, show_progress=False)
     sc_rate_av_lower = np.percentile(fit_av.stan_variables()['sc_rate'],
