@@ -380,23 +380,23 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
 
     fit_av = model.sample(data=data_av, show_progress=False)
     sc_rate_av_lower = np.percentile(fit_av.stan_variables()['sc_rate'],
-                                     quantiles[0], axis=0)
+                                     quantiles[0], axis=0)[0]
     sc_rate_av = np.percentile(fit_av.stan_variables()['sc_rate'],
-                               quantiles[1], axis=0)
+                               quantiles[1], axis=0)[0]
     sc_rate_av_upper = np.percentile(fit_av.stan_variables()['sc_rate'],
-                                     quantiles[2], axis=0)
+                                     quantiles[2], axis=0)[0]
     bg_rate_av_lower = np.percentile(fit_av.stan_variables()['bg_rate'],
-                                     quantiles[0], axis=0)
+                                     quantiles[0], axis=0)[0]
     bg_rate_av = np.percentile(fit_av.stan_variables()['bg_rate'],
-                               quantiles[1], axis=0)
+                               quantiles[1], axis=0)[0]
     bg_rate_av_upper = np.percentile(fit_av.stan_variables()['bg_rate'],
-                                     quantiles[2], axis=0)
+                                     quantiles[2], axis=0)[0]
     logger_stan.warning(f'Average Source Rate={sc_rate_av}'
                         f'+{sc_rate_av_upper-sc_rate_av}'
-                        f'-{sc_rate_av-sc_rate_av_lower}')
+                        f'-{sc_rate_av-sc_rate_av_lower} cts/s')
     logger_stan.warning(f'Average Background Rate={bg_rate_av}'
                         f'+{bg_rate_av_upper-bg_rate_av}'
-                        f'-{bg_rate_av-bg_rate_av_lower}')
+                        f'-{bg_rate_av-bg_rate_av_lower} cts/s')
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)
@@ -847,23 +847,23 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
 
     fit_av = model.sample(data=data_av, show_progress=False)
     sc_rate_av_lower = np.percentile(fit_av.stan_variables()['sc_rate'],
-                                     quantiles[0], axis=0)
+                                     quantiles[0], axis=0)[0]
     sc_rate_av = np.percentile(fit_av.stan_variables()['sc_rate'],
-                               quantiles[1], axis=0)
+                               quantiles[1], axis=0)[0]
     sc_rate_av_upper = np.percentile(fit_av.stan_variables()['sc_rate'],
-                                     quantiles[2], axis=0)
+                                     quantiles[2], axis=0)[0]
     bg_rate_av_lower = np.percentile(fit_av.stan_variables()['bg_rate'],
-                                     quantiles[0], axis=0)
+                                     quantiles[0], axis=0)[0]
     bg_rate_av = np.percentile(fit_av.stan_variables()['bg_rate'],
-                               quantiles[1], axis=0)
+                               quantiles[1], axis=0)[0]
     bg_rate_av_upper = np.percentile(fit_av.stan_variables()['bg_rate'],
-                                     quantiles[2], axis=0)
+                                     quantiles[2], axis=0)[0]
     logger_stan.warning(f'Average Source Rate={sc_rate_av}'
                         f'+{sc_rate_av_upper-sc_rate_av}'
-                        f'-{sc_rate_av-sc_rate_av_lower}')
+                        f'-{sc_rate_av-sc_rate_av_lower} cts/s')
     logger_stan.warning(f'Average Background Rate={bg_rate_av}'
                         f'+{bg_rate_av_upper-bg_rate_av}'
-                        f'-{bg_rate_av-bg_rate_av_lower}')
+                        f'-{bg_rate_av-bg_rate_av_lower} cts/s')
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)
