@@ -79,7 +79,8 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, log, mjdref, xflag,
         else:
             border_low = False
             for period in obs_periods:
-                if time_mjd[istart-1] < period[0] and time_mjd[istart] > period[0]:
+                if (time_mjd[istart-1] < period[0]
+                        and time_mjd[istart] > period[0]):
                     tstart = time[istart] - delt[istart]
                     border_low = True
             if not border_low:
@@ -89,7 +90,8 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, log, mjdref, xflag,
         else:
             border_high = False
             for period in obs_periods:
-                if time_mjd[iend] < period[1] and time_mjd[iend + 1] > period[1]:
+                if (time_mjd[iend] < period[1]
+                        and time_mjd[iend + 1] > period[1]):
                     tend = time[iend] + delt[iend]
                     border_high = True
             if not border_high:
@@ -255,7 +257,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
         else:
             border_low = False
             for period in obs_periods:
-                if time_mjd[istart-1] < period[0] and time_mjd[istart] > period[0]:
+                if (time_mjd[istart-1] < period[0]
+                        and time_mjd[istart] > period[0]):
                     tstart = time[istart] - delt[istart]
                     border_low = True
             if not border_low:
@@ -265,7 +268,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
         else:
             border_high = False
             for period in obs_periods:
-                if time_mjd[iend] < period[1] and time_mjd[iend + 1] > period[1]:
+                if (time_mjd[iend] < period[1]
+                        and time_mjd[iend + 1] > period[1]):
                     tend = time[iend] + delt[iend]
                     border_high = True
             if not border_high:
@@ -323,19 +327,44 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     sc_bg_rate_upper = np.percentile(fit.stan_variables()['sc_bg_rate'],
                                      quantiles[2], axis=0)
 
-    amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
-    amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
-    amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
-    amp_frac = np.percentile(fit.stan_variables()['amp_frac'], quantiles[1])
-    amp_frac_low = np.percentile(
-        fit.stan_variables()['amp_frac'], quantiles[0])
-    amp_frac_up = np.percentile(
-        fit.stan_variables()['amp_frac'], quantiles[2])
-    logger_stan.warning(f'eROday AmpVar={amp_var}+{amp_var_up-amp_var}'
-                        f'-{amp_var-amp_var_low}\n')
-    logger_stan.warning(f'AmpFrac={amp_frac}'
-                        f'+{amp_frac_up-amp_frac}'
-                        f'-{amp_frac-amp_frac_low}\n')
+    amp_dev_min = np.percentile(
+        fit.stan_variables()['amp_dev_min'], quantiles[1])
+    amp_dev_min_low = np.percentile(
+        fit.stan_variables()['amp_dev_min'], quantiles[0])
+    amp_dev_min_up = np.percentile(
+        fit.stan_variables()['amp_dev_min'], quantiles[2])
+    amp_frac_min = np.percentile(
+        fit.stan_variables()['amp_frac_min'], quantiles[1])
+    amp_frac_min_low = np.percentile(
+        fit.stan_variables()['amp_frac_min'], quantiles[0])
+    amp_frac_min_up = np.percentile(
+        fit.stan_variables()['amp_frac_min'], quantiles[2])
+    logger_stan.warning(f'eROday AmpVar(min)={amp_dev_min}+'
+                        f'{amp_dev_min_up-amp_dev_min}'
+                        f'-{amp_dev_min-amp_dev_min_low}\n')
+    logger_stan.warning(f'AmpFrac(min)={amp_frac_min}'
+                        f'+{amp_frac_min_up-amp_frac_min}'
+                        f'-{amp_frac_min-amp_frac_min_low}\n')
+
+    amp_dev_med = np.percentile(
+        fit.stan_variables()['amp_dev_med'], quantiles[1])
+    amp_dev_med_low = np.percentile(
+        fit.stan_variables()['amp_dev_med'], quantiles[0])
+    amp_dev_med_up = np.percentile(
+        fit.stan_variables()['amp_dev_med'], quantiles[2])
+    amp_frac_med = np.percentile(
+        fit.stan_variables()['amp_frac_med'], quantiles[1])
+    amp_frac_med_low = np.percentile(
+        fit.stan_variables()['amp_frac_med'], quantiles[0])
+    amp_frac_med_up = np.percentile(
+        fit.stan_variables()['amp_frac_med'], quantiles[2])
+    logger_stan.warning(f'eROday AmpVar(med)={amp_dev_med}+'
+                        f'{amp_dev_med_up-amp_dev_med}'
+                        f'-{amp_dev_med-amp_dev_med_low}\n')
+    logger_stan.warning(f'AmpFrac(med)={amp_frac_med}'
+                        f'+{amp_frac_med_up-amp_frac_med}'
+                        f'-{amp_frac_med-amp_frac_med_low}\n')
+
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
 
@@ -663,7 +692,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         else:
             border_low = False
             for period in obs_periods:
-                if time_mjd[istart-1] < period[0] and time_mjd[istart] > period[0]:
+                if (time_mjd[istart-1] < period[0]
+                        and time_mjd[istart] > period[0]):
                     tstart = time[istart] - delt[istart]
                     border_low = True
             if not border_low:
@@ -673,7 +703,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         else:
             border_high = False
             for period in obs_periods:
-                if time_mjd[iend] < period[1] and time_mjd[iend + 1] > period[1]:
+                if (time_mjd[iend] < period[1]
+                        and time_mjd[iend + 1] > period[1]):
                     tend = time[iend] + delt[iend]
                     border_high = True
             if not border_high:
@@ -733,20 +764,43 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                      quantiles[2], axis=0)
     t = xtime.copy()
 
-    amp_var = np.percentile(fit.stan_variables()['amp_dev'], quantiles[1])
-    amp_var_low = np.percentile(fit.stan_variables()['amp_dev'], quantiles[0])
-    amp_var_up = np.percentile(fit.stan_variables()['amp_dev'], quantiles[2])
-    amp_frac = np.percentile(fit.stan_variables()['amp_frac'], quantiles[1])
-    amp_frac_low = np.percentile(
-        fit.stan_variables()['amp_frac'], quantiles[0])
-    amp_frac_up = np.percentile(
-        fit.stan_variables()['amp_frac'], quantiles[2])
-    logger_stan.warning(f'mincounts {mincounts} AmpVar={amp_var}'
-                        f'+{amp_var_up-amp_var}'
-                        f'-{amp_var-amp_var_low}\n')
-    logger_stan.warning(f'AmpFrac={amp_frac}'
-                        f'+{amp_frac_up-amp_frac}'
-                        f'-{amp_frac-amp_frac_low}\n')
+    amp_dev_min = np.percentile(fit.stan_variables()['amp_dev_min'],
+                                quantiles[1])
+    amp_dev_min_low = np.percentile(fit.stan_variables()['amp_dev_min'],
+                                    quantiles[0])
+    amp_dev_min_up = np.percentile(fit.stan_variables()['amp_dev_min'],
+                                   quantiles[2])
+    amp_frac_min = np.percentile(fit.stan_variables()['amp_frac_min'],
+                                 quantiles[1])
+    amp_frac_min_low = np.percentile(
+        fit.stan_variables()['amp_frac_min'], quantiles[0])
+    amp_frac_min_up = np.percentile(
+        fit.stan_variables()['amp_frac_min'], quantiles[2])
+    logger_stan.warning(f'mincounts {mincounts} AmpVar(min)={amp_dev_min}'
+                        f'+{amp_dev_min_up-amp_dev_min}'
+                        f'-{amp_dev_min-amp_dev_min_low}\n')
+    logger_stan.warning(f'AmpFrac(min)={amp_frac_min}'
+                        f'+{amp_frac_min_up-amp_frac_min}'
+                        f'-{amp_frac_min-amp_frac_min_low}\n')
+
+    amp_dev_med = np.percentile(
+        fit.stan_variables()['amp_dev_med'], quantiles[1])
+    amp_dev_med_low = np.percentile(
+        fit.stan_variables()['amp_dev_med'], quantiles[0])
+    amp_dev_med_up = np.percentile(
+        fit.stan_variables()['amp_dev_med'], quantiles[2])
+    amp_frac_med = np.percentile(
+        fit.stan_variables()['amp_frac_med'], quantiles[1])
+    amp_frac_med_low = np.percentile(
+        fit.stan_variables()['amp_frac_med'], quantiles[0])
+    amp_frac_med_up = np.percentile(
+        fit.stan_variables()['amp_frac_med'], quantiles[2])
+    logger_stan.warning(f'eROday AmpVar(med)={amp_dev_med}+'
+                        f'{amp_dev_med_up-amp_dev_med}'
+                        f'-{amp_dev_med-amp_dev_med_low}\n')
+    logger_stan.warning(f'AmpFrac(med)={amp_frac_med}'
+                        f'+{amp_frac_med_up-amp_frac_med}'
+                        f'-{amp_frac_med-amp_frac_med_low}\n')
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
