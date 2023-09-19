@@ -400,8 +400,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                         f'-{bg_rate_av-bg_rate_av_lower} cts/s')
     tot_exp = ftime.sum()
     tot_fexp = (delt * fexp).sum()
-    logger_stan.warning(f'Total Exposure: {tot_exp}s')
-    logger_stan.warning(f'Total Fractional Exposure: {tot_fexp}s')
+    logger_stan.warning(f'Total Exposure={tot_exp}s')
+    logger_stan.warning(f'Total Fractional Exposure={tot_fexp}s')
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)
@@ -872,8 +872,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                         f'-{bg_rate_av-bg_rate_av_lower} cts/s')
     tot_exp = ftime.sum()
     tot_fexp = (delt * fexp).sum()
-    logger_stan.warning(f'Total Exposure: {tot_exp}s')
-    logger_stan.warning(f'Total Fractional Exposure: {tot_fexp}s')
+    logger_stan.warning(f'Total Exposure={tot_exp}s')
+    logger_stan.warning(f'Total Fractional Exposure={tot_fexp}s')
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)
