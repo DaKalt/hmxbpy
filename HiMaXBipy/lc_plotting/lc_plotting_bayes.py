@@ -228,6 +228,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     back = np.array(hdulist[1].data.field('BACK_COUNTS'), dtype=int)[
         fexp_full > fexp_cut]
     backrat = hdulist[1].data.field('BACKRATIO')[fexp_full > fexp_cut]
+    ftime = hdulist[1].data.field('FRACTIME')[fexp_full > fexp_cut]
     for i, entry in enumerate(backrat):
         if entry < 0.01:
             backrat[i] = 0.01
@@ -397,6 +398,10 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.warning(f'Average Background Rate={bg_rate_av}'
                         f'+{bg_rate_av_upper-bg_rate_av}'
                         f'-{bg_rate_av-bg_rate_av_lower} cts/s')
+    tot_exp = ftime.sum()
+    tot_fexp = (delt * fexp).sum()
+    logger_stan.warning(f'Total Exposure: {tot_exp}s')
+    logger_stan.warning(f'Total Fractional Exposure: {tot_fexp}s')
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)
@@ -671,6 +676,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     back = np.array(hdulist[1].data.field('BACK_COUNTS'), dtype=int)[
         fexp_full > fexp_cut]
     backrat = hdulist[1].data.field('BACKRATIO')[fexp_full > fexp_cut]
+    ftime = hdulist[1].data.field('FRACTIME')[fexp_full > fexp_cut]
     for i, entry in enumerate(backrat):
         if entry < 0.01:
             backrat[i] = 0.01
@@ -864,6 +870,10 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.warning(f'Average Background Rate={bg_rate_av}'
                         f'+{bg_rate_av_upper-bg_rate_av}'
                         f'-{bg_rate_av-bg_rate_av_lower} cts/s')
+    tot_exp = ftime.sum()
+    tot_fexp = (delt * fexp).sum()
+    logger_stan.warning(f'Total Exposure: {tot_exp}s')
+    logger_stan.warning(f'Total Fractional Exposure: {tot_fexp}s')
 
     xtime = np.array(xtime)
     xtime_d = np.array(xtime_d)
