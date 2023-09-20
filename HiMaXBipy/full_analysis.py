@@ -285,6 +285,31 @@ class HiMaXBi:
             raise Exception('Z must be convertible to float.')
         self._Z = float(Z)
 
+    def get_NH(self):
+        '''Create DL.NH file with weighted NH from NH map by
+        Dickey & Lockman  1990 at the source position and set NH to the
+        value given with the task set_NH(NH_file='DL.NH').
+        The task set_radec with the source position must be run before.
+        '''
+        if not '_RA' in dir(self):
+            raise Exception('Source position needs to be set first.')
+        self._logger.warning('Creating DL.NH')
+        sh_file = f'{self._working_dir_full}/working/get_nh.sh'
+        process = subprocess.Popen(
+            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()  # Wait for process to complete.
+        NH = ''
+        string = '(cm**-2) '
+        for line in process.stdout.readlines():
+            line = str(line)[2:-3]
+            if line.find('Weighted') > -1:
+                NH = line[line.find(string)+len(string)+1:]
+        if NH == '':
+            raise Exception('Something went wrong when running get_nh.sh')
+        with open(f'{self._working_dir_full}/DL.NH', 'w') as file:
+            file.writelines(NH)
+        self.set_NH(NH_file=f'{self._working_dir}/DL.NH')
+
     def set_NH(self, NH=-1., NH_file=''):
         '''Set NH in the line of sight (LOS) towards the source. The
         default for LMC is 6e20. Either NH or NH_file has to be given,
