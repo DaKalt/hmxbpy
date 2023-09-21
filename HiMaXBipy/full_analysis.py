@@ -246,8 +246,10 @@ class HiMaXBi:
 
         '''
         self._logger.info(f'Distance set to {distance} kpc.')
-        if type(distance) != float and type(distance) != str:
-            raise Exception('distance must be a float or string.')
+        if (type(distance) != float
+            and type(distance) != str
+                and type(distance) != int):
+            raise Exception('distance must be a float, int or string.')
         try:
             if float(distance) <= 0:
                 raise Exception('distance must be > 0.')
@@ -293,7 +295,7 @@ class HiMaXBi:
         '''
         if not '_RA' in dir(self):
             raise Exception('Source position needs to be set first.')
-        self._logger.warning('Creating DL.NH')
+        self._logger.info('Creating DL.NH')
         sh_file = f'{self._working_dir_full}/working/get_nh.sh'
         process = subprocess.Popen(
             [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -339,11 +341,12 @@ class HiMaXBi:
                 if lines[0].find('\n') > 0:
                     NH = lines[0][:lines[0].find('\n')]
                 else:
-                    NH  = lines[0]
+                    NH = lines[0]
             if float(NH) <= 0:
                 raise Exception('NH must be > 0 or NH_file must exist.')
         except TypeError:
-            raise Exception('NH must be convertible to float.')
+            raise Exception('NH must be convertible to float (NH file might '
+                            'be corrupted).')
         self._NH = float(NH)
         self._NH_set = True
 
@@ -2404,9 +2407,9 @@ class HiMaXBi:
             if logfile == '':
                 logfile = f'LC_{bin_e[0]}keV_{bin_e[1]}keV_fexp{fracexp}.log'
             logfile = self._working_dir_full + '/logfiles/lightcurves/' + logfile
-            logstate = setup_logfile(self._logger, logfile)
             if os.path.exists(logfile):
                 os.remove(logfile)
+            logstate = setup_logfile(self._logger, logfile)
             for TM in TM_list:
                 if fileid == '':
                     pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
@@ -3373,6 +3376,17 @@ class HiMaXBi:
             bands[part_table].write('\\hline\n')
             bands[part_table].write("\\end{{tabular}}")
             bands[part_table].close()
+
+    def wipe_working_dir(self):
+        '''Task to clean up working directory to free up space.
+        '''
+        self._logger.info('Cleaning up working directory.')
+        for (path, dirs, filenames) in os.walk(f'{self._working_dir_full}'
+                                               '/working'):
+            for filename in filenames:
+                os.remove(os.path.join(path, filename))
+        self._LC_extracted = False
+        self._debugging = False
 
     def run_standard(self):
         '''
