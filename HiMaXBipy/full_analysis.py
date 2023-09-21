@@ -305,10 +305,13 @@ class HiMaXBi:
             if line.find('Weighted') > -1:
                 NH = line[line.find(string)+len(string)+1:]
         if NH == '':
-            raise Exception('Something went wrong when running get_nh.sh')
+            raise Exception('Something went wrong when running get_nh.sh. '
+                            'A likely error is not having installed the'
+                            ' heasoft software or a wrong setup. Try if the '
+                            'command "nh" is working correctly.')
         with open(f'{self._working_dir_full}/DL.NH', 'w') as file:
             file.writelines(NH)
-        self.set_NH(NH_file=f'{self._working_dir}/DL.NH')
+        self.set_NH(NH_file=f'{self._working_dir_full}/DL.NH')
 
     def set_NH(self, NH=-1., NH_file=''):
         '''Set NH in the line of sight (LOS) towards the source. The
