@@ -336,7 +336,10 @@ class HiMaXBi:
             if float(NH) == -1 and os.path.exists(NH_file):
                 with open(NH_file) as file:
                     lines = file.readlines()
-                NH = lines[0][:lines[0].find('\n')]
+                if lines[0].find('\n') > 0:
+                    NH = lines[0][:lines[0].find('\n')]
+                else:
+                    NH  = lines[0]
             if float(NH) <= 0:
                 raise Exception('NH must be > 0 or NH_file must exist.')
         except TypeError:
