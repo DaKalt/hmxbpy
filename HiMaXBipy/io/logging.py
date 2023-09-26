@@ -5,6 +5,7 @@
 @author: David Kaltenbrunner
 """
 import logging
+from datetime import datetime
 
 
 def setup_logfile(log, logname):
@@ -29,8 +30,9 @@ def setup_logger(name, working_dir):
     consoleHandler.setFormatter(logFormatter)
     consoleHandler.setLevel(logging.WARNING)
     log.addHandler(consoleHandler)
+    ttag = str(datetime.now()).replace(' ', '_')[:-7]
     fileHandler = logging.FileHandler(filename=f'{working_dir}'
-                                      '/logfiles/last_run.log', mode='w')
+                                      f'/logfiles/run_{ttag}.log', mode='w')
     fileHandler.setFormatter(logFormatter)
     fileHandler.setLevel(logging.INFO)
     log.addHandler(fileHandler)
