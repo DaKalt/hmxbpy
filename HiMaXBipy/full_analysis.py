@@ -116,11 +116,17 @@ class HiMaXBi:
 
         for (path, directories, filenames) in os.walk(self._sh_dir_):
             for filename in filenames:
+                if os.path.exists(f'{self._working_dir_full}/working/'
+                                  f'{filename}'):
+                    os.remove(f'{self._working_dir_full}/working/{filename}')
                 shutil.copy(self._sh_dir_ + '/' + filename,
                             self._working_dir_full + '/working')
 
         for (path, directories, filenames) in os.walk(self._stan_dir_):
             for filename in filenames:
+                if os.path.exists(f'{self._working_dir_full}/working/'
+                                  f'{filename}'):
+                    os.remove(f'{self._working_dir_full}/working/{filename}')
                 shutil.copy(self._stan_dir_ + '/' + filename,
                             self._working_dir_full + '/working')
 
@@ -162,6 +168,8 @@ class HiMaXBi:
 
         '''
         new_sh = path[:-3] + '_modified.sh'
+        if os.path.exists(new_sh):
+            os.remove(new_sh)
         shutil.copy(path, new_sh)
         for pair in replacements:
             for line in fileinput.input(new_sh, inplace=True):
@@ -3241,6 +3249,9 @@ class HiMaXBi:
                                        model_file, title, save_settings,
                                        log_suffix, colors, markers,
                                        fit_statistic)
+
+    def plot_spectra_bayesian(self):
+        return
 
     def _standard_spec_an(self, separate, skip_eRASS, table_name, mode,
                           file_list, skip_varabs, absorption, rebin,
