@@ -625,24 +625,11 @@ if __name__ == '__main__':
 __dir__ = [PCAFitter, PCAModel]
 
 
-def fit_bkg(bkg_file, source_file='', logfile=''):
+def fit_bkg(bkg_file, log, source_file=''):
     # logging.basicConfig(filename='bxa.log',level=logging.DEBUG)
     #logFormatter = logging.Formatter("[%(name)s %(levelname)s]: %(message)s")
     logFormatter = logging.Formatter("%(levelname)s: %(message)s")
-    if logfile == '':
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setFormatter(logFormatter)
-        consoleHandler.setLevel(logging.INFO)
-        logf.addHandler(consoleHandler)
-    else:
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setFormatter(logFormatter)
-        consoleHandler.setLevel(logging.WARNING)
-        logf.addHandler(consoleHandler)
-        fileHandler = logging.FileHandler(filename=logfile, mode='a')
-        fileHandler.setFormatter(logFormatter)
-        fileHandler.setLevel(logging.INFO)
-        logf.addHandler(fileHandler)
+    logf.handlers = log.handlers
 
     background_file = bkg_file
     source_file = source_file if source_file != '' else None

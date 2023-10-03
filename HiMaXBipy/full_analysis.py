@@ -20,7 +20,8 @@ from matplotlib import gridspec
 import numpy as np
 import scipy.stats
 try:
-    from xspec import AllData, AllModels, Fit, Model, Plot, Xset
+    from xspec import AllData, AllModels, Fit, Model, Plot, PlotManager,\
+        Spectrum, Xset
 except ModuleNotFoundError:
     raise Exception('xspec needs to be installed before using this package. '
                     'xspec is fully integrated in the general build of '
@@ -36,6 +37,8 @@ from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
 from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,\
     plot_lc_mincounts_broken_bayes
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
+from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa, plot_bxa
+from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple
 
 
 class HiMaXBi:
@@ -3251,6 +3254,11 @@ class HiMaXBi:
                                        fit_statistic)
 
     def plot_spectra_bayesian(self):
+        fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
+                abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
+                src_files, statistic, suffix, resume, working_dir, Z)
+        plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
+                 src_markers, bkg_markers, bkg_linestyle, epoch_type)
         return
 
     def _standard_spec_an(self, separate, skip_eRASS, table_name, mode,

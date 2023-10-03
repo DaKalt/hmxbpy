@@ -935,11 +935,11 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         ax.errorbar(t, sc_rate, xerr=terr,
                     yerr=sc_rate_err,
                     linestyle='None', color=color, fmt='o',
-                    zorder=4)
+                    zorder=6)
         ax.errorbar(t, bg_rate, xerr=terr,
                     yerr=bg_rate_err,
                     linestyle='None', color=color, fmt='x',
-                    zorder=3, alpha=alpha_bg)
+                    zorder=5, alpha=alpha_bg)
 
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
     pymin = ymin - (ymax-ymin)*0.05
