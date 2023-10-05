@@ -366,6 +366,29 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                         f'+{amp_frac_med_up-amp_frac_med}'
                         f'-{amp_frac_med-amp_frac_med_low}\n')
 
+    yrate = np.array(sc_rate)
+    yrate_lower = np.array(sc_rate_lower)
+    yrate_upper = np.array(sc_rate_upper)
+    yrate_e = np.sqrt(((yrate-yrate_lower)**2+(yrate_upper-yrate)**2)/2)
+
+    i_max = np.argmax(yrate_lower)
+    i_min = np.argmax(yrate_upper)
+
+    ampl_max2 = yrate_lower[i_max] - yrate_upper[i_min]
+    ampl_max = yrate[i_max] - yrate[i_min]
+    if yrate[i_min] > 0:
+        variability = yrate[i_max] / yrate[i_min]
+    else:
+        variability = -1
+    ampl_sig = ampl_max / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
+    ampl_sig2 = ampl_max2 / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
+
+    log.info(f'AMPL_MAX scan: {ampl_max}\n')
+    log.info(f'Variability V scan = {variability}\n')
+    log.info(f'AMPL_SIG scan: {ampl_sig}\n')
+    log.info(f'AMPL_MAX conservative scan: {ampl_max2}\n')
+    log.info(f'AMPL_SIG2 scan: {ampl_sig2}\n')
+
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
 
@@ -837,6 +860,29 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.warning(f'mincounts {mincounts} AmpFrac(med)={amp_frac_med}'
                         f'+{amp_frac_med_up-amp_frac_med}'
                         f'-{amp_frac_med-amp_frac_med_low}\n')
+
+    yrate = np.array(sc_rate)
+    yrate_lower = np.array(sc_rate_lower)
+    yrate_upper = np.array(sc_rate_upper)
+    yrate_e = np.sqrt(((yrate-yrate_lower)**2+(yrate_upper-yrate)**2)/2)
+
+    i_max = np.argmax(yrate_lower)
+    i_min = np.argmax(yrate_upper)
+
+    ampl_max2 = yrate_lower[i_max] - yrate_upper[i_min]
+    ampl_max = yrate[i_max] - yrate[i_min]
+    if yrate[i_min] > 0:
+        variability = yrate[i_max] / yrate[i_min]
+    else:
+        variability = -1
+    ampl_sig = ampl_max / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
+    ampl_sig2 = ampl_max2 / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
+
+    log.info(f'AMPL_MAX mincounts {mincounts}: {ampl_max}\n')
+    log.info(f'Variability V mincounts {mincounts} = {variability}\n')
+    log.info(f'AMPL_SIG mincounts {mincounts}: {ampl_sig}\n')
+    log.info(f'AMPL_MAX conservative mincounts {mincounts}: {ampl_max2}\n')
+    log.info(f'AMPL_SIG2 mincounts {mincounts}: {ampl_sig2}\n')
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
