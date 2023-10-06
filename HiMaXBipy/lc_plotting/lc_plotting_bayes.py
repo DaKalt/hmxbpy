@@ -372,7 +372,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     yrate_e = np.sqrt(((yrate-yrate_lower)**2+(yrate_upper-yrate)**2)/2)
 
     i_max = np.argmax(yrate_lower)
-    i_min = np.argmax(yrate_upper)
+    i_min = np.argmin(yrate_upper)
 
     ampl_max2 = yrate_lower[i_max] - yrate_upper[i_min]
     ampl_max = yrate[i_max] - yrate[i_min]
@@ -867,7 +867,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     yrate_e = np.sqrt(((yrate-yrate_lower)**2+(yrate_upper-yrate)**2)/2)
 
     i_max = np.argmax(yrate_lower)
-    i_min = np.argmax(yrate_upper)
+    i_min = np.argmin(yrate_upper)
 
     ampl_max2 = yrate_lower[i_max] - yrate_upper[i_min]
     ampl_max = yrate[i_max] - yrate[i_min]
