@@ -832,6 +832,8 @@ class HiMaXBi:
                     pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC'
                     outfile = (f'{self._working_dir}/results/lightcurves/'
                                f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC')
+                if yscale != 'linear':
+                    outfile += yscale
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
                                  f'./{self._src_name}_{self._skytile}_eROSITA_'
@@ -847,7 +849,7 @@ class HiMaXBi:
 
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                 ax = fig1.add_subplot(111)
-                ax.set_yscale(yscale) #sets yscale to log if wanted
+                ax.set_yscale(yscale)  # sets yscale to log if wanted
 
                 self._logger.info(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
@@ -1184,6 +1186,8 @@ class HiMaXBi:
                     outfile = (f'{self._working_dir}/results/lightcurves/'
                                f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
                                'brokenLC')
+                if yscale != 'linear':
+                    outfile += yscale
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
                                  f'./{self._src_name}_{self._skytile}_eROSITA_'
@@ -2466,6 +2470,8 @@ class HiMaXBi:
                     outfile = (f'{self._working_dir}/results/lightcurves/'
                                f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
                                f'brokenLC_bayes_{mode}')
+                if yscale != 'linear':
+                    outfile += yscale
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
                                 f'./{self._src_name}_{self._skytile}_eROSITA_'
