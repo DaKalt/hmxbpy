@@ -637,7 +637,7 @@ class HiMaXBi:
                      label_style='serif', label_size=16, figsize=[16, 7],
                      colors=[], fileid='', toplab='', separate_TM=False,
                      vlines=[], ticknumber_y=5, ticknumber_x=8, E_bins=[],
-                     lc_binning=-1):
+                     lc_binning=-1, yscale='linear'):
         '''Function to create full lightcurve.
 
         Parameters
@@ -701,6 +701,9 @@ class HiMaXBi:
         lc_binning : str or float, optional
             Sets initial lc binsize in seconds. The default is -1
             (meaning the current value is not changeds)
+        yscale : str, optional
+            Scale for yaxis of LC, either 'linear' or 'log'. The default
+            is 'linear'.
 
         '''
         self._logger.info('Running plot_lc_full.')
@@ -782,6 +785,12 @@ class HiMaXBi:
                     raise Exception(
                         'The third entry in each line of vlines needs to be a '
                         'negative integer < -2.')
+        if type(yscale) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if (yscale != 'linear'
+                    and yscale != 'log'):
+                raise Exception('yscale must be \'linear\' or \'log\'.')
 
         os.chdir(self._working_dir_full + '/working/')
 
@@ -838,6 +847,7 @@ class HiMaXBi:
 
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                 ax = fig1.add_subplot(111)
+                ax.set_yscale(yscale) #sets yscale to log if wanted
 
                 self._logger.info(f'Now working on {pfile}.fits\n')
                 hdulist = fits.open(f'{pfile}.fits')
@@ -943,7 +953,8 @@ class HiMaXBi:
                        colors=[], fileid='', toplab='', separate_TM=False,
                        vlines=[], ticknumber_y=5, ticknumber_x=3, E_bins=[],
                        lc_binning=-1, d=12, tilt=45, diag_color="k",
-                       short_time=True, fig_borders=[0.97, 0.1, 0.05, 0.98]):
+                       short_time=True, fig_borders=[0.97, 0.1, 0.05, 0.98],
+                       yscale='linear'):
         '''Function to create full lightcurve with gaps cut out.
 
         Parameters
@@ -1020,6 +1031,9 @@ class HiMaXBi:
         fig_borders : array-like (n,1), optional
             Sets the borders of the figure (top, bottom, left, right).
             The default is [0.97, 0.1, 0.05, 0.98].
+        yscale : str, optional
+            Scale for yaxis of LC, either 'linear' or 'log'. The default
+            is 'linear'.
         '''
         self._logger.info('Running plot_lc_broken.')
         if type(logname) != str:
@@ -1116,6 +1130,12 @@ class HiMaXBi:
                 if type(entry) != float:
                     raise Exception(
                         'Entries in fig_borders need to be of type float.')
+        if type(yscale) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if (yscale != 'linear'
+                    and yscale != 'log'):
+                raise Exception('yscale must be \'linear\' or \'log\'.')
 
         os.chdir(self._working_dir_full + '/working/')
 
@@ -1273,6 +1293,7 @@ class HiMaXBi:
                                 transform=big_ax.transAxes)
 
                 for ax in axs:
+                    ax.set_yscale(yscale)
                     for i in range(len(vlines)):
                         ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
                                   colors=vlines[i][1], linestyle='dotted',
@@ -2161,7 +2182,7 @@ class HiMaXBi:
                              ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
                              tilt=45, diag_color="k", short_time=True,
                              fig_borders=[0.97, 0.1, 0.05, 0.98],
-                             bbp0=0.01, bbmode='both'):
+                             bbp0=0.01, bbmode='both', yscale='linear'):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
 
@@ -2262,6 +2283,9 @@ class HiMaXBi:
             (source counts only), 'both' (one overlay for source and
             background counts each) or 'sum' (overlay for sc+bg counts).
             The default is 'both'.
+        yscale : str, optional
+            Scale for yaxis of LC, either 'linear' or 'log'. The default
+            is 'linear'.
         '''
         self._logger.info(f'Running plot_lc_HR in mode {mode}.')
         if type(logfile) != str:
@@ -2379,6 +2403,12 @@ class HiMaXBi:
                 and bbmode != 'both'
                     and bbmode != 'sum'):
                 raise Exception('bbmode must be \'sc\', \'both\' or \'sum\'')
+        if type(yscale) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if (yscale != 'linear'
+                    and yscale != 'log'):
+                raise Exception('yscale must be \'linear\' or \'log\'.')
 
         os.chdir(self._working_dir_full + '/working/')
 
@@ -2567,6 +2597,7 @@ class HiMaXBi:
                                 transform=big_ax.transAxes)
 
                 for ax in axs:
+                    ax.set_yscale(yscale)  # set yscale to log if wanted
                     for i in range(len(vlines)):
                         ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
                                   colors=vlines[i][1], linestyle='dotted',
