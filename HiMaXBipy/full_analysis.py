@@ -833,7 +833,7 @@ class HiMaXBi:
                     outfile = (f'{self._working_dir}/results/lightcurves/'
                                f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_fullLC')
                 if yscale != 'linear':
-                    outfile += yscale
+                    outfile += f'_{yscale}'
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
                                  f'./{self._src_name}_{self._skytile}_eROSITA_'
@@ -1187,7 +1187,7 @@ class HiMaXBi:
                                f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
                                'brokenLC')
                 if yscale != 'linear':
-                    outfile += yscale
+                    outfile += f'_{yscale}'
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
                                  f'./{self._src_name}_{self._skytile}_eROSITA_'
@@ -2471,7 +2471,7 @@ class HiMaXBi:
                                f'{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_'
                                f'brokenLC_bayes_{mode}')
                 if yscale != 'linear':
-                    outfile += yscale
+                    outfile += f'_{yscale}'
                 replacements = [['@esass_location', self._esass],
                                 ['@infile',
                                 f'./{self._src_name}_{self._skytile}_eROSITA_'
