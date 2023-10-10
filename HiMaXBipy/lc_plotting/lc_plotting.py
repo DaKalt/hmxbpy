@@ -1139,17 +1139,21 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
         if i_ax == 0:
             ax.plot([1, 1], [0, 1], transform=ax.transAxes, **kwargs)
             ax.spines.right.set_visible(False)
-            ax.tick_params(right=False, labelright=False)
+            ax.tick_params(which='major', right=False, labelright=False)
+            ax.tick_params(which='minor', right=False, labelright=False)
         elif i_ax == len(axs) - 1:
             ax.plot([0, 0], [0, 1], transform=ax.transAxes, **kwargs)
             ax.spines.left.set_visible(False)
-            ax.tick_params(left=False, labelleft=False)
+            ax.tick_params(which='major', left=False, labelleft=False)
+            ax.tick_params(which='minor', left=False, labelleft=False)
         else:
             ax.plot([0, 0, 1, 1], [0, 1, 0, 1],
                     transform=ax.transAxes, **kwargs)
             ax.spines.right.set_visible(False)
             ax.spines.left.set_visible(False)
-            ax.tick_params(left=False, labelleft=False,
+            ax.tick_params(which='major', left=False, labelleft=False,
+                           right=False, labelright=False)
+            ax.tick_params(which='minor', left=False, labelleft=False,
                            right=False, labelright=False)
 
         if i_ax == 0 or i_ax == len(axs) - 1:
