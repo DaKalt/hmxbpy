@@ -2515,7 +2515,7 @@ class HiMaXBi:
                         obs_periods=self._obs_periods, short_time=short_time,
                         stan_model=stan_model, quantiles=quantiles,
                         time_rel=time_rel, fexp_cut=float(fracexp),
-                        alpha_bg=alpha_bg)
+                        alpha_bg=alpha_bg, yscale=yscale)
                 elif mode == 'mincounts':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
@@ -2523,7 +2523,8 @@ class HiMaXBi:
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time, stan_model=stan_model,
                         quantiles=quantiles, time_rel=time_rel,
-                        fexp_cut=float(fracexp), alpha_bg=alpha_bg)
+                        fexp_cut=float(fracexp), alpha_bg=alpha_bg,
+                        yscale=yscale)
                 elif mode == 'mincounts_scan':
                     pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
@@ -2531,14 +2532,15 @@ class HiMaXBi:
                         obs_periods=self._obs_periods, short_time=short_time,
                         stan_model=stan_model, quantiles=quantiles,
                         time_rel=time_rel, fexp_cut=float(fracexp),
-                        alpha_bg=alpha_bg)
+                        alpha_bg=alpha_bg, yscale=yscale)
                     pxmin2, pxmax2, pymin2, pymax2, time_rel = plot_lc_mincounts_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
                         short_time=short_time, stan_model=stan_model,
                         quantiles=quantiles, time_rel=time_rel,
-                        fexp_cut=float(fracexp), alpha_bg=alpha_bg)
+                        fexp_cut=float(fracexp), alpha_bg=alpha_bg,
+                        yscale=yscale)
                     pymin = min([pymin1, pymin2])
                     pymax = max([pymax1, pymax2])
                     pxmin = np.min([pxmin1, pxmin2], axis=0)
@@ -2551,7 +2553,7 @@ class HiMaXBi:
                         short_time=short_time, stan_model=stan_model,
                         quantiles=quantiles, time_rel=time_rel,
                         fexp_cut=float(fracexp), alpha_bg=alpha_bg,
-                        bblocks=True, bbmode=bbmode, bbp0=bbp0)
+                        bblocks=True, bbmode=bbmode, bbp0=bbp0, yscale=yscale)
                 elif mode == 'scan_bb':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
@@ -2560,7 +2562,7 @@ class HiMaXBi:
                         stan_model=stan_model, quantiles=quantiles,
                         time_rel=time_rel, fexp_cut=float(fracexp),
                         alpha_bg=alpha_bg, bblocks=True, bbmode=bbmode,
-                        bbp0=bbp0)
+                        bbp0=bbp0, yscale=yscale)
 
                 hdulist.close()
 

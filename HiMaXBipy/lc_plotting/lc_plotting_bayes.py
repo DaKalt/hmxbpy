@@ -197,7 +197,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                 color, obs_periods, short_time, stan_model,
                                 quantiles, time_rel=0, fexp_cut=0.15,
                                 alpha_bg=0.5, bblocks=False, bbp0=0.01,
-                                bbmode='both'):
+                                bbmode='both', yscale='linear'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
     Bayesian fit assuming Poissionian distribution for counts and log;
@@ -208,7 +208,6 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.handlers = log.handlers.copy()
     pxmin = []
     pxmax = []
-    ymin = 0
     pymax = []
     sc_rate = []
     sc_rate_upper = []
@@ -494,8 +493,17 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                     zorder=3, alpha=alpha_bg)
 
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
-    pymin = ymin - (ymax-ymin)*0.05
-    pymax = ymax + (ymax-ymin)*0.05
+    if yscale == 'linear':
+        ymin = 0
+        pymin = ymin - (ymax-ymin)*0.05
+        pymax = ymax + (ymax-ymin)*0.05
+    elif yscale == 'log':
+        ymin = min([min(sc_rate_lower), min(bg_rate_lower)])
+        pymin = ymin / ((ymax/ymin) ** 0.05)
+        pymax = ymax * ((ymax/ymin) ** 0.05)
+    else:
+        pymin = 0
+        pymax = 100
 
     if bblocks:
         if bbmode == 'sc' or bbmode == 'both':
@@ -668,7 +676,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                    short_time, stan_model, quantiles,
                                    time_rel=0, fexp_cut=0.15,
                                    alpha_bg=0.5, bblocks=False, bbp0=0.01,
-                                   bbmode='both'):
+                                   bbmode='both', yscale='linear'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
     Bayesian fit assuming Poissionian distribution for counts and log;
@@ -679,7 +687,6 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.handlers = log.handlers.copy()
     pxmin = []
     pxmax = []
-    ymin = 0
     pymax = []
     sc_rate = []
     sc_rate_upper = []
@@ -988,8 +995,17 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                     zorder=5, alpha=alpha_bg)
 
     ymax = max([max(sc_rate_upper), max(bg_rate_upper)])
-    pymin = ymin - (ymax-ymin)*0.05
-    pymax = ymax + (ymax-ymin)*0.05
+    if yscale == 'linear':
+        ymin = 0
+        pymin = ymin - (ymax-ymin)*0.05
+        pymax = ymax + (ymax-ymin)*0.05
+    elif yscale == 'log':
+        ymin = min([min(sc_rate_lower), min(bg_rate_lower)])
+        pymin = ymin / ((ymax/ymin) ** 0.05)
+        pymax = ymax * ((ymax/ymin) ** 0.05)
+    else:
+        pymin = 0
+        pymax = 100
 
     if bblocks:
         if bbmode == 'sc' or bbmode == 'both':
