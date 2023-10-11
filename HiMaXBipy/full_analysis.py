@@ -1315,7 +1315,8 @@ class HiMaXBi:
 
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                        ticknumber_x, ticknumber_y, ncols,
-                                       nrows, d, tilt, diag_color, big_ax)
+                                       nrows, d, tilt, diag_color, big_ax,
+                                       yscale)
 
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
@@ -2011,9 +2012,11 @@ class HiMaXBi:
                                       pymin, pymax, colors='grey',
                                       linestyle='dotted', zorder=-4)
 
+                yscale = 'linear' #if needed this needs to be programmed
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                        ticknumber_x, ticknumber_y, ncols,
-                                       nrows, d, tilt, diag_color, big_ax)
+                                       nrows, d, tilt, diag_color, big_ax,
+                                       yscale)
 
                 if i == 0:
                     width_ratios = []
@@ -2136,9 +2139,10 @@ class HiMaXBi:
                                   pymin, pymax, colors='grey',
                                   linestyle='dotted', zorder=-4)
 
+            yscale = 'linear' #this needs to be changed entirely anyways
             format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                    ticknumber_x, ticknumber_y, ncols,
-                                   nrows, d, tilt, diag_color, big_ax)
+                                   nrows, d, tilt, diag_color, big_ax, yscale)
 
             gs = gridspec.GridSpec(ncols=ncols,
                                    nrows=nrows,
@@ -2623,7 +2627,8 @@ class HiMaXBi:
 
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                        ticknumber_x, ticknumber_y, ncols,
-                                       nrows, d, tilt, diag_color, big_ax)
+                                       nrows, d, tilt, diag_color, big_ax,
+                                       yscale)
 
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)

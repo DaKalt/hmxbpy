@@ -1114,13 +1114,13 @@ def plot_lc_UL_broken_new(hdulist, axs, log, mjdref, xflag, mincounts,
 
 def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                            ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
-                           diag_color, big_ax):
+                           diag_color, big_ax, yscale):
     # proportion of vertical to horizontal extent of the slanted line
     d = np.tan(tilt)
     kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12, linestyle="none",
                   color=diag_color, mec=diag_color, mew=1, clip_on=False)
 
-    start_x, end_x, longest_y = 0, 0, 0
+    start_x, end_x = 0, 0
 
     for i_ax, ax in enumerate(axs):
         loc = plticker.MultipleLocator(base=1.0)
@@ -1157,18 +1157,34 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                            right=False, labelright=False)
 
         if i_ax == 0 or i_ax == len(axs) - 1:
-            tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
-            yticks = []
-            for j in range(-2*int(ticknumber_y), 2*int(ticknumber_y) + 1):
-                if j * tick_size_y > pymin and j * tick_size_y < pymax:
-                    yticks.append(j * tick_size_y)
-            ax.set_yticks(yticks)
+            if yscale == 'linear':
+                tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
+                yticks = []
+                for j in range(-2*int(ticknumber_y), 2*int(ticknumber_y) + 1):
+                    if j * tick_size_y > pymin and j * tick_size_y < pymax:
+                        yticks.append(j * tick_size_y)
+                ax.set_yticks(yticks)
+                big_ax.set_yticks(yticks)
+            elif yscale == 'log':
+                yticks = []
+                for power in range(np.floor(np.log10(pymin)),
+                                   np.ceil(np.log10(pymax))):
+                    if (np.log10(pymax/pymin) >= 2 * ticknumber_y
+                            and power % 2 == 1):
+                        continue
+                    yticks.append(10**power)
+                    if np.log10(pymax/pymin) * 2 <= ticknumber_y:
+                        yticks.append(2 * 10 ** power)
+                    if np.log10(pymax/pymin) <= ticknumber_y:
+                        yticks.append(5 * 10 ** power)
+                ax.set_yticks(yticks)
+                big_ax.set_yticks(yticks)
 
-            longest_y = ''
-            for entry in ax.get_yticks():
-                entry = round_to_1(entry)
-                if len(str(entry)) > len(longest_y):
-                    longest_y = str(entry)
+            # longest_y = ''
+            # for entry in ax.get_yticks():
+            #     entry = round_to_1(entry)
+            #     if len(str(entry)) > len(longest_y):
+            #         longest_y = str(entry)
 
         tick_size_x = np.round(
             (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
@@ -1195,6 +1211,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
 
         ax.set_xbound(lower=pxmins[i_ax], upper=pxmaxs[i_ax])
         ax.set_ybound(lower=pymin, upper=pymax)
+    big_ax.set_ybound(lower=pymin, upper=pymax)
 
     big_ax.tick_params(left=True, bottom=True,
                        right=True, top=True)
@@ -1212,12 +1229,10 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                        right='on', length=0)
 
     big_ax.set_xbound(lower=0, upper=1)
-    big_ax.set_ybound(lower=0, upper=1)
     big_ax.set_xticks([0, 1])
-    big_ax.set_yticks([0, 1])
 
     big_ax.set_xticklabels([start_x, end_x], alpha=0)
-    big_ax.set_yticklabels([longest_y, longest_y], alpha=0)
+    big_ax.yaxis.set_ticklabels(big_ax.yaxis.get_ticklabels(), alpha=0)
 
 
 def plot_lc_mincounts_hr(hdulist_1, hdulist_2, axs, log, mjdref, xflag,
