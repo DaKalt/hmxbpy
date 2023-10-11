@@ -1296,6 +1296,7 @@ class HiMaXBi:
                                 horizontalalignment='center',
                                 transform=big_ax.transAxes)
 
+                big_ax.set_yscale(yscale)
                 for ax in axs:
                     ax.set_yscale(yscale)
                     for i in range(len(vlines)):
@@ -2012,7 +2013,7 @@ class HiMaXBi:
                                       pymin, pymax, colors='grey',
                                       linestyle='dotted', zorder=-4)
 
-                yscale = 'linear' #if needed this needs to be programmed
+                yscale = 'linear'  # if needed this needs to be programmed
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                        ticknumber_x, ticknumber_y, ncols,
                                        nrows, d, tilt, diag_color, big_ax,
@@ -2139,7 +2140,7 @@ class HiMaXBi:
                                   pymin, pymax, colors='grey',
                                   linestyle='dotted', zorder=-4)
 
-            yscale = 'linear' #this needs to be changed entirely anyways
+            yscale = 'linear'  # this needs to be changed entirely anyways
             format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                    ticknumber_x, ticknumber_y, ncols,
                                    nrows, d, tilt, diag_color, big_ax, yscale)
@@ -2608,6 +2609,7 @@ class HiMaXBi:
                                 horizontalalignment='center',
                                 transform=big_ax.transAxes)
 
+                big_ax.set_yscale(yscale)
                 for ax in axs:
                     ax.set_yscale(yscale)  # set yscale to log if wanted
                     for i in range(len(vlines)):
