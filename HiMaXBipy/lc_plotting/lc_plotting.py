@@ -501,7 +501,7 @@ def format_axis(ax, pxmin, pxmax, pymin, pymax, ticknumber_x, ticknumber_y):
     ax.set_xlim(pxmin, pxmax)
     ax.set_ylim(pymin, pymax)
     # this locator puts ticks at regular intervals
-    loc = plticker.MultipleLocator(base=1.0)
+    loc = plticker.MultipleLocator(base=10.0)
     ax.yaxis.set_major_locator(loc)
     x_formatter = plticker.ScalarFormatter(useOffset=False)
     ax.xaxis.set_major_formatter(x_formatter)
@@ -1124,7 +1124,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
     start_x, end_x = 0, 0
 
     for i_ax, ax in enumerate(axs):
-        loc = plticker.MultipleLocator(base=1.0)
+        loc = plticker.MultipleLocator(base=10.0)
         ax.yaxis.set_major_locator(loc)
         x_formatter = plticker.ScalarFormatter(useOffset=False)
         ax.xaxis.set_major_formatter(x_formatter)
@@ -1167,17 +1167,23 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                 ax.set_yticks(yticks)
             elif yscale == 'log':
                 yticks = []
+                yticklabes = []
                 for power in range(int(np.floor(np.log10(pymin))),
                                    int(np.ceil(np.log10(pymax)))):
                     if (np.log10(pymax/pymin) >= 2 * ticknumber_y
                             and power % 2 == 1):
                         continue
                     yticks.append(10**power)
+                    yticklabes.append('$\\mathdefault{10^{%i}}$' % (power))
                     if np.log10(pymax/pymin) * 2 <= ticknumber_y:
                         yticks.append(2 * 10 ** power)
+                        yticklabes.append('$\\mathdefault{2\\times10^{%i}}$'
+                                          % (power))
                     if np.log10(pymax/pymin) <= ticknumber_y:
                         yticks.append(5 * 10 ** power)
-                ax.set_yticks(yticks)
+                        yticklabes.append('$\\mathdefault{5\\times10^{%i}}$'
+                                          % (power))
+                ax.set_yticks(yticks, labels=yticklabes)
 
             # longest_y = ''
             # for entry in ax.get_yticks():
@@ -1213,7 +1219,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
 
     big_ax.tick_params(left=True, bottom=True,
                        right=True, top=True)
-    loc = plticker.MultipleLocator(base=1.0)
+    loc = plticker.MultipleLocator(base=10.0)
     big_ax.yaxis.set_major_locator(loc)
     x_formatter = plticker.ScalarFormatter(useOffset=False)
     big_ax.xaxis.set_major_formatter(x_formatter)
