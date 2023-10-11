@@ -1167,8 +1167,8 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                 big_ax.set_yticks(yticks)
             elif yscale == 'log':
                 yticks = []
-                for power in range(np.floor(np.log10(pymin)),
-                                   np.ceil(np.log10(pymax))):
+                for power in range(int(np.floor(np.log10(pymin))),
+                                   int(np.ceil(np.log10(pymax)))):
                     if (np.log10(pymax/pymin) >= 2 * ticknumber_y
                             and power % 2 == 1):
                         continue
