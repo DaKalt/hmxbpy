@@ -1123,21 +1123,6 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
 
     start_x, end_x = 0, 0
 
-    big_ax.tick_params(left=True, bottom=True,
-                       right=True, top=True)
-    loc = plticker.MultipleLocator(base=1.0)
-    big_ax.yaxis.set_major_locator(loc)
-    x_formatter = plticker.ScalarFormatter(useOffset=False)
-    big_ax.xaxis.set_major_formatter(x_formatter)
-    big_ax.tick_params(axis='x', which='major', direction='in',
-                       top='on',   pad=9, length=0)  # , labelsize=10)
-    big_ax.tick_params(axis='x', which='minor', direction='in',
-                       top='on',   length=0)  # , labelsize=0)
-    big_ax.tick_params(axis='y', which='major', direction='in',
-                       right='on', length=0)  # , labelsize=10)
-    big_ax.tick_params(axis='y', which='minor', direction='in',
-                       right='on', length=0)
-
     for i_ax, ax in enumerate(axs):
         loc = plticker.MultipleLocator(base=1.0)
         ax.yaxis.set_major_locator(loc)
@@ -1180,7 +1165,6 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                     if j * tick_size_y > pymin and j * tick_size_y < pymax:
                         yticks.append(j * tick_size_y)
                 ax.set_yticks(yticks)
-                big_ax.set_yticks(yticks)
             elif yscale == 'log':
                 yticks = []
                 for power in range(int(np.floor(np.log10(pymin))),
@@ -1194,7 +1178,6 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                     if np.log10(pymax/pymin) <= ticknumber_y:
                         yticks.append(5 * 10 ** power)
                 ax.set_yticks(yticks)
-                big_ax.set_yticks(yticks)
 
             # longest_y = ''
             # for entry in ax.get_yticks():
@@ -1227,13 +1210,29 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
 
         ax.set_xbound(lower=pxmins[i_ax], upper=pxmaxs[i_ax])
         ax.set_ybound(lower=pymin, upper=pymax)
-    big_ax.set_ybound(lower=pymin, upper=pymax)
+
+    big_ax.tick_params(left=True, bottom=True,
+                       right=True, top=True)
+    loc = plticker.MultipleLocator(base=1.0)
+    big_ax.yaxis.set_major_locator(loc)
+    x_formatter = plticker.ScalarFormatter(useOffset=False)
+    big_ax.xaxis.set_major_formatter(x_formatter)
+    big_ax.tick_params(axis='x', which='major', direction='in',
+                       top='on',   pad=9, length=0)  # , labelsize=10)
+    big_ax.tick_params(axis='x', which='minor', direction='in',
+                       top='on',   length=0)  # , labelsize=0)
+    big_ax.tick_params(axis='y', which='major', direction='in',
+                       right='on', length=0)  # , labelsize=10)
+    big_ax.tick_params(axis='y', which='minor', direction='in',
+                       right='on', length=0)
 
     big_ax.set_xbound(lower=0, upper=1)
     big_ax.set_xticks([0, 1])
-
     big_ax.set_xticklabels([start_x, end_x], alpha=0)
-    big_ax.set_yticklabels(big_ax.get_yticklabels(), alpha=0)
+
+    big_ax.set_yticks(axs[0].get_yticks())
+    big_ax.set_yticklabels(axs[0].get_yticklabels(), alpha=0)
+    big_ax.set_ybound(lower=pymin, upper=pymax)
 
 
 def plot_lc_mincounts_hr(hdulist_1, hdulist_2, axs, log, mjdref, xflag,
