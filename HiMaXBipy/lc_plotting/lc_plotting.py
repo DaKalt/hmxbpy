@@ -1175,11 +1175,11 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                         continue
                     yticks.append(10**power)
                     yticklabes.append('$\\mathdefault{10^{%i}}$' % (power))
-                    if np.log10(pymax/pymin) * 2 <= ticknumber_y:
+                    if np.log10(pymax/pymin) * 4 <= ticknumber_y:
                         yticks.append(2 * 10 ** power)
                         yticklabes.append('$\\mathdefault{2\\times10^{%i}}$'
                                           % (power))
-                    if np.log10(pymax/pymin) <= ticknumber_y:
+                    if np.log10(pymax/pymin) * 2 <= ticknumber_y:
                         yticks.append(5 * 10 ** power)
                         yticklabes.append('$\\mathdefault{5\\times10^{%i}}$'
                                           % (power))

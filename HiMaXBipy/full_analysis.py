@@ -955,7 +955,7 @@ class HiMaXBi:
                        colors=[], fileid='', toplab='', separate_TM=False,
                        vlines=[], ticknumber_y=5, ticknumber_x=3, E_bins=[],
                        lc_binning=-1, d=12, tilt=45, diag_color="k",
-                       short_time=True, fig_borders=[0.97, 0.1, 0.05, 0.98],
+                       short_time=True, fig_borders=[],
                        yscale='linear'):
         '''Function to create full lightcurve with gaps cut out.
 
@@ -1126,7 +1126,7 @@ class HiMaXBi:
         if type(fig_borders) != list and type(fig_borders) != np.ndarray:
             raise Exception('fig_borders must be array-like')
         else:
-            if len(fig_borders) != 4:
+            if len(fig_borders) != 4 and len(fig_borders) != 0:
                 raise Exception('fig_borders needs exactly 4 entries')
             for entry in fig_borders:
                 if type(entry) != float:
@@ -1319,6 +1319,11 @@ class HiMaXBi:
                                        nrows, d, tilt, diag_color, big_ax,
                                        yscale)
 
+                if fig_borders == []:
+                    if yscale == 'log' and pymax / pymin * 2 >= ticknumber_y:
+                        fig_borders = [0.97, 0.1, 0.1, 0.98]
+                    else:
+                        fig_borders = [0.97, 0.1, 0.05, 0.98]
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
                 wspace = 8.0 / figsize[0] * 0.05
@@ -1698,7 +1703,7 @@ class HiMaXBi:
                    colors=[], fileid='', toplab='', separate_TM=False,
                    vlines=[], ticknumber_y=5, ticknumber_x=3, E_bins=[],
                    lc_binning=-1, d=12, tilt=45, diag_color="k",
-                   short_time=True, fig_borders=[0.97, 0.1, 0.05, 0.98]):
+                   short_time=True, fig_borders=[]):
         '''Function to create full lightcurve with gaps cut out.
 
         Parameters
@@ -1866,7 +1871,7 @@ class HiMaXBi:
         if type(fig_borders) != list and type(fig_borders) != np.ndarray:
             raise Exception('fig_borders must be array-like')
         else:
-            if len(fig_borders) != 4:
+            if len(fig_borders) != 4 and len(fig_borders) != 0:
                 raise Exception('fig_borders needs exactly 4 entries')
             for entry in fig_borders:
                 if type(entry) != float:
@@ -2014,6 +2019,9 @@ class HiMaXBi:
                                       linestyle='dotted', zorder=-4)
 
                 yscale = 'linear'  # if needed this needs to be programmed
+                if fig_borders == []:
+                    if yscale == 'log' and pymax / pymin * 2 >= ticknumber_y:
+                        fig_borders = [0.97, 0.1, 0.1, 0.98]
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                        ticknumber_x, ticknumber_y, ncols,
                                        nrows, d, tilt, diag_color, big_ax,
@@ -2140,7 +2148,7 @@ class HiMaXBi:
                                   pymin, pymax, colors='grey',
                                   linestyle='dotted', zorder=-4)
 
-            yscale = 'linear'  # this needs to be changed entirely anyways
+            yscale = 'linear'  #TODO this needs to be changed entirely anyways
             format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                    ticknumber_x, ticknumber_y, ncols,
                                    nrows, d, tilt, diag_color, big_ax, yscale)
@@ -2153,6 +2161,8 @@ class HiMaXBi:
             fig1.set_tight_layout(True)
             fig1.set_tight_layout(False)
             wspace = 8.0 / figsize[0] * 0.05
+            if fig_borders == []:
+                fig_borders = [0.97, 0.1, 0.05, 0.98]
             fig1.subplots_adjust(
                 wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
                 left=fig_borders[2], right=fig_borders[3])
@@ -2190,7 +2200,7 @@ class HiMaXBi:
                              separate_TM=False, vlines=[], ticknumber_y=5,
                              ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
                              tilt=45, diag_color="k", short_time=True,
-                             fig_borders=[0.97, 0.1, 0.05, 0.98],
+                             fig_borders=[],
                              bbp0=0.01, bbmode='both', yscale='linear'):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
@@ -2397,7 +2407,7 @@ class HiMaXBi:
         if type(fig_borders) != list and type(fig_borders) != np.ndarray:
             raise Exception('fig_borders must be array-like')
         else:
-            if len(fig_borders) != 4:
+            if len(fig_borders) != 4 and len(fig_borders) != 0:
                 raise Exception('fig_borders needs exactly 4 entries')
             for entry in fig_borders:
                 if type(entry) != float:
@@ -2632,6 +2642,12 @@ class HiMaXBi:
                                        nrows, d, tilt, diag_color, big_ax,
                                        yscale)
 
+
+                if fig_borders == []:
+                    if yscale == 'log' and pymax / pymin * 2 >= ticknumber_y:
+                        fig_borders = [0.97, 0.1, 0.1, 0.98]
+                    else:
+                        fig_borders = [0.97, 0.1, 0.05, 0.98]
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
                 wspace = 8.0 / figsize[0] * 0.05
