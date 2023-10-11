@@ -1232,7 +1232,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
     big_ax.set_xticks([0, 1])
 
     big_ax.set_xticklabels([start_x, end_x], alpha=0)
-    big_ax.yaxis.set_ticklabels(big_ax.yaxis.get_ticklabels(), alpha=0)
+    big_ax.set_yticklabels(big_ax.get_yticklabels(), alpha=0)
 
 
 def plot_lc_mincounts_hr(hdulist_1, hdulist_2, axs, log, mjdref, xflag,
