@@ -1320,7 +1320,7 @@ class HiMaXBi:
                                        yscale)
 
                 if fig_borders == []:
-                    if yscale == 'log' and pymax / pymin * 2 >= ticknumber_y:
+                    if yscale == 'log' and pymax / pymin * 2 <= ticknumber_y:
                         fig_borders = [0.97, 0.1, 0.1, 0.98]
                     else:
                         fig_borders = [0.97, 0.1, 0.05, 0.98]
@@ -2020,7 +2020,7 @@ class HiMaXBi:
 
                 yscale = 'linear'  # if needed this needs to be programmed
                 if fig_borders == []:
-                    if yscale == 'log' and pymax / pymin * 2 >= ticknumber_y:
+                    if yscale == 'log' and pymax / pymin * 2 <= ticknumber_y:
                         fig_borders = [0.97, 0.1, 0.1, 0.98]
                 format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                        ticknumber_x, ticknumber_y, ncols,
@@ -2148,7 +2148,7 @@ class HiMaXBi:
                                   pymin, pymax, colors='grey',
                                   linestyle='dotted', zorder=-4)
 
-            yscale = 'linear'  #TODO this needs to be changed entirely anyways
+            yscale = 'linear'  # TODO this needs to be changed entirely anyways
             format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
                                    ticknumber_x, ticknumber_y, ncols,
                                    nrows, d, tilt, diag_color, big_ax, yscale)
@@ -2642,9 +2642,8 @@ class HiMaXBi:
                                        nrows, d, tilt, diag_color, big_ax,
                                        yscale)
 
-
                 if fig_borders == []:
-                    if yscale == 'log' and pymax / pymin * 2 >= ticknumber_y:
+                    if yscale == 'log' and pymax / pymin * 2 <= ticknumber_y:
                         fig_borders = [0.97, 0.1, 0.1, 0.98]
                     else:
                         fig_borders = [0.97, 0.1, 0.05, 0.98]
