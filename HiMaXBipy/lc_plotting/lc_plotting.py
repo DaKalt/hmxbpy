@@ -1115,6 +1115,7 @@ def plot_lc_UL_broken_new(hdulist, axs, log, mjdref, xflag, mincounts,
 def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                            ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
                            diag_color, big_ax, yscale):
+    fig.canvas.draw()
     # proportion of vertical to horizontal extent of the slanted line
     d = np.tan(tilt)
     kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12, linestyle="none",
