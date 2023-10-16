@@ -137,6 +137,14 @@ class HiMaXBi:
                 shutil.copy(self._stan_dir_ + '/' + filename,
                             self._working_dir_full + '/working')
 
+        for (path, directories, filenames) in os.walk(self._json_dir_):
+            for filename in filenames:
+                if os.path.exists(f'{self._working_dir_full}/working/'
+                                  f'{filename}'):
+                    os.remove(f'{self._working_dir_full}/working/{filename}')
+                shutil.copy(self._stan_dir_ + '/' + filename,
+                            self._working_dir_full + '/working')
+
         os.chdir(working_dir + '/working/')
 
         self._working_dir = os.path.relpath(working_dir)
