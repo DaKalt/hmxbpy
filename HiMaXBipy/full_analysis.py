@@ -3690,8 +3690,7 @@ class HiMaXBi:
         bkg_linestyle = ['--']  # TODO: make this an option
 
         old_environ = os.environ.copy()  # maybe make the below an option
-        os.environ['BKGMODELDIR'] = (f'{self._json_dir_}'
-                                     '/erosita_merged_1024.json')
+        os.environ['BKGMODELDIR'] = (f'{self._json_dir_}/')
         os.environ['EROBACK'] = f'{self._json_dir_}/erosita_merged_1024.json'
 
         # these stay hardcoded but need to be adjusted
