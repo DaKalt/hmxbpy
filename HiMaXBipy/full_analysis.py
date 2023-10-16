@@ -3624,7 +3624,7 @@ class HiMaXBi:
             for bin in tbins:
                 if type(bin) != list and type(bin) != np.ndarray:
                     raise Exception('Each bin in tbins must be array-like')
-                if len(bin) != 2:
+                if len(bin) != 2 and not (len(tbins) == 1 and len(bin) == 0):
                     raise Exception('Each bin in tbins must have 2 entries.')
                 for entry in bin:
                     if type(entry) != int and entry != float:
