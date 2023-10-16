@@ -227,7 +227,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
             Esteps.append(entry-EkeV_err[ii])
         Esteps.append(EkeV[-1]+EkeV_err[-1])
         ax_spec.stairs(model, Esteps, color=colors[igroup],
-                       linestyle=bkg_linestyle, colors=colors[igroup])
+                       linestyle=bkg_linestyle)
 
         Plot('delchi')
         resid = Plot.y(isource)

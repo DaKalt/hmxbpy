@@ -3778,6 +3778,7 @@ class HiMaXBi:
         ax_spec.set_position(gs[0].get_position(fig))
         ax_res.set_position(gs[1].get_position(fig))
 
+        fig.savefig(f'{self._working_dir_full}/test.pdf')
         # TODO: save figure, output, fluxes/lums
 
         self._logger.handlers = logstate
