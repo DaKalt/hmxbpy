@@ -3717,7 +3717,7 @@ class HiMaXBi:
         resume = False
         src_markers = ['.'] * 10  # TODO: do this properly
         bkg_markers = ['x'] * 10
-        bkg_linestyle = ['--']  # TODO: make this an option
+        bkg_linestyle = '--'  # TODO: make this an option
 
         old_environ = os.environ.copy()  # maybe make the below an option
         os.environ['BKGMODELDIR'] = (f'{self._json_dir_}/')
