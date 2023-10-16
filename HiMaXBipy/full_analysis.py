@@ -137,13 +137,13 @@ class HiMaXBi:
                 shutil.copy(self._stan_dir_ + '/' + filename,
                             self._working_dir_full + '/working')
 
-        for (path, directories, filenames) in os.walk(self._json_dir_):
-            for filename in filenames:
-                if os.path.exists(f'{self._working_dir_full}/working/'
-                                  f'{filename}'):
-                    os.remove(f'{self._working_dir_full}/working/{filename}')
-                shutil.copy(self._json_dir_ + '/' + filename,
-                            self._working_dir_full + '/working')
+        # for (path, directories, filenames) in os.walk(self._json_dir_):
+        #     for filename in filenames:
+        #         if os.path.exists(f'{self._working_dir_full}/working/'
+        #                           f'{filename}'):
+        #             os.remove(f'{self._working_dir_full}/working/{filename}')
+        #         shutil.copy(self._json_dir_ + '/' + filename,
+        #                     self._working_dir_full + '/working')
 
         os.chdir(working_dir + '/working/')
 
@@ -3713,12 +3713,17 @@ class HiMaXBi:
         ax_spec.set_xscale('log')
         ax_res.set_xscale('log')
 
+        old_environ = os.environ.copy()
+        os.environ['BKGMODELDIR'] = self._json_dir_
+        os.environ['EROBACK'] = self._json_dir_
+
         src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
 
         working_dir = f'{self._working_dir_full}/working'
+        NH = self._NH * 1e-22
         abs_F, unabs_L = fit_bxa(Xset, Fit, PlotManager, AllData, AllModels,
                                  Spectrum, Model, abund, distance, E_ranges,
-                                 fit_model, self._NH, self._logger, prompting,
+                                 fit_model, NH, self._logger, prompting,
                                  quantiles, src_files, fit_statistic, suffix,
                                  resume, working_dir, self._Z)
         output = plot_bxa(Plot, rebin_params, src_files, ax_spec, ax_res,
@@ -3746,11 +3751,9 @@ class HiMaXBi:
         # TODO: save figure, output, fluxes/lums
 
         self._logger.handlers = logstate
+        self.environ = old_environ
 
     def _prep_spec_srclist(self, tbin_f, tbins, mode):
-        #old_environ = os.environ.copy()
-        # os.environ['BKGMODELDIR'] = self._json_dir_ #TODO: currently does not work, can fix in the future
-        #os.environ['EROBACK'] = self._json_dir_
 
         event_files = []
         if tbin_f == 'epoch':
@@ -3792,7 +3795,6 @@ class HiMaXBi:
             bkg = file.replace('SourceSpec', 'BackgrSpec')
             fit_bkg(bkg, self._logger, source_file=file)
 
-        #os.environ = old_environ
         return src_files
 
     def _standard_spec_an(self, separate, skip_eRASS, table_name, mode,

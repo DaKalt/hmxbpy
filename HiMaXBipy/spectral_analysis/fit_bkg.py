@@ -532,7 +532,7 @@ class PCAFitter(object):
 
             next_nparams = last_nparams + 3
             next_aic = v + 2 * next_nparams
-            logf.info('with Gaussian:', next_aic, '; change: '
+            logf.info(f'with Gaussian: {next_aic}; change: '
                       '%.1f (negative is good)' %
                       (next_aic - last_aic))
             if next_aic < last_aic:
