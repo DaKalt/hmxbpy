@@ -3689,6 +3689,11 @@ class HiMaXBi:
         bkg_markers = ['x'] * 10
         bkg_linestyle = ['--']  # TODO: make this an option
 
+        old_environ = os.environ.copy()  # maybe make the below an option
+        os.environ['BKGMODELDIR'] = (f'{self._json_dir_}'
+                                     '/erosita_merged_1024.json')
+        os.environ['EROBACK'] = f'{self._json_dir_}/erosita_merged_1024.json'
+
         # these stay hardcoded but need to be adjusted
         fig_borders = [0.97, 0.1, 0.05, 0.98]
         figsize = [8, 12]
@@ -3712,10 +3717,6 @@ class HiMaXBi:
         ax_spec.set_yscale('log')
         ax_spec.set_xscale('log')
         ax_res.set_xscale('log')
-
-        old_environ = os.environ.copy()
-        os.environ['BKGMODELDIR'] = self._json_dir_
-        os.environ['EROBACK'] = self._json_dir_
 
         src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
 
