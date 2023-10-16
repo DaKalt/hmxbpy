@@ -7,6 +7,7 @@ Created on Tue Aug 30 04:23:18 2022
 """
 import fileinput
 import getpass
+from importlib import import_module
 import os
 import shutil
 import subprocess
@@ -36,6 +37,7 @@ from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     plot_lc_mincounts_hr
 from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,\
     plot_lc_mincounts_broken_bayes
+from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa, plot_bxa
 from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple
@@ -2707,6 +2709,26 @@ class HiMaXBi:
             self._logger.debug(str(line)[2:-3] + '\n')
         self._logger.handlers = logstate
 
+    def _extract_spectrum_bxa(self, filelist, epoch):
+        self._logger.debug(f'Extracting spectrum for {filelist}.')
+        replacements = [['@main_name', self._working_dir],
+                        ['@result_dir', '.'],
+                        ['@sources_list', filelist],
+                        ['@right_ascension', self._RA],
+                        ['@declination', self._Dec],
+                        ['@esass_location', self._esass],
+                        ['@epoch', epoch]]
+        sh_file = self._working_dir_full + '/working/extract_spectrum_bxa.sh'
+        sh_file = self._replace_in_sh(sh_file, replacements)
+        process = subprocess.Popen(
+            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()  # Wait for process to complete.
+
+        # iterate on the stdout line by line
+        for line in process.stdout.readlines():
+            # to fix weird b'something' format
+            self._logger.debug(str(line)[2:-3] + '\n')
+
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='.log', Z=-1, distance=-1,
                      skip_varabs=False, NH=-1., rebin=True,
@@ -3080,6 +3102,9 @@ class HiMaXBi:
             process = subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
+            for line in process.stdout.readlines():
+                # to fix weird b'something' format
+                self._logger.debug(str(line)[2:-3] + '\n')
 
             self._extract_spectrum(f'{log_prefix}_simultaneous_'
                                    f'{self._period_names[epoch_counter]}'
@@ -3143,6 +3168,9 @@ class HiMaXBi:
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                for line in process.stdout.readlines():
+                    # to fix weird b'something' format
+                    self._logger.debug(str(line)[2:-3] + '\n')
 
                 self._extract_spectrum(f'{log_prefix}_simultaneous_e'
                                        f'{self._ownership}{epoch}{log_suffix}',
@@ -3235,6 +3263,9 @@ class HiMaXBi:
             process = subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
+            for line in process.stdout.readlines():
+                # to fix weird b'something' format
+                self._logger.debug(str(line)[2:-3] + '\n')
 
             self._extract_spectrum(f'{log_prefix}_individual_'
                                    f'{self._period_names[epoch_counter]}'
@@ -3290,6 +3321,9 @@ class HiMaXBi:
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                for line in process.stdout.readlines():
+                    # to fix weird b'something' format
+                    self._logger.debug(str(line)[2:-3] + '\n')
 
                 self._extract_spectrum(f'{log_prefix}_individual_e'
                                        f'{self._ownership}{epoch}{log_suffix}',
@@ -3314,13 +3348,430 @@ class HiMaXBi:
                                        log_suffix, colors, markers,
                                        fit_statistic)
 
-    def plot_spectra_bayesian(self):
-        fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
-                abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
-                src_files, statistic, suffix, resume, working_dir, Z)
-        plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
-                 src_markers, bkg_markers, bkg_linestyle, epoch_type)
-        return
+    def plot_spectra_bayesian(self, mode='merged',  log_prefix='spectrum',
+                              log_suffix='.log', Z=-1, distance=-1,
+                              model='apl', NH=-1., rebin=True,
+                              rebin_params=[3, 10], rescale=False,
+                              rescale_F=[1e-6, 1.], rescale_chi=[-5., 5.],
+                              fit_statistic='cstat', colors=[], markers=[],
+                              title='', TM_list=[0], return_array=False,
+                              abund='wilm', tbins=[[]],
+                              tbin_f='period', E_ranges=[[0.2, 8.0]],
+                              quantiles=[], folder_suffix=''):
+        '''Fit and plot spectrum using bxa.
+
+        Parameters
+        ----------
+        mode : str, optional
+            Sets how data should be arranged for analysis.
+            'simultaneous' fits all eRASS spectra simultaneously,
+            'merged' creates a single spectrum of all existing data. For
+            fitting of individual eRASS/epochs run the function multiple
+            times using differend tbins.
+            The default is 'merged'.
+        log_prefix : str, optional
+            Sets a prefix for logfiles. The default is 'spectrum'.
+        log_suffix : str, optional
+            Sets a suffix for logfiles (including data type extension).
+            The default is 'autosafe.log'.
+        Z : float or str, optional
+            Sets the metalicity to use for the varabs model
+            (e.g. '0.49' for LMC sources). The default is -1 which uses
+            the previously set metalicity or 0.49 if it never was set.
+        distance : float or str, optional
+            Sets the distance to the source in kpc to calculate
+            luminosities. The default is -1 which uses the previously
+            set value (default saved is 50).
+        model : str, optional
+            Defines which file should be used to specify the spectral
+            model and set priors. The user can use prewritten files or
+            name a file in the working directory. Prewritten models are:
+            -apl: absorbed powerlaw with linked PL indices between the
+            used spectra and tbvarabs for local absorption. (Note: for
+            mode='merged' only one -merged- spectrum is in use.)
+            -apl_simple: absorbed powerlaw with linked PL indices
+            without local absorption.
+            -abb: absorbed black body with linked bb temperatures
+            between the used spectra and tbvarabs for local absorption.
+            -abb_simple: absorbed black body with linked bb temperatures
+            without local absorption.
+            For the correct definition of a user-defined model it might
+            be helpful to run the function <HiMaXBi>.bxa_model_example()
+            which creates a python file with the apl model with comments
+            for usage in the working directory where source and
+            background regions are (replace <HiMaXBi> with the object
+            name).
+        NH : float or str, optional
+            Sets the MW absorption modeled by Tbabs in units of cm^-2.
+            The default is -1 to use
+            preset NH.
+        rebin : bool, optional
+            Rebin energy bins during plotting (does not influence fit).
+            The default is True.
+        rebin_params :  int array-like (2,), optional
+            Sets rebin parameters for plotting. The default is [3, 10].
+        rescale : bool, optional
+            Rescale y axis during plotting (does not influence fit). The
+            default is False.
+        rescale_F :  float array-like (2,), optional
+            Sets rescale parameters for top plot during plotting. The
+            default is [1e-6, 1.].
+        rescale_chi :  float array-like (2,), optional
+            Sets rescale parameters for bottom plot during plotting. The
+            default is [-5., 5.].
+        fit_statistic : str, optional
+            Sets the fit-statistic used. Possible entries are 'cstat'
+            and 'chi'. If set to 'chi' a grouping parameter <20 will be
+            overwritten to 20. Future releases will allow 'bxa' and
+            '3ml' as input. The default is 'cstat'.
+        colors : str array-like (n,), optional
+            If set, overwrites default colors during plotting. n has to
+            be equal to the number of datasets used (number of
+            eRASS/epochs). The 0th component will be used for merged
+            spectra. Entries have to be matplotlib colors. The default
+            is [].
+        markers : array-like (n,), optional
+            If set, overwrites default markers during plotting. n has to
+            be equal to the number of datasets used (number of
+            eRASS/epochs). The 0th component will be used for merged and
+            individual spectra. Entries have to be integers. The default
+            is [].
+        title : str, optional
+            Set title of spectrum plots. The default is ''.
+        TM_list : int array-like (n,), optional
+            Sets which TMs to use. The default is [0] which uses a
+            merged spectrum for TMs 0, 1, 2, 3, 4 and 6. The usage of
+            TMs 5 and 7 for spectra is currently not supported. To do a
+            simultaneous fit to all TMs with on-chip filters use
+            TM_list=[1,2,3,4,6], mode='simultaneous' and set a time bin
+            to analyse with the tbin and tbin_f keywors. Without setting
+            a timebin the number of free parameters gets too large.
+        return_array : bool, optional
+            If True returns a numpy array of model and data points. Not
+            available yet, will be included in future releases. The
+            default is False.
+        abund : str, optional
+            Sets the abundance table used. Default is 'wilm'
+        tbins : float array-like (n,2), optional
+            Sets specific timebins to be analysed (e.g. during a flare).
+            The format should be [[start1, end1], [start2, end2],...].
+            tbin_f sets how these times should be read.
+            The default is [[]] which uses
+        tbinf : str, optional
+            Sets the format how tbin should be read or which timebins to
+            use for the analysis. The options are:
+            -mjd: timebins are read as MJD times
+            -mjd_short: timebins are read as days where day 0 is set to
+            the earliest time of observations among the sourcefiles
+            (to approximately match times in lightcurves with short_time
+            set to True)
+            -time_eRO: uses time in seconds as found in eventfiles
+            -time_eRO_short: uses time in seconds with t 0 set to the
+            earlist time of the observation (similar to mjd_short)
+            -eRASS: only works if tbin is empty. The spectra will be
+            separated by eRASS for analysis (only makes a difference for
+            simultaneous fitting)
+            -epoch: only works if tbin is empty. The spectra will be
+            separated by epoch for analysis (only makes a difference for
+            simultaneous fitting)
+        E_ranges : float array-like (n,2), optional
+            Sets energy ranges to be to extract fluxes and luminosities
+            for. The default is [[0.2, 8.0]] which uses
+        quantiles : array-like (3,) or (0,) float or int, optional
+            Quantiles to plot as lower boundary, expected value and
+            upper boundary. If the default is used, 1 sigma percentiles
+            and the median are used. The default is [].
+        folder_suffix : str, optional
+            Suffix to the standard naming for the output folder. The
+            default is ''.
+        '''
+        fit_model = None
+        self._logger.info('Running plot_spectra.')
+        # Checking if input is sensible
+        if type(mode) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if (mode != 'merged' and mode != 'simultaneous'):
+                # TODO: maybe add individual to fit all eRASS separately?
+                raise Exception('mode must be \'merged\' or \'simultaneous\'.')
+        if type(model) != str:
+            raise Exception('model must be a string.')
+        else:
+            if (model != 'apl' and model != 'apl_simple' and model != 'abb'
+                    and model != 'abb_simple'):
+                try:
+                    mod = import_module(f'{self._working_dir_full}/{model}')
+                    fit_model = mod.custom_model
+                except NameError:
+                    raise Exception('model must be \'apl\', \'apl_simple\', '
+                                    '\'abb\', \'abb_simple\' or an existing '
+                                    'python file in '
+                                    f'{self._working_dir_full}.')
+                except AttributeError:
+                    raise Exception(f'The model function inside {model} must '
+                                    'be called \'custom_model\'.')
+                raise Exception('mode must be \'merged\' or \'simultaneous\'.')
+        if type(log_prefix) != str:
+            raise Exception('log_prefix must be a string.')
+        if type(log_suffix) != str:
+            raise Exception('log_suffix must be a string.')
+        if type(rebin) != bool:
+            raise Exception('rebin must be a bool.')
+        if type(rescale) != bool:
+            raise Exception('rescale must be a bool.')
+        if type(return_array) != bool:
+            raise Exception('return_array must be a bool.')
+        if type(NH) != str and type(NH) != float:
+            raise Exception('NH must be a string or float.')
+        else:
+            try:
+                NH = float(NH)
+                if NH <= 0 and not NH == -1.:
+                    raise Exception('NH must be > 0.')
+            except ValueError:
+                raise Exception('NH must be a number.')
+        if NH != -1.:
+            self.set_NH(NH=NH)
+        if type(rebin_params) != list and type(rebin_params) != np.ndarray:
+            raise Exception('rebin_params must be array-like')
+        else:
+            for entry in rebin_params:
+                if type(entry) != int:
+                    raise Exception(
+                        'The entries of rebin_params need to be given as int.')
+                if entry <= 0:
+                    raise Exception(
+                        'The entries of rebin_params need to be >0.')
+            if len(rebin_params) != 2:
+                raise Exception('rebin_params needs exactly 2 entries.')
+        if type(rescale_F) != list and type(rescale_F) != np.ndarray:
+            raise Exception('rescale_F must be array-like')
+        else:
+            for entry in rescale_F:
+                if type(entry) != float:
+                    raise Exception(
+                        'The entries of rescale_F need to be given as float.')
+                if entry <= 0:
+                    raise Exception('The entries of rescale_F need to be >0.')
+            if len(rescale_F) != 2:
+                raise Exception('rescale_F needs exactly 2 entries.')
+        if type(rescale_chi) != list and type(rescale_chi) != np.ndarray:
+            raise Exception('rescale_chi must be array-like')
+        else:
+            for entry in rescale_chi:
+                if type(entry) != float:
+                    raise Exception(
+                        'The entries of rescale_chi need to be given as float.')
+            if len(rescale_chi) != 2:
+                raise Exception('rescale_chi needs exactly 2 entries.')
+        if Z != -1:
+            self.set_metallicity(Z=Z)
+        if distance != -1:
+            self.set_distance(distance)
+        if type(fit_statistic) != str:
+            raise Exception('fit_statistic must be a string.')
+        else:
+            if fit_statistic != 'chi' and fit_statistic != 'cstat':
+                raise Exception(
+                    'mode must be \'chi\' or \'cstat\'. (\'3ml\' and \'bxa\' '
+                    'not supported yet.)')
+            if fit_statistic == 'chi':
+                if self._grouping < 20:
+                    self._grouping = 20
+                    self._logger.warning('Grouping set to 20 due to '
+                                         'chi fit-statistic usage.')
+        if type(colors) != list and type(colors) != np.ndarray:
+            raise Exception('colors must be array-like')
+        else:
+            for entry in colors:
+                if type(entry) != int and type(entry) != str:
+                    raise Exception(
+                        'The entries of colors need to be given as int.')
+            if (colors != []
+                    and len(colors) < len(self._filelist.split(sep=' '))):
+                raise Exception(
+                    'If colors are set, they need to be set for every eRASS '
+                    'used.')
+        if type(markers) != list and type(markers) != np.ndarray:
+            raise Exception('markers must be array-like')
+        else:
+            for entry in markers:
+                if type(entry) != int:
+                    raise Exception(
+                        'The entries of markers need to be given as int.')
+            if (markers != []
+                    and len(markers) < len(self._filelist.split(sep=' '))):
+                raise Exception(
+                    'If markers are set, they need to be set for every eRASS '
+                    'used.')
+        if type(title) != str:
+            raise Exception('title must be a string.')
+        if type(abund) != str:
+            raise Exception('abund must be a string.')
+        if type(TM_list) != list and type(TM_list) != np.ndarray:
+            raise Exception('TM_list must be array-like')
+        else:
+            for entry in TM_list:
+                if type(entry) != int:
+                    raise Exception(
+                        'The entries of TM_list need to be given as int.')
+                if entry < 0 or entry > 8:
+                    raise Exception('The entries of TM_list must be between '
+                                    '0 and 8.')
+        if type(tbins) != list and type(tbins) != np.ndarray:
+            raise Exception('tbins must be array-like')
+        else:
+            for bin in tbins:
+                if type(bin) != list and type(bin) != np.ndarray:
+                    raise Exception('Each bin in tbins must be array-like')
+                if len(bin) != 2:
+                    raise Exception('Each bin in tbins must have 2 entries.')
+                for entry in bin:
+                    if type(entry) != int and entry != float:
+                        raise Exception(
+                            'The entries of tbins bins must be int or float.')
+        if type(tbin_f) != str:
+            raise Exception('tbin_f must be a string.')
+        else:
+            if (tbin_f != 'mjd' and tbin_f != 'mjd_short'
+                and tbin_f != 'time_eRO' and tbin_f != 'time_eRO_short'
+                    and tbin_f != 'eRASS' and tbin_f != 'epoch'):
+                raise Exception(
+                    'tbinf must be \'mjd\', \'mjd_short\', \'time_eRO\', '
+                    '\'time_eRO_short\', \'eRASS\' or \'epoch\'.')
+        if type(E_ranges) != list and type(E_ranges) != np.ndarray:
+            raise Exception('E_ranges must be array-like')
+        else:
+            for bin in E_ranges:
+                if type(bin) != list and type(bin) != np.ndarray:
+                    raise Exception('Each bin in E_ranges must be array-like')
+                if len(bin) != 2:
+                    raise Exception(
+                        'Each bin in E_ranges must have 2 entries.')
+                for entry in bin:
+                    if type(entry) != int and entry != float:
+                        raise Exception(
+                            'The entries of E_ranges bins must be int or '
+                            'float.')
+                    if entry < 0:
+                        raise Exception('Energy bins must be >0.')
+        if ((type(quantiles) != list and type(quantiles) != np.ndarray)
+                or (np.shape(quantiles) != (3,) and
+                    np.shape(quantiles) != (0,))):
+            raise Exception('quantiles must be (3,) or (0,) array-like.')
+        if np.shape(quantiles) == (0,):
+            quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
+        if type(folder_suffix) != str:
+            raise Exception('folder_suffix must be a string.')
+
+        if model == 'apl':
+            fit_model = apl
+        elif model == 'apl_simple':
+            fit_model = apl_simple
+        elif model == 'abb':
+            raise Exception('abb not available yet.')
+        elif model == 'abb_simple':
+            raise Exception('abb_simple not available yet.')
+
+        prompting = False  # TODO: make this an option if needed
+        resume = False
+        src_markers = ['.'] * 10  # TODO: do this properly
+        bkg_markers = ['x'] * 10
+        bkg_linestyle = ['--']  # TODO: make this an option
+
+        # these stay hardcoded but need to be adjusted
+        fig_borders = [0.97, 0.1, 0.05, 0.98]
+        figsize = [8, 12]
+        logname = 'bxa_fit.log'
+
+        logstate = setup_logfile(self._logger, logname)
+
+        suffix = f'_{tbin_f}{folder_suffix}'
+        if rebin == False:
+            rebin_params = [0, 0]
+
+        fig = plt.figure(figsize=(figsize[0], figsize[1]))
+        ax_spec = fig.add_subplot(111)
+        ax_res = fig.add_subplot(111)
+        ax_spec.set_yscale('log')
+        ax_spec.set_xscale('log')
+        ax_res.set_xscale('log')
+
+        src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
+
+        working_dir = f'{self._working_dir_full}/working'
+        abs_F, unabs_L = fit_bxa(Xset, Fit, PlotManager, AllData, AllModels,
+                                 Spectrum, Model, abund, distance, E_ranges,
+                                 fit_model, self._NH, self._logger, prompting,
+                                 quantiles, src_files, fit_statistic, suffix,
+                                 resume, working_dir, self._Z)
+        output = plot_bxa(Plot, rebin_params, src_files, ax_spec, ax_res,
+                          colors, src_markers, bkg_markers, bkg_linestyle,
+                          tbin_f)
+
+        fig.set_tight_layout(True)
+        fig.set_tight_layout(False)
+        wspace = 12.0 / figsize[0] * 0.05  # TODO: why was this 8.0 before?
+        fig.subplots_adjust(
+            wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
+            left=fig_borders[2], right=fig_borders[3])
+
+        width_ratios = [1]
+        height_ratios = [8, 4]
+
+        gs = gridspec.GridSpec(ncols=1,
+                               nrows=2,
+                               height_ratios=height_ratios,
+                               width_ratios=width_ratios)
+
+        ax_spec.set_position(gs[0].get_position(fig))
+        ax_res.set_position(gs[1].get_position(fig))
+
+        # TODO: save figure, output, fluxes/lums
+
+        self._logger.handlers = logstate
+
+    def _prep_spec_srclist(self, tbin_f, tbins, mode):
+        event_files = []
+        if tbin_f == 'epoch':
+            for epoch_counter in range(len(self._period_names)):
+                start = ((self._obs_periods[epoch_counter][0] - self._mjdref) * 24.
+                         * 3600.)
+                stop = ((self._obs_periods[epoch_counter][1] - self._mjdref) * 24.
+                        * 3600.)
+                replacements = [['@esass_location', self._esass],
+                                ['@infiles', self._filelist],
+                                ['@outfile',
+                                f'./{self._period_names[epoch_counter]}_'
+                                 'bxa.fits'],
+                                ['@start',
+                                f'{start}'],
+                                ['@stop', f'{stop}']]
+                sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
+                sh_file = self._replace_in_sh(sh_file, replacements)
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
+                for line in process.stdout.readlines():
+                    # to fix weird b'something' format
+                    self._logger.debug(str(line)[2:-3] + '\n')
+                event_files.append(f'./{self._period_names[epoch_counter]}_'
+                                   'bxa.fits')
+        # TODO: write other cases
+        src_files = []
+        if mode == 'merged':
+            infiles = ''
+            for file in event_files:
+                infiles += f'{file} '
+            infiles = infiles.strip()
+            self._extract_spectrum_bxa(infiles, 'merged')
+            src_files.append(f'merged_bxa_020_SourceSpec_00001.fits')
+        # TODO: write simultaneous
+        # TODO: write separate TM
+        for file in src_files:
+            bkg = file.replace('SourceSpec', 'BackgrSpec')
+            fit_bkg(bkg, self._logger, source_file=file)
+        return src_files
 
     def _standard_spec_an(self, separate, skip_eRASS, table_name, mode,
                           file_list, skip_varabs, absorption, rebin,

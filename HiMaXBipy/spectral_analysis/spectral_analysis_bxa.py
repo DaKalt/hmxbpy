@@ -25,7 +25,7 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
     Xset.abund = abund
     Fit.statMethod = statistic
     Xset.allowPrompting = prompting
-    PlotManager.splashPage = False  # TODO what does this do?
+    PlotManager.splashPage = False  # reduces unnecessar output by xspec
 
     AllData.clear()
     AllModels.clear()
@@ -37,7 +37,7 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
     clo = 1
     nchan = 1024
 
-    # pca_models = [] #TODO: why did I want to import this?
+    # pca_models = [] #TODO: maybe for future release allow to let the user define pcamodel to use for bkg
     n_srcfiles = len(src_files)
 
     srcs = []
@@ -133,7 +133,7 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
             AllModels(groupNum=2*groupid+1,
                       modName=f'bkgmod{bkgid}').pcabkg.norm.values = [1, -1]
             AllModels(groupNum=2*groupid+2,
-                      modName=f'bkgmod{bkgid}').pcabkg.norm.values = [1, -1]  # TODO: does this have to be bkg_factor instead of 1?
+                      modName=f'bkgmod{bkgid}').pcabkg.norm.values = [1, -1]  # TODO: does this have to be bkg_factor instead of 1? I think not, should be done by xspec using the bkg factors internally
             if groupid+1 == bkgid:
                 fac_src.values = [1, 0.1, 0.1, 0.1, 10, 10]
                 fac_bkg.link = fac_src
