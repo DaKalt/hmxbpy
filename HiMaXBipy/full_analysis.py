@@ -142,7 +142,7 @@ class HiMaXBi:
                 if os.path.exists(f'{self._working_dir_full}/working/'
                                   f'{filename}'):
                     os.remove(f'{self._working_dir_full}/working/{filename}')
-                shutil.copy(self._stan_dir_ + '/' + filename,
+                shutil.copy(self._json_dir_ + '/' + filename,
                             self._working_dir_full + '/working')
 
         os.chdir(working_dir + '/working/')
