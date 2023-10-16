@@ -1,7 +1,7 @@
 def apl(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
-    srcmod = Model('tbabs*tbvarabs*pow')
+    srcmod = Model('tbabs*tbvarabs*pow', modName='srcmod', sourceNum=1)
     srcmod.TBabs.nH.values = [galnh, -1]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
@@ -43,7 +43,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
 def apl_simple(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
-    srcmod = Model('tbabs*pow')
+    srcmod = Model('tbabs*pow', modName='srcmod', sourceNum=1)
     srcmod.TBabs.nH.values = [galnh, -1]
 
     # fit parameters
