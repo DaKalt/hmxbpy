@@ -3356,7 +3356,7 @@ class HiMaXBi:
                               fit_statistic='cstat', colors=[], markers=[],
                               title='', TM_list=[0], return_array=False,
                               abund='wilm', tbins=[[]],
-                              tbin_f='period', E_ranges=[[0.2, 8.0]],
+                              tbin_f='epoch', E_ranges=[[0.2, 8.0]],
                               quantiles=[], folder_suffix=''):
         '''Fit and plot spectrum using bxa.
 
