@@ -29,8 +29,15 @@ def get_path_of_data_dir():
 
     return file_path
 
+
 def get_stan_dir():
     file_path = pkg_resources.resource_filename("HiMaXBipy", 'stan_files')
+
+    return file_path
+
+
+def get_json_dir():
+    file_path = pkg_resources.resource_filename("HiMaXBipy", 'json_files')
 
     return file_path
 

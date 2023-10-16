@@ -26,7 +26,8 @@ def find_extra_files(directory):
 sh_files = find_extra_files('HiMaXBipy/sh_files/')
 tex_files = find_extra_files('HiMaXBipy/tex_style/')
 stan_files = find_extra_files('HiMaXBipy/stan_files/')
-extra_files = sh_files + tex_files + stan_files
+json_files = find_extra_files('HiMaXBipy/json_files/')
+extra_files = sh_files + tex_files + stan_files + json_files
 
 setup(
 
@@ -40,9 +41,10 @@ setup(
         'HiMaXBipy/stan_files',
         'HiMaXBipy/tex_style',
         'HiMaXBipy/bxa_models',
+        'HiMaXBipy/json_files',
 
     ],
-    version='v1.0.188',
+    version='v1.0.190',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',

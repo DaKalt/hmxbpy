@@ -29,7 +29,8 @@ except ModuleNotFoundError:
                     'Heasoft, follow instruction on '
                     'http://heasarc.gsfc.nasa.gov/lheasoft/install.html')
 
-from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir
+from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir,\
+    get_json_dir
 from HiMaXBipy.io.logging import setup_logfile, setup_logger, set_loglevel
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
@@ -118,6 +119,7 @@ class HiMaXBi:
 
         self._sh_dir_ = get_path_of_data_dir()
         self._stan_dir_ = get_stan_dir()
+        self._json_dir_ = get_json_dir()
 
         for (path, directories, filenames) in os.walk(self._sh_dir_):
             for filename in filenames:
@@ -3738,6 +3740,10 @@ class HiMaXBi:
         self._logger.handlers = logstate
 
     def _prep_spec_srclist(self, tbin_f, tbins, mode):
+        old_environ = os.environ.copy()
+        os.environ['BKGMODELDIR'] = self._json_dir_
+        os.environ['EROBACK'] = self._json_dir_
+
         event_files = []
         if tbin_f == 'epoch':
             for epoch_counter in range(len(self._period_names)):
@@ -3777,6 +3783,8 @@ class HiMaXBi:
         for file in src_files:
             bkg = file.replace('SourceSpec', 'BackgrSpec')
             fit_bkg(bkg, self._logger, source_file=file)
+
+        os.environ = old_environ
         return src_files
 
     def _standard_spec_an(self, separate, skip_eRASS, table_name, mode,
