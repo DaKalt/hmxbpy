@@ -235,12 +235,12 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         ax_res.errorbar(EkeV, resid, xerr=EkeV_err, yerr=resid_err,
                         color=colors[igroup])
 
-        energies[label]([EkeV, EkeV_err])
-        fluxes[label]([data, data_err])
-        backgrounds[label]([bkg, bkg_err])
-        bkg_energies[label]([EkeV_bkg, EkeV_bkg_err])
-        models[label]([model])
-        residuals[label]([resid, resid_err])
+        energies[label] = [EkeV, EkeV_err]
+        fluxes[label] = [data, data_err]
+        backgrounds[label] = [bkg, bkg_err]
+        bkg_energies[label] = [EkeV_bkg, EkeV_bkg_err]
+        models[label] = [model]
+        residuals[label] = [resid, resid_err]
 
     output = {}
     output['EkeV'] = energies
