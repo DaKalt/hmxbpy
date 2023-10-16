@@ -117,12 +117,12 @@ def create_ogip_atable(BackArray, BackSpecFile, SourceSpecFile,
     # store the model in counts / s / cm^2
     bspec = numpy.pad(BackArray, (ilo, Nchannel-ihi)) / \
         hdr['EXPOSURE'] / hdr['AREASCAL']
-    logf.info("background spectrum is scaled by:",
-              hdr['EXPOSURE'], hdr['AREASCAL'])
+    logf.info("background spectrum is scaled by: "
+              f"{hdr['EXPOSURE']}, {hdr['AREASCAL']}")
     # for the source, adjust by the background scaling factor
     sspec = bspec / backscal
     logf.info(BackArray.mean())
-    logf.info("source spectrum is up-scaled by:", backscal)
+    logf.info(f"source spectrum is up-scaled by: {backscal}")
     table = numpy.array([
         ((0,), bspec),
         ((1,), sspec),
@@ -267,7 +267,7 @@ class PCAModel(object):
             cts = (10**y - 1) * 10**lognorm
             return cts
         except Exception as e:
-            logf.warning("Exception in PCA model:", e, p)
+            logf.warning(f"Exception in PCA model: {e}, {p}")
             raise e
 
 
@@ -522,8 +522,8 @@ class PCAFitter(object):
             initial = [xi, log10(4.), log10(power)] + \
                 list(last_final)[:last_nparams]
             self.ngaussians = gi + 1
-            logf.info('initial guess:',
-                      self.calc_bkg_stat_wrapped_gaussians(initial))
+            logf.info('initial guess: '
+                      f'{self.calc_bkg_stat_wrapped_gaussians(initial)}')
             r = minimize(self.calc_bkg_stat_wrapped_gaussians, x0=initial)
             next_final = r.x
             v = self.calc_bkg_stat_wrapped_gaussians(next_final)

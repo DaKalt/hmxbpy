@@ -98,7 +98,7 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
         bkg.ignore("%d-**" % (ihi))
 
         srcs.append(src)
-        bkgs.append(bkgs)
+        bkgs.append(bkg)
         bkg_files.append(bkgfile)
 
     for ispec in range(n_srcfiles):
