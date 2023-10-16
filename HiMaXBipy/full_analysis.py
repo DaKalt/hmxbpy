@@ -3627,7 +3627,7 @@ class HiMaXBi:
                 if len(bin) != 2 and not (len(tbins) == 1 and len(bin) == 0):
                     raise Exception('Each bin in tbins must have 2 entries.')
                 for entry in bin:
-                    if type(entry) != int and entry != float:
+                    if type(entry) != int and type(entry) != float:
                         raise Exception(
                             'The entries of tbins bins must be int or float.')
         if type(tbin_f) != str:
@@ -3649,7 +3649,7 @@ class HiMaXBi:
                     raise Exception(
                         'Each bin in E_ranges must have 2 entries.')
                 for entry in bin:
-                    if type(entry) != int and entry != float:
+                    if type(entry) != int and type(entry) != float:
                         raise Exception(
                             'The entries of E_ranges bins must be int or '
                             'float.')
