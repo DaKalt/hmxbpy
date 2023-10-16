@@ -194,6 +194,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
     energies = {}
     fluxes = {}
     backgrounds = {}
+    bkg_energies = {}
     models = {}
     residuals = {}
     Plot.setRebin(rebinning[0], rebinning[1])
@@ -215,7 +216,9 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
                          label=label)
         bkg = Plot.y(isource+1)
         bkg_err = Plot.yErr(isource+1)
-        ax_spec.errorbar(EkeV, bkg, xerr=EkeV_err, yerr=bkg_err,
+        EkeV_bkg = Plot.x(isource+1)
+        EkeV_bkg_err = Plot.xErr(isource+1)
+        ax_spec.errorbar(EkeV_bkg, bkg, xerr=EkeV_bkg_err, yerr=bkg_err,
                          color=colors[igroup], marker=bkg_markers[igroup],
                          label=label)
         model = Plot.model(isource)
@@ -235,6 +238,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         energies[label]([EkeV, EkeV_err])
         fluxes[label]([data, data_err])
         backgrounds[label]([bkg, bkg_err])
+        bkg_energies[label]([EkeV_bkg, EkeV_bkg_err])
         models[label]([model])
         residuals[label]([resid, resid_err])
 
@@ -242,6 +246,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
     output['EkeV'] = energies
     output['src_fluxes'] = fluxes
     output['bkg_fluxes'] = backgrounds
+    output['EkeV_bkg'] = bkg_energies
     output['model_predictions'] = models
     output['residuals'] = residuals
 
