@@ -565,9 +565,11 @@ class HiMaXBi:
                             ['@emax', bin_e[1]]]
             sh_file = self._working_dir_full + '/working/extract_lc.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
+            old_environ = os.environ.copy()
             process = subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
+            os.environ = old_environ
 
             # iterate on the stdout line by line
             if not logname == '':
@@ -855,9 +857,11 @@ class HiMaXBi:
                                 ['@selection', f'FRACEXP>{fracexp}']]
                 sh_file = self._working_dir_full + '/working/fselect_lc.sh'
                 sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                os.environ = old_environ
 
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                 ax = fig1.add_subplot(111)
@@ -1209,9 +1213,11 @@ class HiMaXBi:
                                 ['@selection', f'FRACEXP>{fracexp}']]
                 sh_file = self._working_dir_full + '/working/fselect_lc.sh'
                 sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                os.environ = old_environ
 
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
 
@@ -1604,10 +1610,12 @@ class HiMaXBi:
                                     ['@selection', selection]]
                     sh_file = self._working_dir_full + '/working/fselect_lc.sh'
                     sh_file = self._replace_in_sh(sh_file, replacements)
+                    old_environ = os.environ.copy()
                     process = subprocess.Popen(
                         [sh_file], stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE)
                     process.wait()  # Wait for process to complete.
+                    os.environ = old_environ
 
                     fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
                     ax = fig1.add_subplot(111)
@@ -1951,9 +1959,11 @@ class HiMaXBi:
                                 ['@selection', f'FRACEXP>{fracexp}']]
                 sh_file = self._working_dir_full + '/working/fselect_lc.sh'
                 sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                os.environ = old_environ
 
                 ncols, nrows = len(self._obs_periods), 3
 
@@ -2508,9 +2518,11 @@ class HiMaXBi:
                                 ['@selection', f'FRACEXP>{fracexp}']]
                 sh_file = self._working_dir_full + '/working/fselect_lc.sh'
                 sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                os.environ = old_environ
 
                 fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
 
@@ -2708,9 +2720,11 @@ class HiMaXBi:
                         ['@epoch', epoch]]
         sh_file = self._working_dir_full + '/working/extract_spectrum.sh'
         sh_file = self._replace_in_sh(sh_file, replacements)
+        old_environ = os.environ.copy()
         process = subprocess.Popen(
             [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
+        os.environ = old_environ
 
         # iterate on the stdout line by line
         logstate = setup_logfile(self._logger, logname)
@@ -2730,9 +2744,11 @@ class HiMaXBi:
                         ['@epoch', epoch]]
         sh_file = self._working_dir_full + '/working/extract_spectrum_bxa.sh'
         sh_file = self._replace_in_sh(sh_file, replacements)
+        old_environ = os.environ.copy()
         process = subprocess.Popen(
             [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
+        os.environ = old_environ
 
         # iterate on the stdout line by line
         for line in process.stdout.readlines():
@@ -3109,9 +3125,11 @@ class HiMaXBi:
                             ['@start', f'{start}'], ['@stop', f'{stop}']]
             sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
+            old_environ = os.environ.copy()
             process = subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
+            os.environ = old_environ
             for line in process.stdout.readlines():
                 # to fix weird b'something' format
                 self._logger.debug(str(line)[2:-3] + '\n')
@@ -3175,9 +3193,11 @@ class HiMaXBi:
                                 ['@stop', f'{stop}']]
                 sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
                 sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                os.environ = old_environ
                 for line in process.stdout.readlines():
                     # to fix weird b'something' format
                     self._logger.debug(str(line)[2:-3] + '\n')
@@ -3270,9 +3290,11 @@ class HiMaXBi:
                             ['@stop', f'{stop}']]
             sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
+            old_environ = os.environ.copy()
             process = subprocess.Popen(
                 [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
+            os.environ = old_environ
             for line in process.stdout.readlines():
                 # to fix weird b'something' format
                 self._logger.debug(str(line)[2:-3] + '\n')
@@ -3328,9 +3350,11 @@ class HiMaXBi:
                                 ['@start', f'{start}'], ['@stop', f'{stop}']]
                 sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
                 sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                os.environ = old_environ
                 for line in process.stdout.readlines():
                     # to fix weird b'something' format
                     self._logger.debug(str(line)[2:-3] + '\n')
@@ -3772,9 +3796,11 @@ class HiMaXBi:
                                 ['@stop', f'{stop}']]
                 sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
                 sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
                 process = subprocess.Popen(
                     [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 process.wait()  # Wait for process to complete.
+                os.environ = old_environ
                 for line in process.stdout.readlines():
                     # to fix weird b'something' format
                     self._logger.debug(str(line)[2:-3] + '\n')
