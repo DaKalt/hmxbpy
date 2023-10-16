@@ -16,6 +16,7 @@ import time
 import warnings
 
 from astropy.io import fits
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
@@ -42,6 +43,8 @@ from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa, plot_bxa
 from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple
+
+color_palette = list(mcolors.TABLEAU_COLORS.values())
 
 
 class HiMaXBi:
@@ -3706,6 +3709,9 @@ class HiMaXBi:
             raise Exception('abb not available yet.')
         elif model == 'abb_simple':
             raise Exception('abb_simple not available yet.')
+
+        if colors == []:
+            colors = color_palette
 
         prompting = False  # TODO: make this an option if needed
         resume = False
