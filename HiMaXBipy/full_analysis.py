@@ -3748,9 +3748,9 @@ class HiMaXBi:
         self._logger.handlers = logstate
 
     def _prep_spec_srclist(self, tbin_f, tbins, mode):
-        old_environ = os.environ.copy()
-        os.environ['BKGMODELDIR'] = self._json_dir_
-        os.environ['EROBACK'] = self._json_dir_
+        #old_environ = os.environ.copy()
+        # os.environ['BKGMODELDIR'] = self._json_dir_ #TODO: currently does not work, can fix in the future
+        #os.environ['EROBACK'] = self._json_dir_
 
         event_files = []
         if tbin_f == 'epoch':
@@ -3792,7 +3792,7 @@ class HiMaXBi:
             bkg = file.replace('SourceSpec', 'BackgrSpec')
             fit_bkg(bkg, self._logger, source_file=file)
 
-        os.environ = old_environ
+        #os.environ = old_environ
         return src_files
 
     def _standard_spec_an(self, separate, skip_eRASS, table_name, mode,
