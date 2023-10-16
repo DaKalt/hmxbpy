@@ -3683,6 +3683,12 @@ class HiMaXBi:
         fig_borders = [0.97, 0.1, 0.05, 0.98]
         figsize = [8, 12]
         logname = 'bxa_fit.log'
+        if not self._LC_extracted and not self._debugging:
+            self._extract_lc()
+        if self._debugging:
+            self._LC_extracted = True
+            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._eRASS_vs_epoch()
 
         logstate = setup_logfile(self._logger, logname)
 

@@ -42,7 +42,7 @@ setup(
         'HiMaXBipy/bxa_models',
 
     ],
-    version='v1.0.187',
+    version='v1.0.188',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',
