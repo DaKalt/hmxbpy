@@ -26,7 +26,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
     p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
-    gamma.value = [1, 0.1, -2, -2, 4, 4]
+    gamma.values = [1, 0.1, -2, -2, 4, 4]
     p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
     transformations.append(p_gamma)
     for groupid in range(n):
@@ -48,7 +48,7 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
-    gamma.value = [1, 0.1, -2, -2, 4, 4]
+    gamma.values = [1, 0.1, -2, -2, 4, 4]
     p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
     transformations.append(p_gamma)
     for groupid in range(n):
