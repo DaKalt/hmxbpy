@@ -29,6 +29,7 @@ except ModuleNotFoundError:
                     'xspec is fully integrated in the general build of '
                     'Heasoft, follow instruction on '
                     'http://heasarc.gsfc.nasa.gov/lheasoft/install.html')
+from xspec import __path__ as xspec_path
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir,\
     get_json_dir
@@ -45,6 +46,20 @@ from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa, plot_bxa
 from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple
 
 color_palette = list(mcolors.TABLEAU_COLORS.values())
+
+# Checking heasoft/xspec version, since it does not have proper versioning
+try:
+    path = xspec_path[0]
+    part = path[path.find('heasoft-')+8:]
+    version = int(part[:1])
+    release = int(part[2:4])
+    if version <= 6 and release < 30:
+        warnings.warn('The heasoft version loaded seems to be too old, '
+                      'some xspec functions can run into problems. '
+                      'Consider loading a newer version.')
+except ValueError:
+    warnings.warn('The heasoft version used for xspec could not be read '
+                  'automatically, make sure that it is newer than 6.30.')
 
 
 class HiMaXBi:
@@ -313,12 +328,21 @@ class HiMaXBi:
             raise Exception('Z must be convertible to float.')
         self._Z = float(Z)
 
-    def get_NH(self):
+    def get_NH(self, correct_mol=False):
         '''Create DL.NH file with weighted NH from NH map by
         Dickey & Lockman  1990 at the source position and set NH to the
         value given with the task set_NH(NH_file='DL.NH').
         The task set_radec with the source position must be run before.
+
+        Parameters
+        ----------
+        correct_mol : bool, optional
+            Turn on correction factor of NHI value by 1.25. See
+            Wilingale+2013, MNRAS 431, 394–404 for a discussion on this.
+            The default is False.
         '''
+        if type(correct_mol) != bool:
+            raise Exception('correct_mol must be boolean.')
         if not '_RA' in dir(self):
             raise Exception('Source position needs to be set first.')
         self._logger.info('Creating DL.NH')
@@ -337,6 +361,8 @@ class HiMaXBi:
                             'A likely error is not having installed the'
                             ' heasoft software or a wrong setup. Try if the '
                             'command "nh" is working correctly.')
+        if correct_mol:
+            NH = str(1.25*float(NH))
         with open(f'{self._working_dir_full}/DL.NH', 'w') as file:
             file.writelines(NH)
         self.set_NH(NH_file=f'{self._working_dir_full}/DL.NH')
@@ -1183,7 +1209,19 @@ class HiMaXBi:
             TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
         else:
             TM_list = [0]
-        time_rel = 0
+
+        if short_time:
+            if time_axis == 'mjd':
+                time_rel = self._obs_periods[0][0]
+            elif time_axis == 's':
+                time_rel = ((self._obs_periods[0][0] - self._mjdref)
+                            / (24. * 3600))
+            else:
+                time_rel = 0
+                self._logger.error('time_rel not yet defined for this '
+                                   'time_axis.')
+        else:
+            time_rel = 0
         pxmin = []
         pxmax = []
         pymin = 0
@@ -1247,27 +1285,27 @@ class HiMaXBi:
                     colors = ['lightblue', 'black']
 
                 if mode == 'ul':
-                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_UL_broken_new(
+                    pxmin, pxmax, pymin, pymax, _ = plot_lc_UL_broken_new(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
-                        short_time=short_time)
+                        short_time=short_time, time_rel=time_rel)
                     pymin = min(pymin)
                     pymax = max(pymax)
                 elif mode == 'mincounts':
-                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_new(
+                    pxmin, pxmax, pymin, pymax, _ = plot_lc_mincounts_broken_new(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
-                        short_time=short_time)
+                        short_time=short_time, time_rel=time_rel)
                     pymin = min(pymin)
                     pymax = max(pymax)
                 elif mode == 'mincounts_ul':
-                    pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_broken_new(
+                    pxmin1, pxmax1, pymin1, pymax1, _ = plot_lc_UL_broken_new(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[0], obs_periods=self._obs_periods,
-                        short_time=short_time)
+                        short_time=short_time, time_rel=time_rel)
                     pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_broken_new(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
@@ -1926,7 +1964,6 @@ class HiMaXBi:
             TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
         else:
             TM_list = [0]
-        time_rel = 0
         pxmin = []
         pxmax = []
         pymin = 0
@@ -1992,28 +2029,41 @@ class HiMaXBi:
                 if colors == []:
                     colors = ['lightblue', 'black']
 
+                if short_time:
+                    if time_axis == 'mjd':
+                        time_rel = self._obs_periods[0][0]
+                    elif time_axis == 's':
+                        time_rel = ((self._obs_periods[0][0] - self._mjdref)
+                                    / (24. * 3600))
+                    else:
+                        time_rel = 0
+                        self._logger.error('time_rel not yet defined for this '
+                                           'time_axis.')
+                else:
+                    time_rel = 0
+
                 if mode == 'ul':
-                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_UL_broken_new(
+                    pxmin, pxmax, pymin, pymax, _ = plot_lc_UL_broken_new(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
-                        short_time=short_time)
+                        short_time=short_time, time_rel=time_rel)
                     pymin = min(pymin)
                     pymax = max(pymax)
                 elif mode == 'mincounts':
-                    pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_new(
+                    pxmin, pxmax, pymin, pymax, _ = plot_lc_mincounts_broken_new(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[1], obs_periods=self._obs_periods,
-                        short_time=short_time)
+                        short_time=short_time, time_rel=time_rel)
                     pymin = min(pymin)
                     pymax = max(pymax)
                 elif mode == 'mincounts_ul':
-                    pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_broken_new(
+                    pxmin1, pxmax1, pymin1, pymax1, _ = plot_lc_UL_broken_new(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
                         color=colors[0], obs_periods=self._obs_periods,
-                        short_time=short_time)
+                        short_time=short_time, time_rel=time_rel)
                     pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_broken_new(
                         hdulist=hdulist, axs=axs, log=self._logger,
                         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
@@ -2481,7 +2531,19 @@ class HiMaXBi:
             TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
         else:
             TM_list = [0]
-        time_rel = 0
+
+        if short_time:
+            if time_axis == 'mjd':
+                time_rel = self._obs_periods[0][0]
+            elif time_axis == 's':
+                time_rel = ((self._obs_periods[0][0] - self._mjdref)
+                            / (24. * 3600))
+            else:
+                time_rel = 0
+                self._logger.error('time_rel not yet defined for this '
+                                   'time_axis.')
+        else:
+            time_rel = 0
         pxmin = []
         pxmax = []
         pymin = 0
@@ -3388,7 +3450,7 @@ class HiMaXBi:
     def plot_spectra_bayesian(self, mode='merged',  log_prefix='spectrum',
                               log_suffix='.log', Z=-1, distance=-1,
                               model='apl', NH=-1., rebin=True,
-                              rebin_params=[3, 10], rescale=False,
+                              rebin_params=[5, 20], rescale=False,
                               rescale_F=[1e-6, 1.], rescale_chi=[-5., 5.],
                               fit_statistic='cstat', colors=[], markers=[],
                               title='', TM_list=[0], return_array=False,
@@ -3528,9 +3590,11 @@ class HiMaXBi:
         if type(mode) != str:
             raise Exception('mode must be a string.')
         else:
-            if (mode != 'merged' and mode != 'simultaneous'):
+            if (mode != 'merged' and mode != 'simultaneous'
+                    and mode != 'individual'):
                 # TODO: maybe add individual to fit all eRASS separately?
-                raise Exception('mode must be \'merged\' or \'simultaneous\'.')
+                raise Exception('mode must be \'merged\' or \'simultaneous\''
+                                ' or \'individual\'.')
         if type(model) != str:
             raise Exception('model must be a string.')
         else:
@@ -3751,20 +3815,21 @@ class HiMaXBi:
 
         working_dir = f'{self._working_dir_full}/working'
         NH = self._NH * 1e-22
-        abs_F, unabs_L = fit_bxa(Xset, Fit, PlotManager, AllData, AllModels,
-                                 Spectrum, Model, abund, distance, E_ranges,
-                                 fit_model, NH, self._logger, prompting,
-                                 quantiles, src_files, fit_statistic, suffix,
-                                 resume, working_dir, self._Z)
+        abs_F, unabs_L, bkg_factors = \
+            fit_bxa(Xset, Fit, PlotManager, AllData, AllModels,
+                    Spectrum, Model, abund, distance, E_ranges,
+                    fit_model, NH, self._logger, prompting,
+                    quantiles, src_files, fit_statistic, suffix,
+                    resume, working_dir, self._Z)
         output = plot_bxa(Plot, rebin_params, src_files, ax_spec, ax_res,
                           colors, src_markers, bkg_markers, bkg_linestyle,
-                          tbin_f)
+                          tbin_f, bkg_factors)
 
         fig.set_tight_layout(True)
         fig.set_tight_layout(False)
-        wspace = 12.0 / figsize[0] * 0.05  # TODO: why was this 8.0 before?
+        hspace = 12.0 / figsize[0] * 0.05  # TODO: why was this 8.0 before?
         fig.subplots_adjust(
-            wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
+            hspace=hspace, top=fig_borders[0], bottom=fig_borders[1],
             left=fig_borders[2], right=fig_borders[3])
 
         width_ratios = [1]
@@ -3782,10 +3847,12 @@ class HiMaXBi:
         # TODO: save figure, output, fluxes/lums
 
         self._logger.handlers = logstate
-        self.environ = old_environ
+        os.environ = old_environ
+
+        if return_array:
+            return output, abs_F, unabs_L
 
     def _prep_spec_srclist(self, tbin_f, tbins, mode):
-
         event_files = []
         if tbin_f == 'epoch':
             for epoch_counter in range(len(self._period_names)):
@@ -3821,8 +3888,11 @@ class HiMaXBi:
                 infiles += f'{file} '
             infiles = infiles.strip()
             self._extract_spectrum_bxa(infiles, 'merged')
-            src_files.append(f'merged_bxa_020_SourceSpec_00001.fits')
-        # TODO: write simultaneous
+            src_files.append('merged_bxa_020_SourceSpec_00001.fits')
+        elif mode == 'simultaneous':
+            for iepoch, file in enumerate(event_files):
+                self._extract_spectrum_bxa(file, f'simu{iepoch}')
+                src_files.append(f'simu{iepoch}_bxa_020_SourceSpec_00001.fits')
         # TODO: write separate TM
         for file in src_files:
             bkg = file.replace('SourceSpec', 'BackgrSpec')
@@ -3983,9 +4053,10 @@ class HiMaXBi:
         Runs entire analysis chain with standard settings.
 
         '''
+        self.get_NH(correct_mol=True)
         # self.plot_lc_full()
         # self.plot_lc_parts()
         self.debug = False
         self.plot_lc_broken()
-        self.plot_spectra()
+        # self.plot_spectra()
         self.plot_lc_bayes_broken()

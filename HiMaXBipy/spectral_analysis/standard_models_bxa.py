@@ -34,10 +34,13 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-20, 1e-20, 1e20, 1e20]
         p_norm = bxa.create_jeffreys_prior_for(model, norm)
-        p_norm['name'] = f'norm{groupid+1}'
+        p_norm['name'] = f'log(norm{groupid+1})'
         transformations.append(p_norm)
+        model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
+        model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
-    return transformations, nH, 'apl'
+    nHs = [nH, loc_nh]
+    return transformations, nHs, 'apl'
 
 
 def apl_simple(Model, AllModels, bxa, galnh, Z, n):
@@ -56,7 +59,10 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-20, 1e-20, 1e20, 1e20]
         p_norm = bxa.create_jeffreys_prior_for(model, norm)
-        p_norm['name'] = f'norm{groupid+1}'
+        p_norm['name'] = f'log(norm{groupid+1})'
         transformations.append(p_norm)
+        model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
+        model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
-    return transformations, nH, 'apl_simple'
+    nHs = [nH]
+    return transformations, nHs, 'apl_simple'
