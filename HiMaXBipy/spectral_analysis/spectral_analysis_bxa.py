@@ -430,6 +430,9 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
                          outputfiles_basename=outfiles)
     analyser.run(resume=resume)
 
+    AllData.show()
+    AllModels.show()
+
     absorbed_F = []
     unabsorbed_L = []
     old_posterior = analyser.posterior.copy()
