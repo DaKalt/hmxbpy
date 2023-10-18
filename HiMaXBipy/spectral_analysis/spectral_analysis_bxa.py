@@ -223,7 +223,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         data_err = Plot.yErr(isource)
         ax_spec.errorbar(EkeV, data, xerr=EkeV_err, yerr=data_err,
                          color=colors[igroup], marker=src_markers[igroup],
-                         label=label)
+                         label=label, linestyle=spec_linestyle)
         bkg = (bkg_factors[igroup] * np.array(Plot.y(isource+1))).tolist()
         bkg_err = (bkg_factors[igroup] *
                    np.array(Plot.yErr(isource+1))).tolist()
@@ -455,5 +455,8 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
             analyser.posterior[:, 0] = old_posterior[:, 0]
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
+
+    AllData.show()
+    AllModels.show()
 
     return absorbed_F, unabsorbed_L, bkg_factors
