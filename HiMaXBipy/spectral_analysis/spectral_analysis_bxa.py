@@ -381,7 +381,8 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
                          scaleType="lin", chanOffset=clo, chanWidth=1,
                          sourceNum=ii)
         # delete the first response
-        # bkg.multiresponse[0] = None #not deleting it for plotting
+        # seem to be necessary for the fit to converge properly?
+        bkg.multiresponse[0] = None
 
     transf_src, nHs,  model_name = func(Model, AllModels, bxa,
                                         galnh, Z, n_srcfiles)
@@ -441,6 +442,7 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
         fluxes = []
         lums = []
         for band in E_ranges:
+            old_nh = []
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')
             fluxes_band = [np.percentile(flux, quantiles[0]),
@@ -448,6 +450,7 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
                            np.percentile(flux, quantiles[2])]
             fluxes.append(fluxes_band)
             for nH in nHs:
+                old_nh.append(nH.values)
                 nH.values = 0.00001
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')
@@ -455,6 +458,8 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
                          lum(np.percentile(flux, quantiles[1]), distance),
                          lum(np.percentile(flux, quantiles[2]), distance)]
             lums.append(lums_band)
+            for inH, nH in enumerate(nHs):
+                nH.values = old_nh[inH]
             analyser.posterior[:, 0] = old_posterior[:, 0]
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
