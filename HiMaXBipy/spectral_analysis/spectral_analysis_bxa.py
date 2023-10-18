@@ -224,8 +224,9 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         ax_spec.errorbar(EkeV, data, xerr=EkeV_err, yerr=data_err,
                          color=colors[igroup], marker=src_markers[igroup],
                          label=label)
-        bkg = bkg_factors[igroup] * Plot.y(isource+1)
-        bkg_err = bkg_factors[igroup] * Plot.yErr(isource+1)
+        bkg = (bkg_factors[igroup] * np.array(Plot.y(isource+1))).tolist()
+        bkg_err = (bkg_factors[igroup] *
+                   np.array(Plot.yErr(isource+1))).tolist()
         EkeV_bkg = Plot.x(isource+1)
         EkeV_bkg_err = Plot.xErr(isource+1)
         ax_spec.errorbar(EkeV_bkg, bkg, xerr=EkeV_bkg_err, yerr=bkg_err,
@@ -239,7 +240,8 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         Esteps.append(EkeV[-1]+EkeV_err[-1])
         ax_spec.stairs(model, Esteps, color=colors[igroup],
                        linestyle=model_linestyle)
-        model_bkg = bkg_factors[igroup] * Plot.model(isource+1)
+        model_bkg = (bkg_factors[igroup] *
+                     np.array(Plot.model(isource+1))).tolist()
         Esteps_bkg = []
         for ii, entry in enumerate(EkeV_bkg):
             Esteps_bkg.append(entry-EkeV_bkg_err[ii])
@@ -349,6 +351,7 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
 #        src.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo, scaleType="lin",
 #                     chanOffset=clo, chanWidth=1, sourceNum=1)
 # the above stuff seems counterintuitive, trying out what happens if i leave it out
+# pretty sure that it must not be set like that, tried in xspec. Not sure why it worked somehow still
 
         AllData(f"{2*ispec+2}:{2*ispec+2} " + bkgfile)
         bkg = AllData(2*ispec+2)
@@ -359,9 +362,6 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
         for ii in range(1, n_srcfiles+1):
             bkg.multiresponse[ii] = rmf
             bkg.multiresponse[ii].arf = arf
-
-#        bkg.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo, scaleType="lin",
-#                     chanOffset=clo, chanWidth=1, sourceNum=1)
 
         srcs.append(src)
         bkgs.append(bkg)
@@ -374,14 +374,14 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
         bkg = bkgs[ispec]
         bkgfile = bkg_files[ispec]
         for ii in range(2, n_srcfiles+2):
-            src.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo,
+            src.dummyrsp(lowE=ilo/100., highE=ihi/100., nBins=ihi - ilo,
                          scaleType="lin", chanOffset=clo, chanWidth=1,
                          sourceNum=ii)
-            bkg.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo,
+            bkg.dummyrsp(lowE=ilo/100., highE=ihi/100., nBins=ihi - ilo,
                          scaleType="lin", chanOffset=clo, chanWidth=1,
                          sourceNum=ii)
         # delete the first response
-        # bkg.multiresponse[0] = None
+        # bkg.multiresponse[0] = None #not deleting it for plotting
 
     transf_src, nHs,  model_name = func(Model, AllModels, bxa,
                                         galnh, Z, n_srcfiles)
