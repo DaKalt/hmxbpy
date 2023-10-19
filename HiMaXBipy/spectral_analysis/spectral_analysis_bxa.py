@@ -98,13 +98,6 @@ def fit_bxa_old(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
         bkg.ignore("1-%d" % ilo)
         bkg.ignore("%d-**" % (ihi))
 
-        arf, rmf = bkg.multiresponse[0].arf, bkg.multiresponse[0].rmf
-
-        # copy response to source 2
-        for ii in range(1, n_srcfiles+1):
-            bkg.multiresponse[ii] = rmf
-            bkg.multiresponse[ii].arf = arf
-
         srcs.append(src)
         bkgs.append(bkg)
         bkg_files.append(bkgfile)
@@ -123,7 +116,7 @@ def fit_bxa_old(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
                          scaleType="lin", chanOffset=clo, chanWidth=1,
                          sourceNum=ii)
         # delete the first response
-        # bkg.multiresponse[0] = None
+        bkg.multiresponse[0] = None
 
     transf_src, nHs,  model_name = func(Model, AllModels, bxa,
                                         galnh, Z, n_srcfiles)
@@ -365,10 +358,10 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
         bkg.ignore("1-%d" % ilo)
         bkg.ignore("%d-**" % (ihi))
 
-        # arf, rmf = bkg.multiresponse[0].arf, bkg.multiresponse[0].rmf
-        # for ii in range(1, n_srcfiles+1):
-        #     bkg.multiresponse[ii] = rmf
-        #     bkg.multiresponse[ii].arf = arf
+        arf, rmf = bkg.multiresponse[0].arf, bkg.multiresponse[0].rmf
+        for ii in range(1, n_srcfiles+1):
+            bkg.multiresponse[ii] = rmf
+            bkg.multiresponse[ii].arf = arf
 
         srcs.append(src)
         bkgs.append(bkg)
@@ -382,14 +375,14 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
         bkgfile = bkg_files[ispec]
         for ii in range(2, n_srcfiles+2):
             src.dummyrsp(lowE=ilo/100., highE=ihi/100., nBins=ihi - ilo,
-                         scaleType="lin", chanOffset=clo, chanWidth=1,
+                         scaleType="lin", chanOffset=clo, chanWidth=0.01,
                          sourceNum=ii)
             bkg.dummyrsp(lowE=ilo/100., highE=ihi/100., nBins=ihi - ilo,
-                         scaleType="lin", chanOffset=clo, chanWidth=1,
+                         scaleType="lin", chanOffset=clo, chanWidth=0.01,
                          sourceNum=ii)
         # delete the first response
         # seem to be necessary for the fit to converge properly?
-        bkg.multiresponse[0] = None
+        # bkg.multiresponse[0] = None
 
     transf_src, nHs,  model_name = func(Model, AllModels, bxa,
                                         galnh, Z, n_srcfiles)
