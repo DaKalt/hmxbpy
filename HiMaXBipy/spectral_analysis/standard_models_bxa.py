@@ -39,8 +39,9 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
-    nHs = [nH, loc_nh]
-    return transformations, nHs, 'apl'
+    nHs_frozen = [nH]
+    nHs_modelled = [loc_nh]
+    return transformations, nHs_frozen, nHs_modelled, 'apl'
 
 
 def apl_simple(Model, AllModels, bxa, galnh, Z, n):
@@ -64,5 +65,6 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
-    nHs = [nH]
-    return transformations, nHs, 'apl_simple'
+    nHs_frozen = [nH]
+    nHs_modelled = []
+    return transformations, nHs_frozen, nHs_modelled, 'apl_simple'

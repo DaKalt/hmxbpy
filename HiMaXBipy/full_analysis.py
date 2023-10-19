@@ -3575,7 +3575,8 @@ class HiMaXBi:
             simultaneous fitting)
         E_ranges : float array-like (n,2), optional
             Sets energy ranges to be to extract fluxes and luminosities
-            for. The default is [[0.2, 8.0]] which uses
+            for. The first entry also sets the energy ranges for
+            plottingThe default is [[0.2, 8.0]] which uses
         quantiles : array-like (3,) or (0,) float or int, optional
             Quantiles to plot as lower boundary, expected value and
             upper boundary. If the default is used, 1 sigma percentiles
@@ -3827,7 +3828,7 @@ class HiMaXBi:
 
         fig.set_tight_layout(True)
         fig.set_tight_layout(False)
-        hspace = 12.0 / figsize[0] * 0.05  # TODO: why was this 8.0 before?
+        hspace = 8.0 / figsize[1] * 0.05
         fig.subplots_adjust(
             hspace=hspace, top=fig_borders[0], bottom=fig_borders[1],
             left=fig_borders[2], right=fig_borders[3])
@@ -3842,6 +3843,15 @@ class HiMaXBi:
 
         ax_spec.set_position(gs[0].get_position(fig))
         ax_res.set_position(gs[1].get_position(fig))
+
+        ax_spec.set_ylabel('Counts s$^{-1}$ keV$^{-1}$')
+        ax_res.set_ylabel('$\\Delta\\Chi$')
+        ax_res.set_xlabel('Energy (keV)')
+
+        ax_spec.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
+        ax_res.set_ybound(lower=rescale_chi[0], upper=rescale_chi[1])
+
+        ax_spec.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
 
         fig.savefig(f'{self._working_dir_full}/test.pdf')
         # TODO: save figure, output, fluxes/lums
