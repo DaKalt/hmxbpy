@@ -91,7 +91,7 @@ def fit_bxa_old(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
 
         # make unit response for background model:
         # src.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo, scaleType="lin",
-        #              chanOffset=clo, chanWidth=0.01, sourceNum=1)
+        #              chanOffset=clo, chanWidth=1., sourceNum=1)
 
         AllData(f"{2*ispec+2}:{2*ispec+2} " + bkgfile)
         bkg = AllData(2*ispec+2)
@@ -374,11 +374,11 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
         bkg = bkgs[ispec]
         bkgfile = bkg_files[ispec]
         for ii in range(2, n_srcfiles+2):
-            src.dummyrsp(lowE=ilo/100., highE=ihi/100., nBins=ihi - ilo,
-                         scaleType="lin", chanOffset=clo, chanWidth=0.01,
+            src.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo,
+                         scaleType="lin", chanOffset=clo, chanWidth=1.,
                          sourceNum=ii)
-            bkg.dummyrsp(lowE=ilo/100., highE=ihi/100., nBins=ihi - ilo,
-                         scaleType="lin", chanOffset=clo, chanWidth=0.01,
+            bkg.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo,
+                         scaleType="lin", chanOffset=clo, chanWidth=1.,
                          sourceNum=ii)
         # delete the first response
         # seem to be necessary for the fit to converge properly?
