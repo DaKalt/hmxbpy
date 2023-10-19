@@ -294,5 +294,3 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
 
     return absorbed_F, unabsorbed_L, bkg_factors
 
-def format_axes_spec(fig, ax_spec, ax_res):
-    
