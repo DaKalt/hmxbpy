@@ -3845,7 +3845,7 @@ class HiMaXBi:
         ax_res.set_position(gs[1].get_position(fig))
 
         ax_spec.set_ylabel('Counts s$^{-1}$ keV$^{-1}$')
-        ax_res.set_ylabel('$\\Delta\\Chi$')
+        ax_res.set_ylabel('$\\Delta\\chi$')
         ax_res.set_xlabel('Energy (keV)')
 
         ax_spec.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
