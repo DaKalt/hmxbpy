@@ -274,9 +274,9 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
             fluxes.append(fluxes_band)
             for nH in nHs_froz:
                 old_nh.append(nH.values)
-                nH.values = 1e-7
+                nH.values = 1e-5
             for nH in nHs_mod:
-                nH.values = 1e-7
+                nH.values = 1e-5
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')
             lums_band = [lum(np.percentile(flux, quantiles[0]), distance),
@@ -293,4 +293,3 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
     AllModels.show()
 
     return absorbed_F, unabsorbed_L, bkg_factors
-
