@@ -30,6 +30,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
     models = {}
     bkg_models = {}
     residuals = {}
+    Plot.device = 'none'
     Plot.setRebin(rebinning[0], rebinning[1])
     n_srcfiles = len(src_files)
     for igroup in range(n_srcfiles):
@@ -40,23 +41,24 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         isource = 2*igroup + 1
         Plot.xAxis = 'keV'
         Plot('data')
-        EkeV = Plot.x(isource)
-        EkeV_err = Plot.xErr(isource)
-        data = Plot.y(isource)
-        data_err = Plot.yErr(isource)
+        EkeV = Plot.x(isource).copy()
+        EkeV_err = Plot.xErr(isource).copy()
+        data = Plot.y(isource).copy()
+        data_err = Plot.yErr(isource).copy()
         ax_spec.errorbar(EkeV, data, xerr=EkeV_err, yerr=data_err,
                          color=colors[igroup], marker=src_markers[igroup],
                          label=label, linestyle=spec_linestyle)
-        bkg = (bkg_factors[igroup] * np.array(Plot.y(isource+1))).tolist()
+        bkg = (bkg_factors[igroup] *
+               np.array(Plot.y(isource+1).copy())).tolist()
         bkg_err = (bkg_factors[igroup] *
-                   np.array(Plot.yErr(isource+1))).tolist()
-        EkeV_bkg = Plot.x(isource+1)
-        EkeV_bkg_err = Plot.xErr(isource+1)
+                   np.array(Plot.yErr(isource+1).copy())).tolist()
+        EkeV_bkg = Plot.x(isource+1).copy()
+        EkeV_bkg_err = Plot.xErr(isource+1).copy()
         ax_spec.errorbar(EkeV_bkg, bkg, xerr=EkeV_bkg_err, yerr=bkg_err,
                          color=colors[igroup], marker=bkg_markers[igroup],
                          label=label, linestyle=spec_linestyle)
 
-        model = Plot.model(isource)
+        model = Plot.model(isource).copy()
         Esteps = []
         for ii, entry in enumerate(EkeV):
             Esteps.append(entry-EkeV_err[ii])
@@ -64,7 +66,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         ax_spec.stairs(model, Esteps, color=colors[igroup],
                        linestyle=model_linestyle)
         model_bkg = (bkg_factors[igroup] *
-                     np.array(Plot.model(isource+1))).tolist()
+                     np.array(Plot.model(isource+1).copy())).tolist()
         Esteps_bkg = []
         for ii, entry in enumerate(EkeV_bkg):
             Esteps_bkg.append(entry-EkeV_bkg_err[ii])
@@ -73,8 +75,8 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
                        linestyle=model_linestyle)
 
         Plot('delchi')
-        resid = Plot.y(isource)
-        resid_err = Plot.yErr(isource)
+        resid = Plot.y(isource).copy()
+        resid_err = Plot.yErr(isource).copy()
         ax_res.errorbar(EkeV, resid, xerr=EkeV_err, yerr=resid_err,
                         color=colors[igroup], linestyle=bkg_linestyle)
 
