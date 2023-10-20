@@ -30,7 +30,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
     models = {}
     bkg_models = {}
     residuals = {}
-    Plot.device = 'none'
+    # Plot.device = 'none'
     Plot.setRebin(rebinning[0], rebinning[1])
     n_srcfiles = len(src_files)
     for igroup in range(n_srcfiles):
