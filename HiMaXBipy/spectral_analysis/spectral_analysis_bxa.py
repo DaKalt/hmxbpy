@@ -11,18 +11,21 @@ import bxa.xspec as bxa
 import json
 import numpy as np
 import os
+from xspec import Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,\
+    Plot
+
+from HiMaXBipy.spectral_analysis.modded_function import PredictionBand,\
+    posterior_predictions_plot
 
 
 def lum(flux, distance):
     return 4. * np.pi * (distance * 1000 * 3.0857 * 10 ** 18) ** 2 * 10 ** flux
 
 
-def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
+def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
              src_markers, bkg_markers, model_linestyle, epoch_type,
-             bkg_factors):
-    spec_linestyle = ''
-    bkg_linestyle = ''
-
+             bkg_factors, analyser, src_linestyles, bkg_linestyle,
+             hatches):
     energies = {}
     fluxes = {}
     backgrounds = {}
@@ -30,14 +33,11 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
     models = {}
     bkg_models = {}
     residuals = {}
-    # Plot.device = 'none'
+    Plot.device = '/null'
     Plot.setRebin(rebinning[0], rebinning[1])
     n_srcfiles = len(src_files)
     for igroup in range(n_srcfiles):
-        if n_srcfiles == 1:
-            label = f'{epoch_type}'
-        else:
-            label = f'{epoch_type} {igroup+1}'
+        label = 'test'
         isource = 2*igroup + 1
         Plot.xAxis = 'keV'
         Plot('data')
@@ -47,7 +47,7 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         data_err = Plot.yErr(isource).copy()
         ax_spec.errorbar(EkeV, data, xerr=EkeV_err, yerr=data_err,
                          color=colors[igroup], marker=src_markers[igroup],
-                         label=label, linestyle=spec_linestyle)
+                         label=label, linestyle='', zorder=5)
         bkg = (bkg_factors[igroup] *
                np.array(Plot.y(isource+1).copy())).tolist()
         bkg_err = (bkg_factors[igroup] *
@@ -55,30 +55,30 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
         EkeV_bkg = Plot.x(isource+1).copy()
         EkeV_bkg_err = Plot.xErr(isource+1).copy()
         ax_spec.errorbar(EkeV_bkg, bkg, xerr=EkeV_bkg_err, yerr=bkg_err,
-                         color=colors[igroup], marker=bkg_markers[igroup],
-                         label=label, linestyle=spec_linestyle)
+                         color=colors[igroup], marker=bkg_markers,
+                         label=label, linestyle='', zorder=4)
 
         model = Plot.model(isource).copy()
         Esteps = []
         for ii, entry in enumerate(EkeV):
             Esteps.append(entry-EkeV_err[ii])
         Esteps.append(EkeV[-1]+EkeV_err[-1])
-        ax_spec.stairs(model, Esteps, color=colors[igroup],
-                       linestyle=model_linestyle)
+        # ax_spec.stairs(model, Esteps, color='black',
+        #                linestyle=model_linestyle)
         model_bkg = (bkg_factors[igroup] *
                      np.array(Plot.model(isource+1).copy())).tolist()
         Esteps_bkg = []
         for ii, entry in enumerate(EkeV_bkg):
             Esteps_bkg.append(entry-EkeV_bkg_err[ii])
         Esteps_bkg.append(EkeV_bkg[-1]+EkeV_bkg_err[-1])
-        ax_spec.stairs(model_bkg, Esteps_bkg, color=colors[igroup],
-                       linestyle=model_linestyle)
+        # ax_spec.stairs(model_bkg, Esteps_bkg, color='red',
+        #                linestyle=model_linestyle)
 
         Plot('delchi')
         resid = Plot.y(isource).copy()
         resid_err = Plot.yErr(isource).copy()
         ax_res.errorbar(EkeV, resid, xerr=EkeV_err, yerr=resid_err,
-                        color=colors[igroup], linestyle=bkg_linestyle)
+                        color='black', linestyle='', marker=src_markers[igroup])
 
         energies[label] = [EkeV, EkeV_err]
         fluxes[label] = [data, data_err]
@@ -97,11 +97,69 @@ def plot_bxa(Plot, rebinning, src_files, ax_spec, ax_res, colors,
     output['residuals'] = residuals
     output['model_bkg'] = bkg_models
 
+    for igroup in range(n_srcfiles):
+        models = []
+        bands = []
+        Plot.add = False
+        Plot.background = False
+        for content in posterior_predictions_plot(analyser, plottype='data',
+                                                  nsamples=100, group=2*igroup+1):
+            xmid = content[:, 0]
+            ndata_columns = 6 if Plot.background else 4
+            ncomponents = content.shape[1]-ndata_columns
+            model_contributions = []
+            for component in range(ncomponents):
+                y = content[:, ndata_columns+component]
+                if component >= len(bands):
+                    bands.append(PredictionBand(xmid, ax_spec))
+                bands[component].add(y)
+                model_contributions.append(y)
+            models.append(model_contributions)
+
+        for band, label in zip(bands, 'model prediction'):
+            if label == 'ignore':
+                continue
+            lineargs = dict(drawstyle='steps', color=colors[igroup], zorder=3,
+                            linewidth=0.8, linestyle=src_linestyles[igroup])
+            shadeargs = dict(color=lineargs['color'], zorder=2)
+            band.shade(alpha=0.5, **shadeargs)
+            shadeargs = dict(**shadeargs, hatch=hatches[igroup])
+            band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
+            band.line(label=label, **lineargs)
+
+        models = []
+        bands = []
+        Plot.add = False
+        Plot.background = False
+        for content in posterior_predictions_plot(analyser, plottype='data',
+                                                  nsamples=100, group=2*igroup+2):
+            xmid = content[:, 0]
+            ndata_columns = 6 if Plot.background else 4
+            ncomponents = content.shape[1]-ndata_columns
+            model_contributions = []
+            for component in range(ncomponents):
+                y = bkg_factors[0] * content[:, ndata_columns+component]
+                if component >= len(bands):
+                    bands.append(PredictionBand(xmid, ax_spec))
+                bands[component].add(y)
+                model_contributions.append(y)
+            models.append(model_contributions)
+
+        for band, label in zip(bands, 'model prediction'):
+            if label == 'ignore':
+                continue
+            lineargs = dict(drawstyle='steps', color=colors[igroup], zorder=1,
+                            linestyle=bkg_linestyle, linewidth=0.8)
+            shadeargs = dict(color=lineargs['color'], zorder=0)
+            band.shade(alpha=0.5, **shadeargs)
+            shadeargs = dict(**shadeargs, hatch=hatches[igroup])
+            band.shade(q=0.9973/2., alpha=0.2, **shadeargs)
+            band.line(label=label, **lineargs)
+
     return output
 
 
-def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
-            abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
+def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
             src_files, statistic, suffix, resume, working_dir, Z):
 
     os.environ['WITHOUT_MULTINEST'] = '1'
@@ -294,4 +352,4 @@ def fit_bxa(Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,
     AllData.show()
     AllModels.show()
 
-    return absorbed_F, unabsorbed_L, bkg_factors
+    return absorbed_F, unabsorbed_L, bkg_factors, analyser

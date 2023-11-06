@@ -46,6 +46,8 @@ from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa, plot_bxa
 from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple
 
 color_palette = list(mcolors.TABLEAU_COLORS.values())
+pnt_palette = ['.', 'v', '^', 's', '*', '1', 'o', 'p', 'D', 'x']
+hatch_palette = ['//', '++', 'xx', 'oo', '..', '**', '\\\\', '||', '--', 'OO']
 
 # Checking heasoft/xspec version, since it does not have proper versioning
 try:
@@ -3456,7 +3458,11 @@ class HiMaXBi:
                               title='', TM_list=[0], return_array=False,
                               abund='wilm', tbins=[[]],
                               tbin_f='epoch', E_ranges=[[0.2, 8.0]],
-                              quantiles=[], folder_suffix=''):
+                              quantiles=[], folder_suffix='', resume=False,
+                              prompting=False, plot_bkg=True,
+                              src_markers=[], bkg_markers=[],
+                              src_linestyles=[], bkg_linestyle='--',
+                              set_hatch=False):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3584,6 +3590,34 @@ class HiMaXBi:
         folder_suffix : str, optional
             Suffix to the standard naming for the output folder. The
             default is ''.
+        resume : bool, optional
+            If True fit will continue where it was interrupted or ended.
+            Significantly shortens duration if only plotting settings
+            changed. The default is False.
+        prompting : bool, optional
+            If True xspec prompts are shown. The default is False.
+        plot_bkg : bool, optional
+            If True background data and model are shown in the spectral
+            plot scaled by the background ratios. The default is True.
+        src_markers : array-like (n,) str, optional
+            Marker style for data in spectrum. Entries must be available
+            marker styles from matplotlib.markers. When set to []
+            default markers are used. The default is [].
+        bkg_markers : array-like (n,) str, optional
+            Marker style for background in spectrum. Entries must be
+            available marker styles from matplotlib.markers. When set to
+            [] default markers are used. The default is [].
+        src_linestyles : array-like (n,) str, optional
+            Linestyle for data model in spectrum. Entries must be
+            available linestyle from matplotlib. When set to [] default
+            linestyles are used. The default is [].
+        bkg_linestyle : str, optional
+            Matplotlib linestyle used for all background models. The
+            default is '--'.
+        set_hatch : bool, optional
+            If True hatches will be used to better differentiate between
+            model predictions for different spectra. The default is
+            False.
         '''
         fit_model = None
         self._logger.info('Running plot_spectra.')
@@ -3591,11 +3625,8 @@ class HiMaXBi:
         if type(mode) != str:
             raise Exception('mode must be a string.')
         else:
-            if (mode != 'merged' and mode != 'simultaneous'
-                    and mode != 'individual'):
-                # TODO: maybe add individual to fit all eRASS separately?
-                raise Exception('mode must be \'merged\' or \'simultaneous\''
-                                ' or \'individual\'.')
+            if (mode != 'merged' and mode != 'simultaneous'):
+                raise Exception('mode must be \'merged\' or \'simultaneous\'.')
         if type(model) != str:
             raise Exception('model must be a string.')
         else:
@@ -3621,6 +3652,12 @@ class HiMaXBi:
             raise Exception('rebin must be a bool.')
         if type(rescale) != bool:
             raise Exception('rescale must be a bool.')
+        if type(resume) != bool:
+            raise Exception('resume must be a bool.')
+        if type(prompting) != bool:
+            raise Exception('prompting must be a bool.')
+        if type(plot_bkg) != bool:
+            raise Exception('plot_bkg must be a bool.')
         if type(return_array) != bool:
             raise Exception('return_array must be a bool.')
         if type(NH) != str and type(NH) != float:
@@ -3746,7 +3783,7 @@ class HiMaXBi:
         else:
             for bin in E_ranges:
                 if type(bin) != list and type(bin) != np.ndarray:
-                    raise Exception('Each bin in E_ranges must be array-like')
+                    raise Exception('Each bin in E_ranges must be array-like.')
                 if len(bin) != 2:
                     raise Exception(
                         'Each bin in E_ranges must have 2 entries.')
@@ -3765,6 +3802,14 @@ class HiMaXBi:
             quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
         if type(folder_suffix) != str:
             raise Exception('folder_suffix must be a string.')
+        if type(src_markers) != list and type(src_markers) != np.ndarray:
+            raise Exception('src_markers has to be array-like.')
+        if len(src_markers) == 0:
+            src_markers = pnt_palette
+        if type(bkg_markers) != list and type(bkg_markers) != np.ndarray:
+            raise Exception('bkg_markers has to be array-like.')
+        if type(src_linestyles) != list and type(src_linestyles) != np.ndarray:
+            raise Exception('src_linestyles has to be array-like.')
 
         if model == 'apl':
             fit_model = apl
@@ -3778,19 +3823,13 @@ class HiMaXBi:
         if colors == []:
             colors = color_palette
 
-        prompting = False  # TODO: make this an option if needed
-        resume = False
-        src_markers = ['.'] * 10  # TODO: do this properly
-        bkg_markers = ['x'] * 10
-        bkg_linestyle = '--'  # TODO: make this an option
-
         old_environ = os.environ.copy()  # maybe make the below an option
         os.environ['BKGMODELDIR'] = (f'{self._json_dir_}/')
         os.environ['EROBACK'] = f'{self._json_dir_}/erosita_merged_1024.json'
 
         # these stay hardcoded but need to be adjusted
-        fig_borders = [0.97, 0.1, 0.05, 0.98]
-        figsize = [8, 12]
+        fig_borders = [0.99, 0.08, 0.14, 0.99]
+        figsize = [6, 8]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
             self._extract_lc()
@@ -3809,32 +3848,89 @@ class HiMaXBi:
         ax_spec = fig.add_subplot(111)
         ax_res = fig.add_subplot(111)
         ax_spec.set_yscale('log')
-        ax_spec.set_xscale('log')
-        ax_res.set_xscale('log')
+
+        for ax in [ax_spec, ax_res]:
+            ax.set_xscale('log')
+
+            ax.grid(which='major', axis='both', zorder=-1,
+                    color='#111111', linewidth=0.8)
+            ax.grid(which='minor', axis='both', zorder=-1,
+                    color='#222222', linewidth=0.5, linestyle=':')
+
+            ax.tick_params(axis='x', which='major', direction='in',
+                           top='on', pad=9, length=5, width=1.5)  # , labelsize=10)
+            ax.tick_params(axis='x', which='minor', direction='in',
+                           top='on',   length=3)  # , labelsize=0)
+            ax.tick_params(axis='y', which='major', direction='in',
+                           right='on', length=5, width=1.5)  # , labelsize=10)
+            ax.tick_params(axis='y', which='minor', direction='in',
+                           right='on', length=3)  # , labelsize=0)
+            ax.set_xticks([0.5, 1, 5], minor=False)
+            ax.set_xticks([0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 2, 3, 4, 6, 7, 8],
+                          minor=True)
+
+        ax_res.set_yticks([0], minor=False)
+        ax_res.set_yticks([-4, -2, 2, 4], minor=True)
+        ax_res.set_yticklabels(['-4', '-2', '2', '4'], minor=True)
+        ax_res.set_xticklabels(['0.5', '1', '5'], minor=False)
+
+        ax_res_invis = fig.add_subplot(111)
+        ax_res_invis.set_frame_on(False)
+        ax_res_invis.patch.set_facecolor("none")
 
         src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
 
+        if len(bkg_markers) == 0:
+            bkg_markers = ['x'] * len(src_files)
+        if len(src_linestyles) == 0:
+            src_linestyles = ['-'] * len(src_files)
+        if set_hatch:
+            hatches = hatch_palette
+        else:
+            hatches = [''] * len(src_files)
+
         working_dir = f'{self._working_dir_full}/working'
         NH = self._NH * 1e-22
-        abs_F, unabs_L, bkg_factors = \
-            fit_bxa(Xset, Fit, PlotManager, AllData, AllModels,
-                    Spectrum, Model, abund, distance, E_ranges,
+        abs_F, unabs_L, bkg_factors, analyser = \
+            fit_bxa(abund, distance, E_ranges,
                     fit_model, NH, self._logger, prompting,
                     quantiles, src_files, fit_statistic, suffix,
                     resume, working_dir, self._Z)
-        output = plot_bxa(Plot, rebin_params, src_files, ax_spec, ax_res,
+        output = plot_bxa(rebin_params, src_files, ax_spec, ax_res,
                           colors, src_markers, bkg_markers, bkg_linestyle,
-                          tbin_f, bkg_factors)
+                          tbin_f, bkg_factors, analyser, src_linestyles,
+                          bkg_linestyle, hatches)
 
+        fig.canvas.draw()
         fig.set_tight_layout(True)
         fig.set_tight_layout(False)
-        hspace = 8.0 / figsize[1] * 0.05
+        # hspace = 8.0 / figsize[1] * 0.05
+        hspace = 0
         fig.subplots_adjust(
             hspace=hspace, top=fig_borders[0], bottom=fig_borders[1],
             left=fig_borders[2], right=fig_borders[3])
 
+        ax_res_invis.tick_params(left=True, bottom=True,
+                                 right=True, top=True)
+        ax_res_invis.tick_params(axis='x', which='major', direction='in',
+                                 top='on',   pad=9, length=0)  # , labelsize=10)
+        ax_res_invis.tick_params(axis='x', which='minor', direction='in',
+                                 top='on',   length=0)  # , labelsize=0)
+        ax_res_invis.tick_params(axis='y', which='major', direction='in',
+                                 right='on', length=0)  # , labelsize=10)
+        ax_res_invis.tick_params(axis='y', which='minor', direction='in',
+                                 right='on', length=0)
+
+        ax_res_invis.set_xbound(lower=0, upper=1)
+        ax_res_invis.set_xticks([0, 1])
+        ax_res_invis.set_xticklabels(['0', '1'], alpha=0)
+
+        ax_res_invis.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
+        ax_res_invis.set_yticks(ax_spec.get_yticks())
+        ax_res_invis.set_yticklabels(ax_spec.get_yticklabels(), alpha=0)
+
         width_ratios = [1]
-        height_ratios = [8, 4]
+        height_ratios = [5, 3]
 
         gs = gridspec.GridSpec(ncols=1,
                                nrows=2,
@@ -3843,15 +3939,17 @@ class HiMaXBi:
 
         ax_spec.set_position(gs[0].get_position(fig))
         ax_res.set_position(gs[1].get_position(fig))
+        ax_res_invis.set_position(gs[1].get_position(fig))
 
         ax_spec.set_ylabel('Counts s$^{-1}$ keV$^{-1}$')
-        ax_res.set_ylabel('$\\Delta\\chi$')
+        ax_res_invis.set_ylabel('$\\Delta\\chi$')
         ax_res.set_xlabel('Energy (keV)')
 
         ax_spec.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
         ax_res.set_ybound(lower=rescale_chi[0], upper=rescale_chi[1])
 
         ax_spec.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
+        ax_res.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
 
         fig.savefig(f'{self._working_dir_full}/test.pdf')
         # TODO: save figure, output, fluxes/lums
