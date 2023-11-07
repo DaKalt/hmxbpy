@@ -3911,7 +3911,7 @@ class HiMaXBi:
         fig.set_tight_layout(False)
         if len(src_files) > 1:
             ax_spec.legend(bbox_to_anchor=(-0.044, 1.02), loc='upper right',
-                           handletextpad=0.1)
+                           handletextpad=0.1, fontsize=12)
         # hspace = 8.0 / figsize[1] * 0.05
         hspace = 0
         fig.subplots_adjust(
