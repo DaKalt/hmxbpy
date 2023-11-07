@@ -9,6 +9,7 @@ from astropy.io import fits
 from bxa.xspec.solver import BXASolver, XSilence
 import bxa.xspec as bxa
 import json
+from matplotlib.dates import EPOCH_OFFSET
 import numpy as np
 import os
 from xspec import Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,\
@@ -23,9 +24,8 @@ def lum(flux, distance):
 
 
 def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
-             src_markers, bkg_markers, model_linestyle, epoch_type,
-             bkg_factors, analyser, src_linestyles, bkg_linestyle,
-             hatches):
+             src_markers, bkg_markers, epoch_type, bkg_factors, analyser,
+             src_linestyles, bkg_linestyle, hatches):
     energies = {}
     fluxes = {}
     backgrounds = {}
@@ -37,7 +37,10 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
     Plot.setRebin(rebinning[0], rebinning[1])
     n_srcfiles = len(src_files)
     for igroup in range(n_srcfiles):
-        label = 'test'
+        if n_srcfiles > 1:
+            label = f'{epoch_type} {igroup+1}'
+        else:
+            label = f'{epoch_type}'
         isource = 2*igroup + 1
         Plot.xAxis = 'keV'
         Plot('data')
@@ -55,8 +58,8 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
         EkeV_bkg = Plot.x(isource+1).copy()
         EkeV_bkg_err = Plot.xErr(isource+1).copy()
         ax_spec.errorbar(EkeV_bkg, bkg, xerr=EkeV_bkg_err, yerr=bkg_err,
-                         color=colors[igroup], marker=bkg_markers,
-                         label=label, linestyle='', zorder=4)
+                         color=colors[igroup], marker=bkg_markers[igroup],
+                         linestyle='', zorder=4)
 
         model = Plot.model(isource).copy()
         Esteps = []

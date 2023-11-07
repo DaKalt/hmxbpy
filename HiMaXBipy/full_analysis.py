@@ -3897,14 +3897,21 @@ class HiMaXBi:
                     fit_model, NH, self._logger, prompting,
                     quantiles, src_files, fit_statistic, suffix,
                     resume, working_dir, self._Z)
+        if tbin_f == 'eRASS' or tbin_f == 'epoch':
+            epoch_type = tbin_f
+        else:
+            epoch_type = 'part'
         output = plot_bxa(rebin_params, src_files, ax_spec, ax_res,
-                          colors, src_markers, bkg_markers, bkg_linestyle,
-                          tbin_f, bkg_factors, analyser, src_linestyles,
+                          colors, src_markers, bkg_markers, epoch_type,
+                          bkg_factors, analyser, src_linestyles,
                           bkg_linestyle, hatches)
 
         fig.canvas.draw()
         fig.set_tight_layout(True)
         fig.set_tight_layout(False)
+        if len(src_files) > 1:
+            ax_spec.legend(bbox_to_anchor=(-0.044, 1.02), loc='upper right',
+                           handletextpad=0.1)
         # hspace = 8.0 / figsize[1] * 0.05
         hspace = 0
         fig.subplots_adjust(
