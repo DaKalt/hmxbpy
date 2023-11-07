@@ -43,7 +43,8 @@ from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,
 from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa, plot_bxa
-from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple
+from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple,\
+    abb, abb_simple
 
 color_palette = list(mcolors.TABLEAU_COLORS.values())
 pnt_palette = ['.', 'v', '^', 's', '*', '1', 'o', 'p', 'D', 'x']
@@ -3816,9 +3817,9 @@ class HiMaXBi:
         elif model == 'apl_simple':
             fit_model = apl_simple
         elif model == 'abb':
-            raise Exception('abb not available yet.')
+            fit_model = abb
         elif model == 'abb_simple':
-            raise Exception('abb_simple not available yet.')
+            fit_model = abb_simple
 
         if colors == []:
             colors = color_palette
