@@ -3882,7 +3882,7 @@ class HiMaXBi:
             ax.tick_params(axis='x', which='major', direction='in',
                            top='on', pad=9, length=5, width=1.5)  # , labelsize=10)
             ax.tick_params(axis='x', which='minor', direction='in',
-                           top='on',   length=3)  # , labelsize=0)
+                           top='on', pad=9, length=3)  # , labelsize=0)
             ax.tick_params(axis='y', which='major', direction='in',
                            right='on', length=5, width=1.5)  # , labelsize=10)
             ax.tick_params(axis='y', which='minor', direction='in',
@@ -3895,6 +3895,9 @@ class HiMaXBi:
         ax_res.set_yticks([-4, -2, 2, 4], minor=True)
         ax_res.set_yticklabels(['-4', '-2', '2', '4'], minor=True)
         ax_res.set_xticklabels(xlabels, minor=False)
+
+        ax_spec.set_xticklabels(['']*len(xticks), minor = False)
+        ax_spec.set_xticklabels(['']*len(xminorticks), minor=True)
 
         ax_res_invis = fig.add_subplot(111)
         ax_res_invis.set_frame_on(False)
