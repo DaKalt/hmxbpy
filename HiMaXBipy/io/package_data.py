@@ -16,6 +16,11 @@ def round_to_1(x):
     else:
         return round(x, -int(floor(log10(abs(x)))))
 
+def num2text(x):
+    if x == int(x):
+        return str(int(x))
+    else:
+        return str(x)
 
 def get_path_of_data_file(data_file):
     file_path = pkg_resources.resource_filename("HiMaXBipy",

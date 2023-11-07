@@ -32,7 +32,7 @@ except ModuleNotFoundError:
 from xspec import __path__ as xspec_path
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir,\
-    get_json_dir
+    get_json_dir, num2text
 from HiMaXBipy.io.logging import setup_logfile, setup_logger, set_loglevel
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
@@ -3850,6 +3850,27 @@ class HiMaXBi:
         ax_res = fig.add_subplot(111)
         ax_spec.set_yscale('log')
 
+        Emin = E_ranges[0][0]
+        Emax = E_ranges[0][1]
+
+        xticks = []
+        xlabels = []
+        for tick in [0.5, 1, 5, 10]:
+            if tick>Emin and tick<Emax:
+                xticks.append(tick)
+                xlabels.append(num2text(tick))
+
+        xminorticks = []
+        xminorlabels = []
+        xminorticks.append(Emin)
+        xminorlabels.append(num2text(Emin))
+        for tick in [0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 2, 3, 4, 6, 7, 8, 9]:
+            if tick>Emin and tick<Emax:
+                xminorticks.append(tick)
+                xminorlabels.append('')
+        xminorticks.append(Emax)
+        xminorlabels.append(num2text(Emax))
+
         for ax in [ax_spec, ax_res]:
             ax.set_xscale('log')
 
@@ -3866,14 +3887,14 @@ class HiMaXBi:
                            right='on', length=5, width=1.5)  # , labelsize=10)
             ax.tick_params(axis='y', which='minor', direction='in',
                            right='on', length=3)  # , labelsize=0)
-            ax.set_xticks([0.5, 1, 5], minor=False)
-            ax.set_xticks([0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 2, 3, 4, 6, 7, 8],
-                          minor=True)
+            ax.set_xticks(xticks, minor=False)
+            ax.set_xticks(xminorticks, minor=True)
+            ax.set_xticklabels(xminorlabels, minor=True)
 
         ax_res.set_yticks([0], minor=False)
         ax_res.set_yticks([-4, -2, 2, 4], minor=True)
         ax_res.set_yticklabels(['-4', '-2', '2', '4'], minor=True)
-        ax_res.set_xticklabels(['0.5', '1', '5'], minor=False)
+        ax_res.set_xticklabels(xlabels, minor=False)
 
         ax_res_invis = fig.add_subplot(111)
         ax_res_invis.set_frame_on(False)
