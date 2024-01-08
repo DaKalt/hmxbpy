@@ -81,7 +81,8 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
         resid = Plot.y(isource).copy()
         resid_err = Plot.yErr(isource).copy()
         ax_res.errorbar(EkeV, resid, xerr=EkeV_err, yerr=resid_err,
-                        color='black', linestyle='', marker=src_markers[igroup])
+                        color=colors[igroup], linestyle='',
+                        marker=src_markers[igroup])
 
         energies[label] = [EkeV, EkeV_err]
         fluxes[label] = [data, data_err]

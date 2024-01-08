@@ -3829,7 +3829,7 @@ class HiMaXBi:
         os.environ['EROBACK'] = f'{self._json_dir_}/erosita_merged_1024.json'
 
         # these stay hardcoded but need to be adjusted
-        fig_borders = [0.99, 0.08, 0.14, 0.99]
+        fig_borders = [0.95, 0.05, 0.14, 0.95]
         figsize = [6, 8]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
