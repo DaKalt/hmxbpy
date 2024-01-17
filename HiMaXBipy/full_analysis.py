@@ -20,6 +20,7 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 import numpy as np
+from regex import F
 import scipy.stats
 try:
     from xspec import AllData, AllModels, Fit, Model, Plot, PlotManager,\
@@ -3473,7 +3474,9 @@ class HiMaXBi:
             'simultaneous' fits all eRASS spectra simultaneously,
             'merged' creates a single spectrum of all existing data. For
             fitting of individual eRASS/epochs run the function multiple
-            times using differend tbins.
+            times using differend tbins. When doing this use different
+            folder_suffix keywords to not overwrite the results each
+            time.
             The default is 'merged'.
         log_prefix : str, optional
             Sets a prefix for logfiles. The default is 'spectrum'.
@@ -3916,7 +3919,7 @@ class HiMaXBi:
 
         working_dir = f'{self._working_dir_full}/working'
         NH = self._NH * 1e-22
-        abs_F, unabs_L, bkg_factors, analyser = \
+        abs_F, unabs_L, bkg_factors, analyser, self._results = \
             fit_bxa(abund, distance, E_ranges,
                     fit_model, NH, self._logger, prompting,
                     quantiles, src_files, fit_statistic, suffix,
@@ -3983,8 +3986,23 @@ class HiMaXBi:
         ax_spec.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
         ax_res.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
 
-        fig.savefig(f'{self._working_dir_full}/test.pdf')
-        # TODO: save figure, output, fluxes/lums
+        # write if function to test if the folder {self._working_dir_full}/results/spectra/{model}{suffix} exists
+        if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
+                              f'{model}{suffix}'):
+            os.makedirs(f'{self._working_dir_full}/results/spectra/{model}'
+                        f'{suffix}')
+        fig.savefig(f'{self._working_dir_full}/results/spectra/{model}{suffix}'
+                    '/spectrum.pdf')
+        if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
+                          f'{suffix}/corner.pdf'):
+            os.remove(f'{self._working_dir_full}/results/spectra/{model}'
+                      f'{suffix}/corner.pdf')
+        shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
+                    'plots/corner.pdf', f'{self._working_dir_full}/results/'
+                    f'spectra/{model}{suffix}/corner.pdf')
+        results_file = open(f'{self._working_dir_full}/results/spectra/'
+                            f'{model}{suffix}/results.tex', 'w')
+        # TODO: fluxes/lums
 
         self._logger.handlers = logstate
         os.environ = old_environ

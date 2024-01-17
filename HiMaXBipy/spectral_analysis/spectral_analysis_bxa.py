@@ -297,7 +297,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                 model = AllModels(groupNum=2*groupid+1,
                                   modName=f'bkgmod{bkgid}')
                 norm = bxa.create_jeffreys_prior_for(model, fac_src)
-                norm['name'] = f'log(bkg model factor {bkgid})'
+                norm['name'] = f'log(bkg mod f{bkgid})'
                 bkg_norms.append(norm)
             else:
                 fac_src.values = [0, -1]
@@ -316,14 +316,15 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
     log.info('running BXA')
     analyser = BXASolver(transformations=transformations,
                          outputfiles_basename=outfiles)
-    analyser.run(resume=resume)
+    results = analyser.run(resume=resume)
 
     AllData.show()
     AllModels.show()
 
     absorbed_F = []
     unabsorbed_L = []
-    old_posterior = analyser.posterior.copy()
+    #old_posterior = analyser.posterior.copy()
+    print(analyser.posterior) #TODO: debugging
     for ispec in range(n_srcfiles):
         src = srcs[ispec]
         fluxes = []
@@ -349,11 +350,29 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
             lums.append(lums_band)
             for inH, nH in enumerate(nHs_froz):
                 nH.values = old_nh[inH]
-            analyser.posterior[:, 0] = old_posterior[:, 0]
+            #analyser.posterior[:, 0] = old_posterior[:, 0]
+            if band == E_ranges[0] and ispec == 0:
+                print(analyser.posterior)
+            analyser.set_best_fit() #TODO: needs testing
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
+        print(analyser.posterior) #TODO: debugging
 
     AllData.show()
     AllModels.show()
 
-    return absorbed_F, unabsorbed_L, bkg_factors, analyser
+    return absorbed_F, unabsorbed_L, bkg_factors, analyser, results
+
+def write_tex(tex_file, params, abs_F, unabs_L):
+    tex_file.write('\\begin{{tabular}}{{cccccc}}\n')
+    tex_file.write('\\hline\\hline\n')
+    tex_file.write('Data & Part & Power-law & N$_'
+                                '{{\\rm H, varab}}$ & \\mbox'
+                                '{{F$_{{\\rm x}}$}} & \\mbox'
+                                '{{L$_{{\\rm x}}$}} \\\\ \n')
+    tex_file.write('-- & -- & index & $\\times 10^'
+                                '{{20}}$ cm$^{{-2}}$ & $\\times$erg '
+                                'cm$^{{-2}}$s$^{{-1}}$ & $\\times'
+                                '$erg s$^{{-1}}$ \\\\ \n')
+    tex_file.write('\\hline\n')
+    tex_file.write('& & & & & \\\\ \n')
