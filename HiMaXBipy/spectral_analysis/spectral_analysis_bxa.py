@@ -347,12 +347,14 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                          lum(np.percentile(flux, quantiles[1]), distance),
                          lum(np.percentile(flux, quantiles[2]), distance)]
             lums.append(lums_band)
+            if band == E_ranges[0] and ispec == 0:
+                AllModels.show()
             for inH, nH in enumerate(nHs_froz):
                 nH.values = old_nh[inH]
             #analyser.posterior[:, 0] = old_posterior[:, 0]
+            analyser.set_best_fit() #TODO: needs testing
             if band == E_ranges[0] and ispec == 0:
                 AllModels.show()
-            analyser.set_best_fit() #TODO: needs testing
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
 
