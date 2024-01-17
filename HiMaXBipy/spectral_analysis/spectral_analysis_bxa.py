@@ -324,7 +324,6 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
     absorbed_F = []
     unabsorbed_L = []
     #old_posterior = analyser.posterior.copy()
-    print(analyser.posterior) #TODO: debugging
     for ispec in range(n_srcfiles):
         src = srcs[ispec]
         fluxes = []
@@ -352,11 +351,10 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                 nH.values = old_nh[inH]
             #analyser.posterior[:, 0] = old_posterior[:, 0]
             if band == E_ranges[0] and ispec == 0:
-                print(analyser.posterior)
+                AllModels.show()
             analyser.set_best_fit() #TODO: needs testing
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
-        print(analyser.posterior) #TODO: debugging
 
     AllData.show()
     AllModels.show()

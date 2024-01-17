@@ -3924,6 +3924,7 @@ class HiMaXBi:
                     fit_model, NH, self._logger, prompting,
                     quantiles, src_files, fit_statistic, suffix,
                     resume, working_dir, self._Z)
+        self._analyser = analyser
         if tbin_f == 'eRASS' or tbin_f == 'epoch':
             epoch_type = tbin_f
         else:
