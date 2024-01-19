@@ -416,7 +416,7 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles):
         tex_file.write('%s\\\\ \n' % ('& '*(1 + len(tex_info) + 1)))
         line = f'{i+1} & '
         for j in range(len(tex_info)):
-            if len(tex_info[2]) == 1:
+            if len(tex_info[j][2]) == 1:
                 if i > 0:
                     line += ' & '
                     continue
