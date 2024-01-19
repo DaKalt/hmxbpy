@@ -428,11 +428,11 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles):
             mask = cumsumweights > 1e-4
 
             lower = corner.quantile(data[mask], quantiles[0]/100.,
-                                    weights[mask])
+                                    weights[mask])[0]
             median = corner.quantile(data[mask], quantiles[1]/100.,
-                                     weights[mask])
+                                     weights[mask])[0]
             upper = corner.quantile(data[mask], quantiles[2]/100.,
-                                    weights[mask])
+                                    weights[mask])[0]
             if tex_info[j][3] == 'log':
                 lower = 10 ** lower
                 median = 10 ** median

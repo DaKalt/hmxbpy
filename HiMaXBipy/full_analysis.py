@@ -1220,7 +1220,7 @@ class HiMaXBi:
                 time_rel = self._obs_periods[0][0]
             elif time_axis == 's':
                 time_rel = ((self._obs_periods[0][0] - self._mjdref)
-                            / (24. * 3600))
+                            * (24. * 3600))
             else:
                 time_rel = 0
                 self._logger.error('time_rel not yet defined for this '
@@ -4075,7 +4075,83 @@ class HiMaXBi:
                     self._logger.debug(str(line)[2:-3] + '\n')
                 event_files.append(f'./{self._period_names[epoch_counter]}_'
                                    'bxa.fits')
-        # TODO: write other cases
+        elif tbin_f == 'eRASS':
+            for eRASS_counter in range(len(self._ero_starttimes)):
+                if eRASS_counter == 0:
+                    if self._obs_periods[0][0] < self._ero_starttimes[0]:
+                        start = self._obs_periods[0][0]
+                        name = 'eRASS01'
+                    else:
+                        name = 'eRASS1'
+                        start = self._ero_starttimes[0]
+                    stop = self._ero_starttimes[1]
+                elif eRASS_counter == len(self._ero_starttimes) - 1:
+                    start = self._ero_starttimes[-1]
+                    name = f'eRASS{eRASS_counter + 1}'
+                    if self._obs_periods[-1][1] > self._ero_starttimes[-1]:
+                        stop = self._obs_periods[-1][1]
+                    else:
+                        continue
+                else:
+                    name = f'eRASS{eRASS_counter + 1}'
+                    start = self._ero_starttimes[eRASS_counter]
+                    stop = self._ero_starttimes[eRASS_counter + 1]
+                start = ((start - self._mjdref) * 24. * 3600.)
+                stop = ((stop - self._mjdref) * 24. * 3600.)
+                replacements = [['@esass_location', self._esass],
+                                ['@infiles', self._filelist],
+                                ['@outfile',
+                                f'./{name}_'
+                                 'bxa.fits'],
+                                ['@start',
+                                f'{start}'],
+                                ['@stop', f'{stop}']]
+                sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
+                sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
+                os.environ = old_environ
+                for line in process.stdout.readlines():
+                    # to fix weird b'something' format
+                    self._logger.debug(str(line)[2:-3] + '\n')
+                event_files.append(f'./{name}_bxa.fits')
+        elif tbin_f == 'mjd' or tbin_f == 'mjd_short' or tbin_f == 'time_eRO' \
+                or tbin_f == 'time_eRO_short':
+            tbins = np.array(tbins)
+            if tbin_f == 'mjd':
+                tbins = (tbins - self._mjdref) * 24. * 3600.
+            elif tbin_f == 'mjd_short':
+                tbins = (tbins + self._obs_periods[0][0] - self._mjdref) \
+                    * 24. * 3600.
+            elif tbin_f == 'time_eRO':
+                tbins = tbins
+            elif tbin_f == 'time_eRO_short':
+                tbins = tbins + (self._obs_periods[0][0] - self._mjdref) \
+                    * 24. * 3600.
+            for ibin in range(len(tbins)):
+                start = tbins[ibin][0]
+                stop = tbins[ibin][1]
+                replacements = [['@esass_location', self._esass],
+                                ['@infiles', self._filelist],
+                                ['@outfile',
+                                f'./bin{ibin+1}_'
+                                 'bxa.fits'],
+                                ['@start',
+                                f'{start}'],
+                                ['@stop', f'{stop}']]
+                sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
+                sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
+                os.environ = old_environ
+                for line in process.stdout.readlines():
+                    # to fix weird b'something' format
+                    self._logger.debug(str(line)[2:-3] + '\n')
+                event_files.append(f'./bin{ibin+1}_bxa.fits')
         src_files = []
         if mode == 'merged':
             infiles = ''
