@@ -8,8 +8,13 @@ Created on Tue Sep 13 17:23:18 2023
 from astropy.io import fits
 from bxa.xspec.solver import BXASolver, XSilence
 import bxa.xspec as bxa
+import corner
 import json
+import logging
 from matplotlib.dates import EPOCH_OFFSET
+from matplotlib.figure import Figure
+from matplotlib.pyplot import figure
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 from xspec import Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,\
@@ -25,7 +30,7 @@ def lum(flux, distance):
 
 def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
              src_markers, bkg_markers, epoch_type, bkg_factors, analyser,
-             src_linestyles, bkg_linestyle, hatches):
+             src_linestyles, bkg_linestyle, hatches, ntransf):
     energies = {}
     fluxes = {}
     backgrounds = {}
@@ -308,6 +313,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         Fit.statMethod = 'cstat'
 
     transformations = transf_src + bkg_norms
+    ntransf = len(transf_src) #this is for corner plot without background norms
 
     outfiles = f'{working_dir}/{model_name}{suffix}'
     if not os.path.exists(outfiles):
@@ -323,7 +329,6 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
 
     absorbed_F = []
     unabsorbed_L = []
-    #old_posterior = analyser.posterior.copy()
     for ispec in range(n_srcfiles):
         src = srcs[ispec]
         fluxes = []
@@ -351,28 +356,92 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                 AllModels.show()
             for inH, nH in enumerate(nHs_froz):
                 nH.values = old_nh[inH]
-            #analyser.posterior[:, 0] = old_posterior[:, 0]
-            analyser.set_best_fit() #TODO: needs testing
-            if band == E_ranges[0] and ispec == 0:
-                AllModels.show()
+            analyser.set_best_fit()
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
 
+    #this is just to check if analyser.set_best_fit() does its job
     AllData.show()
     AllModels.show()
 
-    return absorbed_F, unabsorbed_L, bkg_factors, analyser, results
+    return absorbed_F, unabsorbed_L, bkg_factors, analyser, ntransf
 
-def write_tex(tex_file, params, abs_F, unabs_L):
-    tex_file.write('\\begin{{tabular}}{{cccccc}}\n')
+def plot_corner(analyser, ntransf, log) -> Figure:
+    """Make a corner plot with corner. Altered from ultranest."""
+    paramnames = analyser.results['paramnames'][:ntransf]
+    data = np.array(analyser.results['weighted_samples']['points']
+                    .T[:ntransf].T)
+    weights = np.array(analyser.results['weighted_samples']['weights'])
+    cumsumweights = np.cumsum(weights)
+
+    mask = cumsumweights > 1e-4
+
+    if mask.sum() == 1:
+        if log is not None:
+            warn = 'Posterior is still concentrated in a single point:'
+            for i, p in enumerate(paramnames):
+                v = analyser.results['samples'][mask,i]
+                warn += "\n" + '    %-20s: %s' % (p, v)
+
+            log.warning(warn)
+            log.info('Try running longer.')
+        return plt.figure()
+
+    # monkey patch to disable a useless warning;
+    # this is for now turned off to check
+    # oldfunc = logging.warning
+    # logging.warning = lambda *args, **kwargs: None
+    fig = corner.corner(data[mask,:], weights=weights[mask],
+                        labels=paramnames, show_titles=True, quiet=True)
+    # logging.warning = oldfunc
+    return fig
+
+def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles):
+    tex_file.write('\\begin{{tabular}}{{%s}}\n' % ('c' * (1+len(tex_info)+2)))
     tex_file.write('\\hline\\hline\n')
-    tex_file.write('Data & Part & Power-law & N$_'
-                                '{{\\rm H, varab}}$ & \\mbox'
-                                '{{F$_{{\\rm x}}$}} & \\mbox'
-                                '{{L$_{{\\rm x}}$}} \\\\ \n')
-    tex_file.write('-- & -- & index & $\\times 10^'
-                                '{{20}}$ cm$^{{-2}}$ & $\\times$erg '
-                                'cm$^{{-2}}$s$^{{-1}}$ & $\\times'
-                                '$erg s$^{{-1}}$ \\\\ \n')
+    line_1 = ''
+    for i in range(len(tex_info)):
+        line_1 += tex_info[i][0] + ' & '
+    line_2 = ''
+    for i in range(len(tex_info)):
+        line_2 += tex_info[i][1] + ' & '
+    tex_file.write(f'Part & {line_1}'
+                                '\\mbox{{F$_{{\\rm x}}$}} '
+                                '& \\mbox{{L$_{{\\rm x}}$}} \\\\ \n')
+    tex_file.write(f'-- & {line_2}'
+                                '$\\times$erg cm$^{{-2}}$s$^{{-1}}$ '
+                                '& $\\times$erg s$^{{-1}}$ \\\\ \n')
     tex_file.write('\\hline\n')
-    tex_file.write('& & & & & \\\\ \n')
+    for i in range(len(abs_F)):
+        tex_file.write('%s\\\\ \n' % ('& '*(1 + len(tex_info) + 1)))
+        line = f'{i+1} & '
+        for j in range(len(tex_info)):
+            if len(tex_info[2]) == 1:
+                if i > 0:
+                    line += ' & '
+                    continue
+            index = tex_info[j][2][i]
+            data = analyser.results['weighted_samples']['points'][index]
+            weights = np.array(analyser.results['weighted_samples']['weights'])
+            cumsumweights = np.cumsum(weights)
+
+            mask = cumsumweights > 1e-4
+
+            lower = corner.quantile(data[mask], quantiles[0], weights[mask])
+            median = corner.quantile(data[mask], quantiles[1], weights[mask])
+            upper = corner.quantile(data[mask], quantiles[2], weights[mask])
+            if tex_info[j][3] == 'log':
+                lower = 10 ** lower
+                median = 10 ** median
+                upper = 10 ** upper 
+            line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
+        lower = abs_F[i][0]
+        median = abs_F[i][1]
+        upper = abs_F[i][2]
+        line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
+        lower = unabs_L[i][0]
+        median = unabs_L[i][1]
+        upper = unabs_L[i][2]
+        line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ \\\\ \n'
+        tex_file.write(line)
+    tex_file.write('%s\\\\ \n' % ('& '*(1 + len(tex_info) + 1)))

@@ -43,7 +43,8 @@ from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,
     plot_lc_mincounts_broken_bayes
 from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
-from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa, plot_bxa
+from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
+    plot_bxa, plot_corner, write_tex
 from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple,\
     abb, abb_simple
 
@@ -3815,13 +3816,22 @@ class HiMaXBi:
         if type(src_linestyles) != list and type(src_linestyles) != np.ndarray:
             raise Exception('src_linestyles has to be array-like.')
 
+        tex_info = []
         if model == 'apl':
             fit_model = apl
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
+                            'log'],
+                        ['Power-law', 'index', [1], 'lin']]
         elif model == 'apl_simple':
             fit_model = apl_simple
+            tex_info = [['Power-law', 'index', [0], 'lin']]
         elif model == 'abb':
             fit_model = abb
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
+                         'log'],
+                        ['Teff', 'K', [1], 'lin']]
         elif model == 'abb_simple':
+            tex_info = [['Teff', 'K', [0], 'lin']]
             fit_model = abb_simple
 
         if colors == []:
@@ -3919,7 +3929,7 @@ class HiMaXBi:
 
         working_dir = f'{self._working_dir_full}/working'
         NH = self._NH * 1e-22
-        abs_F, unabs_L, bkg_factors, analyser, self._results = \
+        abs_F, unabs_L, bkg_factors, analyser, ntransf = \
             fit_bxa(abund, distance, E_ranges,
                     fit_model, NH, self._logger, prompting,
                     quantiles, src_files, fit_statistic, suffix,
@@ -3932,7 +3942,7 @@ class HiMaXBi:
         output = plot_bxa(rebin_params, src_files, ax_spec, ax_res,
                           colors, src_markers, bkg_markers, epoch_type,
                           bkg_factors, analyser, src_linestyles,
-                          bkg_linestyle, hatches)
+                          bkg_linestyle, hatches, ntransf)
 
         fig.canvas.draw()
         fig.set_tight_layout(True)
@@ -3987,23 +3997,49 @@ class HiMaXBi:
         ax_spec.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
         ax_res.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
 
-        # write if function to test if the folder {self._working_dir_full}/results/spectra/{model}{suffix} exists
+        
         if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
                               f'{model}{suffix}'):
             os.makedirs(f'{self._working_dir_full}/results/spectra/{model}'
                         f'{suffix}')
+        if not os.path.exists(f'{self._working_dir_full}/results/spectra/
+                              {model}{suffix}/diagnostic'):
+            os.makedirs(f'{self._working_dir_full}/results/spectra/{model}'
+                        f'{suffix}/diagnostic')
         fig.savefig(f'{self._working_dir_full}/results/spectra/{model}{suffix}'
                     '/spectrum.pdf')
         if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
-                          f'{suffix}/corner.pdf'):
+                          f'{suffix}/corner_full.pdf'):
             os.remove(f'{self._working_dir_full}/results/spectra/{model}'
-                      f'{suffix}/corner.pdf')
+                      f'{suffix}/corner_full.pdf')
+        if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
+                          f'{suffix}/diagnostic/trace.pdf'):
+            os.remove(f'{self._working_dir_full}/results/spectra/{model}'
+                      f'{suffix}/diagnostic/trace.pdf')
+        if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
+                          f'{suffix}/diagnostic/run.pdf'):
+            os.remove(f'{self._working_dir_full}/results/spectra/{model}'
+                      f'{suffix}/diagnostic/run.pdf')
         shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
                     'plots/corner.pdf', f'{self._working_dir_full}/results/'
-                    f'spectra/{model}{suffix}/corner.pdf')
+                    f'spectra/{model}{suffix}/corner_full.pdf')
+        shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
+                    'plots/run.pdf', f'{self._working_dir_full}/results/'
+                    f'spectra/{model}{suffix}/diagnostic/run.pdf')
+        shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
+                    'plots/trace.pdf', f'{self._working_dir_full}/results/'
+                    f'spectra/{model}{suffix}/diagnostic/trace.pdf')
+                
+        fig_corner = plot_corner(analyser, ntransf, self._logger)
+        fig_corner.savefig(f'{self._working_dir_full}/results/spectra/'
+                           f'{model}{suffix}/corner.pdf')
+        # corner plot can be modified by working handing fig_corner to
+        # functions from the corner package
+        
         results_file = open(f'{self._working_dir_full}/results/spectra/'
                             f'{model}{suffix}/results.tex', 'w')
-        # TODO: fluxes/lums
+        write_tex(results_file, tex_info, abs_F, unabs_L, analyser, quantiles)
+        results_file.close()
 
         self._logger.handlers = logstate
         os.environ = old_environ

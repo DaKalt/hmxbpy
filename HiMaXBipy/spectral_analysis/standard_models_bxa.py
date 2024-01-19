@@ -41,7 +41,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
     nHs_modelled = [loc_nh]
-    return transformations, nHs_frozen, nHs_modelled, 'apl'
+    return transformations, nHs_frozen, nHs_modelled, 'apl', tex_info
 
 
 def apl_simple(Model, AllModels, bxa, galnh, Z, n):
@@ -67,7 +67,7 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
     nHs_modelled = []
-    return transformations, nHs_frozen, nHs_modelled, 'apl_simple'
+    return transformations, nHs_frozen, nHs_modelled, 'apl_simple', tex_info
 
 
 def abb_simple(Model, AllModels, bxa, galnh, Z, n):
