@@ -4002,8 +4002,8 @@ class HiMaXBi:
                               f'{model}{suffix}'):
             os.makedirs(f'{self._working_dir_full}/results/spectra/{model}'
                         f'{suffix}')
-        if not os.path.exists(f'{self._working_dir_full}/results/spectra/
-                              {model}{suffix}/diagnostic'):
+        if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
+                              f'{model}{suffix}/diagnostic'):
             os.makedirs(f'{self._working_dir_full}/results/spectra/{model}'
                         f'{suffix}/diagnostic')
         fig.savefig(f'{self._working_dir_full}/results/spectra/{model}{suffix}'
