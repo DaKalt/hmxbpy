@@ -421,7 +421,7 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles):
                     line += ' & '
                     continue
             index = tex_info[j][2][i]
-            data = analyser.results['weighted_samples']['points'][index]
+            data = analyser.results['weighted_samples']['points'].T[index]
             weights = np.array(analyser.results['weighted_samples']['weights'])
             cumsumweights = np.cumsum(weights)
 
