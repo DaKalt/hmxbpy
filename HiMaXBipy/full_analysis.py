@@ -4038,7 +4038,8 @@ class HiMaXBi:
         
         results_file = open(f'{self._working_dir_full}/results/spectra/'
                             f'{model}{suffix}/results.tex', 'w')
-        write_tex(results_file, tex_info, abs_F, unabs_L, analyser, quantiles)
+        write_tex(results_file, tex_info, abs_F, unabs_L, analyser, quantiles,
+                  E_ranges)
         results_file.close()
 
         self._logger.handlers = logstate
