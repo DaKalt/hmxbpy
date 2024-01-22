@@ -396,24 +396,28 @@ def plot_corner(analyser, ntransf, log) -> Figure:
     # logging.warning = oldfunc
     return fig
 
-def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles):
-    tex_file.write('\\begin{{tabular}}{{%s}}\n' % ('c' * (1+len(tex_info)+2)))
+def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
+              E_ranges):
+    tex_file.write('\\begin{{tabular}}{{%s}}\n' % ('c' * (1+len(tex_info)
+                                                          +2*len(E_ranges))))
     tex_file.write('\\hline\\hline\n')
     line_1 = ''
     for i in range(len(tex_info)):
-        line_1 += tex_info[i][0] + ' & '
+        line_1 += tex_info[i][0]
     line_2 = ''
     for i in range(len(tex_info)):
-        line_2 += tex_info[i][1] + ' & '
-    tex_file.write(f'Part & {line_1}'
-                                '\\mbox{{F$_{{\\rm x}}$}} '
-                                '& \\mbox{{L$_{{\\rm x}}$}} \\\\ \n')
-    tex_file.write(f'-- & {line_2}'
-                                '$\\times$erg cm$^{{-2}}$s$^{{-1}}$ '
-                                '& $\\times$erg s$^{{-1}}$ \\\\ \n')
+        line_2 += tex_info[i][1]
+    for entry in E_ranges:
+        line_1 += (' & \\mbox{{F$_{{\\rm x; %s-%s}}$}} '
+                   '& \\mbox{{L$_{{\\rm x; %s-%s}}$}}' % (entry[0], entry[1],
+                                                          entry[0], entry[1]))
+        line_2 += (' & $\\times$erg cm$^{{-2}}$s$^{{-1}}$ & '
+                   '$\\times$erg s$^{{-1}}$')
+    tex_file.write(f'Part & {line_1} \\\\ \n')
+    tex_file.write(f'-- & {line_2} \\\\ \n')
     tex_file.write('\\hline\n')
     for i in range(len(abs_F)):
-        tex_file.write('%s\\\\ \n' % ('& '*(1 + len(tex_info) + 1)))
+        tex_file.write('%s\\\\ \n' % ('& '*(len(tex_info) + 2*len(E_ranges))))
         line = f'{i+1} & '
         for j in range(len(tex_info)):
             if len(tex_info[j][2]) == 1:
@@ -437,14 +441,17 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles):
                 lower = 10 ** lower
                 median = 10 ** median
                 upper = 10 ** upper 
-            line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
-        lower = abs_F[i][0]
-        median = abs_F[i][1]
-        upper = abs_F[i][2]
-        line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
-        lower = unabs_L[i][0]
-        median = unabs_L[i][1]
-        upper = unabs_L[i][2]
-        line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ \\\\ \n'
+            line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$'
+        for irange in range(len(E_ranges)):
+            lower = abs_F[i][irange][0]
+            median = abs_F[i][irange][1]
+            upper = abs_F[i][irange][2]
+            line += f' & {median}$^{{+{upper-median}}}_{{-{median-lower}}}$'
+        for irange in range(len(E_ranges)):
+            lower = unabs_L[i][irange][0]
+            median = unabs_L[i][irange][1]
+            upper = unabs_L[i][irange][2]
+            line += f' & {median}$^{{+{upper-median}}}_{{-{median-lower}}}$'
+        line += '\\\\ \n'
         tex_file.write(line)
-    tex_file.write('%s\\\\ \n' % ('& '*(1 + len(tex_info) + 1)))
+    tex_file.write('%s\\\\ \n' % ('& '*(len(tex_info) + 2*len(E_ranges))))
