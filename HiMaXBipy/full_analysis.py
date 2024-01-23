@@ -3465,7 +3465,7 @@ class HiMaXBi:
                               prompting=False, plot_bkg=True,
                               src_markers=[], bkg_markers=[],
                               src_linestyles=[], bkg_linestyle='--',
-                              set_hatch=False):
+                              set_hatch=False, fig_borders = []):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3623,6 +3623,10 @@ class HiMaXBi:
             If True hatches will be used to better differentiate between
             model predictions for different spectra. The default is
             False.
+        fig_borders :  float array-like (4,), optional
+            Sets figure borders for matplotlib.pyplot.figure object. The order
+             is top, bottom, left, right. The
+            default is [0.97, 0.07, 0.14, 0.97].
         '''
         fit_model = None
         self._logger.info('Running plot_spectra.')
@@ -3815,6 +3819,18 @@ class HiMaXBi:
             raise Exception('bkg_markers has to be array-like.')
         if type(src_linestyles) != list and type(src_linestyles) != np.ndarray:
             raise Exception('src_linestyles has to be array-like.')
+        if type(fig_borders) != list and type(fig_borders) != np.ndarray:
+            raise Exception('fig_borders must be array-like')
+        else:
+            if len(fig_borders) != 0 and len(fig_borders) != 4:
+                raise Exception('fig_borders must have 0 or 4 entries.')
+            for entry in fig_borders:
+                if type(entry) != int and type(entry) != float:
+                    raise Exception(
+                        'The entries of fig_borders need to be given as int.')
+                if entry < 0 or entry > 1:
+                    raise Exception('The entries of fig_borders must be '
+                                    'between 0 and 1.')
 
         tex_info = []
         if model == 'apl':
@@ -3842,7 +3858,8 @@ class HiMaXBi:
         os.environ['EROBACK'] = f'{self._json_dir_}/erosita_merged_1024.json'
 
         # these stay hardcoded but need to be adjusted
-        fig_borders = [0.95, 0.05, 0.14, 0.95]
+        if len(fig_borders) == 0:
+            fig_borders = [0.97, 0.07, 0.14, 0.97]
         figsize = [6, 8]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
