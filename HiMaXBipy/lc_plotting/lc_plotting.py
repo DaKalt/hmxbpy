@@ -1240,6 +1240,135 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
     big_ax.set_yticklabels(axs[0].get_yticklabels(), alpha=0)
     big_ax.set_ybound(lower=pymin, upper=pymax)
 
+def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
+                   ticknumber_x, ticknumber_y, ncols, nrows, d, tilt,
+                   diag_color, big_ax, yscale):
+    fig.canvas.draw()
+    # proportion of vertical to horizontal extent of the slanted line
+    d = np.tan(tilt)
+    kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12, linestyle="none",
+                  color=diag_color, mec=diag_color, mew=1, clip_on=False)
+
+    start_x, end_x = 0, 0
+
+    for i_ax, group in enumerate(axs):
+        for ax in group:
+            loc = plticker.MultipleLocator(base=10.0)
+            ax.yaxis.set_major_locator(loc)
+            x_formatter = plticker.ScalarFormatter(useOffset=False)
+            ax.xaxis.set_major_formatter(x_formatter)
+            ax.tick_params(axis='x', which='major', direction='in',
+                        top='on',   pad=9, length=5)  # , labelsize=10)
+            ax.tick_params(axis='x', which='minor', direction='in',
+                        top='on',   length=3)  # , labelsize=0)
+            ax.tick_params(axis='y', which='major', direction='in',
+                        right='on', length=5)  # , labelsize=10)
+            ax.tick_params(axis='y', which='minor', direction='in',
+                        right='on', length=3)  # , labelsize=0)
+
+            if i_ax == 0:
+                ax.plot([1, 1], [0, 1], transform=ax.transAxes, **kwargs)
+                ax.spines.right.set_visible(False)
+                ax.tick_params(which='major', right=False, labelright=False)
+                ax.tick_params(which='minor', right=False, labelright=False)
+            elif i_ax == len(axs) - 1:
+                ax.plot([0, 0], [0, 1], transform=ax.transAxes, **kwargs)
+                ax.spines.left.set_visible(False)
+                ax.tick_params(which='major', left=False, labelleft=False)
+                ax.tick_params(which='minor', left=False, labelleft=False)
+            else:
+                ax.plot([0, 0, 1, 1], [0, 1, 0, 1],
+                        transform=ax.transAxes, **kwargs)
+                ax.spines.right.set_visible(False)
+                ax.spines.left.set_visible(False)
+                ax.tick_params(which='major', left=False, labelleft=False,
+                            right=False, labelright=False)
+                ax.tick_params(which='minor', left=False, labelleft=False,
+                            right=False, labelright=False)
+
+            if i_ax == 0 or i_ax == len(axs) - 1:
+                if yscale == 'linear':
+                    tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
+                    yticks = []
+                    for j in range(-2*int(ticknumber_y), 2*int(ticknumber_y) + 1):
+                        if j * tick_size_y > pymin and j * tick_size_y < pymax:
+                            yticks.append(j * tick_size_y)
+                    ax.set_yticks(yticks)
+                elif yscale == 'log':
+                    yticks = []
+                    yticklabes = []
+                    for power in range(int(np.floor(np.log10(pymin))),
+                                    int(np.ceil(np.log10(pymax)))):
+                        if (np.log10(pymax/pymin) >= 2 * ticknumber_y
+                                and power % 2 == 1):
+                            continue
+                        yticks.append(10**power)
+                        yticklabes.append('$\\mathdefault{10^{%i}}$' % (power))
+                        if np.log10(pymax/pymin) * 4 <= ticknumber_y:
+                            yticks.append(2 * 10 ** power)
+                            yticklabes.append('$\\mathdefault{2\\times10^{%i}}$'
+                                            % (power))
+                        if np.log10(pymax/pymin) * 2 <= ticknumber_y:
+                            yticks.append(5 * 10 ** power)
+                            yticklabes.append('$\\mathdefault{5\\times10^{%i}}$'
+                                            % (power))
+                    ax.set_yticks(yticks, labels=yticklabes)
+
+                # longest_y = ''
+                # for entry in ax.get_yticks():
+                #     entry = round_to_1(entry)
+                #     if len(str(entry)) > len(longest_y):
+                #         longest_y = str(entry)
+
+            tick_size_x = np.round(
+                (pxmaxs[i_ax] - pxmins[i_ax]) / ticknumber_x)
+            if ticknumber_x % 2 == 0:
+                shift_x = np.round(tick_size_x / 2)
+            else:
+                shift_x = 0
+
+            xticks = []
+            centre_x = np.round(
+                (pxmaxs[i_ax] + pxmins[i_ax]) / 2.)
+            for j in range(-int(ticknumber_x), int(ticknumber_x) + 1):
+                if (j * tick_size_x + centre_x - shift_x > pxmins[i_ax] and
+                        j * tick_size_x + centre_x - shift_x < pxmaxs[i_ax]):
+                    xticks.append(j * tick_size_x + centre_x - shift_x)
+            if len(xticks) <= 1:
+                xticks = [centre_x - np.round(tick_size_x / 2),
+                        centre_x + np.round(tick_size_x / 2)]
+            ax.set_xticks(xticks)
+            if i_ax == 0:
+                start_x = xticks[0]
+            elif i_ax == len(axs) - 1:
+                end_x = xticks[-1]
+
+            ax.set_xbound(lower=pxmins[i_ax], upper=pxmaxs[i_ax])
+            ax.set_ybound(lower=pymin, upper=pymax)
+
+    big_ax.tick_params(left=True, bottom=True,
+                       right=True, top=True)
+    loc = plticker.MultipleLocator(base=10.0)
+    big_ax.yaxis.set_major_locator(loc)
+    x_formatter = plticker.ScalarFormatter(useOffset=False)
+    big_ax.xaxis.set_major_formatter(x_formatter)
+    big_ax.tick_params(axis='x', which='major', direction='in',
+                       top='on',   pad=9, length=0)  # , labelsize=10)
+    big_ax.tick_params(axis='x', which='minor', direction='in',
+                       top='on',   length=0)  # , labelsize=0)
+    big_ax.tick_params(axis='y', which='major', direction='in',
+                       right='on', length=0)  # , labelsize=10)
+    big_ax.tick_params(axis='y', which='minor', direction='in',
+                       right='on', length=0)
+
+    big_ax.set_xbound(lower=0, upper=1)
+    big_ax.set_xticks([0, 1])
+    big_ax.set_xticklabels([start_x, end_x], alpha=0)
+
+    big_ax.set_yticks(axs[0][0].get_yticks())
+    big_ax.set_yticklabels(axs[0][0].get_yticklabels(), alpha=0)
+    big_ax.set_ybound(lower=pymin, upper=pymax)
+
 
 def plot_lc_mincounts_hr(hdulist_1, hdulist_2, axs, log, mjdref, xflag,
                          mincounts, color, obs_periods, short_time,

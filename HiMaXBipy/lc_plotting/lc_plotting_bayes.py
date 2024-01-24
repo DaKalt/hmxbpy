@@ -1171,3 +1171,398 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     logger_stan.handlers = []
 
     return pxmin, pxmax, pymin, pymax, time_rel
+
+def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
+                                   mincounts_full, mincounts_ind, color,
+                                   obs_periods, short_time, stan_model,
+                                   quantiles, time_rel=0, fexp_cut=0.15,
+                                   alpha_bg=0.5, bblocks=False, bbp0=0.01,
+                                   bbmode='both', yscale='linear'):
+    '''
+    Lightcurve rebinned to eROdays with countrates optained with
+    Bayesian fit assuming Poissionian distribution for counts and log;
+    fit done for each bin simultaneously
+    '''
+    logger_stan = logging.getLogger('cmdstanpy')
+    logger_stan.setLevel(logging.DEBUG)
+    logger_stan.handlers = log.handlers.copy()
+    pxmin = []
+    pxmax = []
+    pymax = []
+    xtime = []
+    xtime_d = []
+    fexp_full = hdulist[1].data.field('FRACEXP')[:,0]
+    time = hdulist[1].data.field('TIME')[fexp_full > fexp_cut]
+    time_mjd = time / 3600. / 24. + mjdref
+    delt = hdulist[1].data.field('TIMEDEL')[fexp_full > fexp_cut]
+    cnts0 = np.array(hdulist[1].data.field('COUNTS'),
+                    dtype=int)[:,0][fexp_full > fexp_cut]
+    cnts1 = np.array(hdulist[1].data.field('COUNTS'),
+                    dtype=int)[:,1][fexp_full > fexp_cut]
+    cnts2 = np.array(hdulist[1].data.field('COUNTS'),
+                    dtype=int)[:,2][fexp_full > fexp_cut]
+    fexp1 = hdulist[1].data.field('FRACEXP')[:,1][fexp_full > fexp_cut]
+    fexp2 = hdulist[1].data.field('FRACEXP')[:,2][fexp_full > fexp_cut]
+    back1 = np.array(hdulist[1].data.field('BACK_COUNTS'), dtype=int)[:,1][
+        fexp_full > fexp_cut]
+    back2 = np.array(hdulist[1].data.field('BACK_COUNTS'), dtype=int)[:,2][
+        fexp_full > fexp_cut]
+    backrat = hdulist[1].data.field('BACKRATIO')[fexp_full > fexp_cut]
+    ftime = hdulist[1].data.field('FRACTIME')[fexp_full > fexp_cut]
+    for i, entry in enumerate(backrat):
+        if entry < 0.01:
+            backrat[i] = 0.01
+
+    dts = []
+
+    scs1 = []
+    fexps1 = []
+    bgs1 = []
+    scs2 = []
+    fexps2 = []
+    bgs2 = []
+
+    bgrats = []
+    istart = 0
+    iend = 0
+    tstart = 0
+    tend = 0
+    istart_old = 0
+    nrow = len(time)
+    # rebinning in scans and getting sc and bg rates with uncertainties
+    # from quantiles
+    for i in range(nrow):
+        if i == nrow - 1:
+            iend = i
+            if ((cnts0[istart:nrow].sum() < mincounts_full
+                 or cnts1[istart:nrow].sum() < mincounts_ind
+                 or cnts2[istart:nrow].sum() < mincounts_ind)
+                 and not time_mjd[istart_old] < obs_periods[-1][0]):
+                istart = istart_old
+                del (xtime[-1], xtime_d[-1], dts[-1], bgrats[-1], scs1[-1],
+                     fexps1[-1], bgs1[-1],
+                     scs2[-1], fexps2[-1], bgs2[-1])
+        elif (cnts0[istart:i].sum() >= mincounts_full
+              and cnts1[istart:i].sum() >= mincounts_ind
+              and cnts2[istart:i].sum() >= mincounts_ind
+              and time[i + 1] - time[i] > 3600.0):  # elif to avoid error
+            iend = i
+        else:
+            period_last = False
+            period_first = False
+            for period in obs_periods:
+                if time_mjd[i] < period[1] and time_mjd[i+1] > period[1]:
+                    period_last = True
+                    if time_mjd[istart_old] < period[0] or istart == 0:
+                        period_first = True
+            if period_last:
+                iend = i
+                if not period_first:
+                    istart = istart_old
+                    del (xtime[-1], xtime_d[-1], dts[-1], bgrats[-1], scs1[-1],
+                         fexps1[-1], bgs1[-1],
+                         scs2[-1], fexps2[-1], bgs2[-1])
+            else:
+                continue
+
+        if istart == 0:
+            tstart = time[0]
+        else:
+            border_low = False
+            for period in obs_periods:
+                if (time_mjd[istart-1] < period[0]
+                        and time_mjd[istart] > period[0]):
+                    tstart = time[istart] - delt[istart]
+                    border_low = True
+            if not border_low:
+                tstart = (time[istart] + time[istart-1]) / 2
+        if iend == nrow - 1:
+            tend = time[iend] + delt[iend]
+        else:
+            border_high = False
+            for period in obs_periods:
+                if (time_mjd[iend] < period[1]
+                        and time_mjd[iend + 1] > period[1]):
+                    tend = time[iend] + delt[iend]
+                    border_high = True
+            if not border_high:
+                tend = (time[iend] + time[iend+1]) / 2
+        xtime.append((tend+tstart)/2)
+        xtime_d.append((tend-tstart)/2)
+        # data['N'] = iend-istart
+        dts.append(delt[istart:iend+1].tolist())
+        scs1.append(cnts1[istart:iend+1].tolist())
+        fexps1.append(fexp1[istart:iend+1].tolist())
+        bgs1.append(back1[istart:iend+1].tolist())
+        scs2.append(cnts2[istart:iend+1].tolist())
+        fexps2.append(fexp2[istart:iend+1].tolist())
+        bgs2.append(back2[istart:iend+1].tolist())
+        bgrats.append(backrat[istart:iend+1].tolist())
+        istart_old = istart
+        istart = i + 1
+
+    N1 = 0
+    N2 = 0
+    for k in range(len(scs1)):
+        if len(scs1[k]) > N1:
+            N1 = len(scs1[k])
+    for k in range(len(scs1)):
+        while len(scs1[k]) < N1:
+            dts[k].append(0)
+            scs1[k].append(0)
+            fexps1[k].append(0)
+            bgs1[k].append(0)
+            bgrats[k].append(0)
+    for k in range(len(scs2)):
+        if len(scs2[k]) > N2:
+            N2 = len(scs2[k])
+    for k in range(len(scs2)):
+        while len(scs2[k]) < N2:
+            dts[k].append(0)
+            scs2[k].append(0)
+            fexps2[k].append(0)
+            bgs2[k].append(0)
+            bgrats[k].append(0)
+
+    data = {}
+    data['M'] = len(scs1)
+    data['dt'] = np.array(dts)
+    data['bg_ratio'] = np.array(bgrats)
+    data['N1'] = N1
+    data['sc1'] = np.array(scs1)
+    data['frac_exp1'] = np.array(fexps1)
+    data['bg1'] = np.array(bgs1)
+    data['N2'] = N2
+    data['sc2'] = np.array(scs2)
+    data['frac_exp2'] = np.array(fexps2)
+    data['bg2'] = np.array(bgs2)
+
+    # loading stan model
+    model = CmdStanModel(stan_file=stan_model)
+    fit = model.sample(data=data, show_progress=False)
+    sc_rate_lower1 = np.percentile(fit.stan_variables()['sc_rate1'],
+                                   quantiles[0], axis=0)
+    sc_rate1 = np.percentile(fit.stan_variables()['sc_rate1'],
+                             quantiles[1], axis=0)
+    sc_rate_upper1 = np.percentile(fit.stan_variables()['sc_rate1'],
+                                   quantiles[2], axis=0)
+    bg_rate_lower1 = np.percentile(fit.stan_variables()['bg_rate1'],
+                                   quantiles[0], axis=0)
+    bg_rate1 = np.percentile(fit.stan_variables()['bg_rate1'],
+                             quantiles[1], axis=0)
+    bg_rate_upper1 = np.percentile(fit.stan_variables()['bg_rate1'],
+                                   quantiles[2], axis=0)
+    sc_bg_rate_lower1 = np.percentile(fit.stan_variables()['sc_bg_rate1'],
+                                      quantiles[0], axis=0)
+    sc_bg_rate1 = np.percentile(fit.stan_variables()['sc_bg_rate1'],
+                                quantiles[1], axis=0)
+    sc_bg_rate_upper1 = np.percentile(fit.stan_variables()['sc_bg_rate1'],
+                                      quantiles[2], axis=0)
+    sc_rate_lower2 = np.percentile(fit.stan_variables()['sc_rate2'],
+                                   quantiles[0], axis=0)
+    sc_rate2 = np.percentile(fit.stan_variables()['sc_rate2'],
+                             quantiles[1], axis=0)
+    sc_rate_upper2 = np.percentile(fit.stan_variables()['sc_rate2'],
+                                   quantiles[2], axis=0)
+    bg_rate_lower2 = np.percentile(fit.stan_variables()['bg_rate2'],
+                                   quantiles[0], axis=0)
+    bg_rate2 = np.percentile(fit.stan_variables()['bg_rate2'],
+                             quantiles[1], axis=0)
+    bg_rate_upper2 = np.percentile(fit.stan_variables()['bg_rate2'],
+                                   quantiles[2], axis=0)
+    sc_bg_rate_lower2 = np.percentile(fit.stan_variables()['sc_bg_rate2'],
+                                      quantiles[0], axis=0)
+    sc_bg_rate2 = np.percentile(fit.stan_variables()['sc_bg_rate2'],
+                                quantiles[1], axis=0)
+    sc_bg_rate_upper2 = np.percentile(fit.stan_variables()['sc_bg_rate2'],
+                                      quantiles[2], axis=0)
+    frac = np.percentile(fit.stan_variables()['frac'], quantiles[1], axis=0)
+    frac_upper = np.percentile(fit.stan_variables()['frac'],
+                               quantiles[2], axis=0)
+    frac_lower = np.percentile(fit.stan_variables()['frac'],
+                               quantiles[0], axis=0)
+    
+    t = xtime.copy()
+
+    yrate = np.array(sc_rate1)
+    yrate_lower = np.array(sc_rate_lower1)
+    yrate_upper = np.array(sc_rate_upper1)
+    yrate_e = np.sqrt(((yrate-yrate_lower)**2+(yrate_upper-yrate)**2)/2)
+
+    i_max = np.argmax(yrate_lower)
+    i_min = np.argmin(yrate_upper)
+
+    ampl_max2 = yrate_lower[i_max] - yrate_upper[i_min]
+    ampl_max = yrate[i_max] - yrate[i_min]
+    if yrate[i_min] > 0:
+        variability = yrate[i_max] / yrate[i_min]
+    else:
+        variability = -1
+    ampl_sig = ampl_max / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
+    ampl_sig2 = ampl_max2 / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
+
+    log.info(f'AMPL_MAX hr band 1 {mincounts_full}: {ampl_max}\n')
+    log.info(f'Variability V mincounts band 1 {mincounts_full} = '
+             f'{variability}\n')
+    log.info(f'AMPL_SIG mincounts band 1 {mincounts_full}: {ampl_sig}\n')
+    log.info(f'AMPL_MAX conservative mincounts band 1 {mincounts_full}: '
+             f'{ampl_max2}\n')
+    log.info(f'AMPL_SIG2 mincounts band 1 {mincounts_full}: {ampl_sig2}\n')
+    
+    yrate = np.array(sc_rate2)
+    yrate_lower = np.array(sc_rate_lower2)
+    yrate_upper = np.array(sc_rate_upper2)
+    yrate_e = np.sqrt(((yrate-yrate_lower)**2+(yrate_upper-yrate)**2)/2)
+
+    i_max = np.argmax(yrate_lower)
+    i_min = np.argmin(yrate_upper)
+
+    ampl_max2 = yrate_lower[i_max] - yrate_upper[i_min]
+    ampl_max = yrate[i_max] - yrate[i_min]
+    if yrate[i_min] > 0:
+        variability = yrate[i_max] / yrate[i_min]
+    else:
+        variability = -1
+    ampl_sig = ampl_max / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
+    ampl_sig2 = ampl_max2 / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
+
+    log.info(f'AMPL_MAX hr band 2 {mincounts_ind}: {ampl_max}\n')
+    log.info(f'Variability V mincounts band 2 {mincounts_ind} = '
+             f'{variability}\n')
+    log.info(f'AMPL_SIG mincounts band 2 {mincounts_ind}: {ampl_sig}\n')
+    log.info(f'AMPL_MAX conservative mincounts band 2 {mincounts_ind}: '
+             f'{ampl_max2}\n')
+    log.info(f'AMPL_SIG2 mincounts band 2 {mincounts_ind}: {ampl_sig2}\n')
+
+
+    if istart != nrow:
+        raise Exception('Something went wrong in last bin.')
+
+    xtime = np.array(xtime)
+    xtime_d = np.array(xtime_d)
+    mjd = xtime * (1. / 24. / 3600.) + mjdref
+    mjd_d = xtime_d / 24. / 3600.
+    sc_rate1 = np.array(sc_rate1)
+    sc_rate_lower1 = np.array(sc_rate_lower1)
+    sc_rate_upper1 = np.array(sc_rate_upper1)
+    bg_rate1 = np.array(bg_rate1)
+    bg_rate_lower1 = np.array(bg_rate_lower1)
+    bg_rate_upper1 = np.array(bg_rate_upper1)
+    sc_bg_rate1 = np.array(sc_bg_rate1)
+    sc_bg_rate_lower1 = np.array(sc_bg_rate_lower1)
+    sc_bg_rate_upper1 = np.array(sc_bg_rate_upper1)
+    sc_rate_err1 = [sc_rate1 + (-sc_rate_lower1),
+                    sc_rate_upper1 + (-sc_rate1)]
+    bg_rate_err1 = [bg_rate1 + (-bg_rate_lower1),
+                    bg_rate_upper1 + (-bg_rate1)]
+    sc_bg_rate_err1 = [sc_bg_rate1 + (-sc_bg_rate_lower1),
+                       sc_bg_rate_upper1 + (-sc_bg_rate1)]
+    sc_rate_lower2 = np.array(sc_rate_lower2)
+    sc_rate_upper2 = np.array(sc_rate_upper2)
+    bg_rate2 = np.array(bg_rate2)
+    bg_rate_lower2 = np.array(bg_rate_lower2)
+    bg_rate_upper2 = np.array(bg_rate_upper2)
+    sc_bg_rate2 = np.array(sc_bg_rate2)
+    sc_bg_rate_lower2 = np.array(sc_bg_rate_lower2)
+    sc_bg_rate_upper2 = np.array(sc_bg_rate_upper2)
+    sc_rate_err2 = [sc_rate2 + (-sc_rate_lower2),
+                    sc_rate_upper2 + (-sc_rate2)]
+    bg_rate_err2 = [bg_rate2 + (-bg_rate_lower2),
+                    bg_rate_upper2 + (-bg_rate2)]
+    sc_bg_rate_err2 = [sc_bg_rate2 + (-sc_bg_rate_lower2),
+                       sc_bg_rate_upper2 + (-sc_bg_rate2)]
+    frac = np.array(frac)
+    frac_lower = np.array(frac_lower)
+    frac_upper = np.array(frac_upper)
+    frac_err = [frac + (-frac_lower),
+                frac_upper + (-frac)]
+                    
+
+    for i_ax, group in enumerate(axs):
+        for i_en, ax in group:
+            if xflag == 1:
+                xtime_part = xtime[(mjd > obs_periods[i_ax][0]) *
+                                (mjd < obs_periods[i_ax][1])]
+                xtime_d_part = xtime_d[(mjd > obs_periods[i_ax][0]) *
+                                    (mjd < obs_periods[i_ax][1])]
+                xmin = min(xtime_part - xtime_d_part)
+                xmax = max(xtime_part + xtime_d_part)
+            else:
+                mjd_part = mjd[(mjd > obs_periods[i_ax][0]) *
+                            (mjd < obs_periods[i_ax][1])]
+                mjd_d_part = mjd_d[(mjd > obs_periods[i_ax][0]) *
+                                (mjd < obs_periods[i_ax][1])]
+                xmin = min(mjd_part - mjd_d_part)
+                xmax = max(mjd_part + mjd_d_part)
+
+            if short_time:
+                if i_ax == 0 and time_rel == 0:
+                    time_rel = int(xmin)
+                xtime_short = xtime - time_rel
+                mjd_short = mjd - time_rel
+                xmin = xmin - time_rel
+                xmax = xmax - time_rel
+            else:
+                mjd_short = mjd.copy()
+                xtime_short = xtime.copy()
+
+            xm = (xmax-xmin)*0.05
+            pxmin.append(xmin - xm)
+            pxmax.append(xmax + xm)
+
+            if xflag == 1:
+                t = xtime_short
+                terr = xtime_d
+            else:
+                t = mjd_short
+                terr = mjd_d
+            if i_en == 0:
+                ax.errorbar(t, sc_rate1, xerr=terr,
+                            yerr=sc_rate_err1,
+                            linestyle='None', color=color, fmt='o',
+                            zorder=6)
+                ax.errorbar(t, bg_rate1, xerr=terr,
+                            yerr=bg_rate_err1,
+                            linestyle='None', color=color, fmt='x',
+                            zorder=5, alpha=alpha_bg)
+            elif i_en == 1:
+                ax.errorbar(t, sc_rate2, xerr=terr,
+                            yerr=sc_rate_err2,
+                            linestyle='None', color=color, fmt='o',
+                            zorder=6)
+                ax.errorbar(t, bg_rate2, xerr=terr,
+                            yerr=bg_rate_err2,
+                            linestyle='None', color=color, fmt='x',
+                            zorder=5, alpha=alpha_bg)
+            else:
+                ax.errorbar(t, frac, xerr=terr,
+                            yerr=frac_err,
+                            linestyle='None', color=color, fmt='o',
+                            zorder=6)
+
+    ymax1 = max([max(sc_rate_upper1), max(bg_rate_upper1)])
+    ymax2 = max([max(sc_rate_upper2), max(bg_rate_upper2)])
+    if yscale == 'linear':
+        ymin = 0
+        pymin = [ymin - (ymax1-ymin)*0.05,
+                 ymin - (ymax2-ymin)*0.05,
+                 -1]
+        pymax = [ymax1 + (ymax1-ymin)*0.05,
+                 ymax2 + (ymax2-ymin)*0.05,
+                 1]
+    elif yscale == 'log':
+        ymin1 = min([min(sc_rate_lower1), min(bg_rate_lower1)])
+        ymin2 = min([min(sc_rate_lower2), min(bg_rate_lower2)])
+        pymin = [ymin1 / ((ymax1/ymin1) ** 0.05),
+                 ymin2 / ((ymax2/ymin2) ** 0.05),
+                 -1]
+        pymax = [ymax1 * ((ymax1/ymin1) ** 0.05),
+                 ymax2 * ((ymax2/ymin2) ** 0.05),
+                 1]
+    else:
+        pymin = 0
+        pymax = 100
+
+    logger_stan.handlers = []
+
+    return pxmin, pxmax, pymin, pymax, time_rel

@@ -37,10 +37,9 @@ from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir,\
 from HiMaXBipy.io.logging import setup_logfile, setup_logger, set_loglevel
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
-    plot_lc_mincounts_broken_new, format_axis_broken_new, plot_lc_UL_hr,\
-    plot_lc_mincounts_hr
+    plot_lc_mincounts_broken_new, format_axis_broken_new, format_axis_hr
 from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,\
-    plot_lc_mincounts_broken_bayes
+    plot_lc_mincounts_broken_bayes, plot_hr_mincounts_broken_bayes
 from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
@@ -73,10 +72,11 @@ class HiMaXBi:
     _esass = '/home/erosita/sw/eSASSusers_211214/bin/esass-init.sh'
     _LC_prebinning = '1.0'
     _LC_extracted = False
+    _LC_HR_extracted = False
     _mjdref = 51543.875
     _ero_starttimes = np.array([58828, 59011, 59198, 59381, 59567])
     _energy_bins = [[0.2, 8.0]]
-    _energy_bins_hr = [[0.2, 2.0], [2.0, 8.0]]
+    _energy_bins_hr = [[0.2, 8.0], [0.2, 2.0], [2.0, 8.0]]
     _grouping = 1
     _ownership = 'x'
     _distance = 50.
@@ -247,31 +247,54 @@ class HiMaXBi:
         self._energy_bins = np.array(bins, dtype=np.float64).tolist()
         self._LC_extracted = False
 
-    def set_Ebins_HR(self, bins):
+    def set_Ebins_HR(self, bin_full, bins_ind):
         '''Set energy bins to be analysed in keV. The default is
         [0.2, 8.0].
 
         Parameters
         ----------
-        bins : array-like (n,2), optional
+        bin_full : array-like (2,) or (0,), optional
             Sets energy bins that should be analysed. For each bin
             E_min and E_max must be given in keV. The default is
-            [[0.2, 8.0]]
+            [0.2, 8.0]
+        bins_ind : array-like (2,2) or (0,), optional
+            Sets energy bins that should be analysed. For each bin
+            E_min and E_max must be given in keV. The default is
+            [[0.2, 2.0], [2.0, 8.0]]
         '''
-        self._logger.info('Ebins HR set.')
-        if type(bins) != list and type(bins) != np.ndarray:
+        if bin_full == []:
+            bin_full = [0.2, 8.0]
+        if bins_ind == []:
+            bins_ind = [[0.2, 2.0], [2.0, 8.0]]
+        self._logger.info('Ebins set.')
+        if type(bin_full) != list and type(bin_full) != np.ndarray:
             raise Exception('bins must be array-like')
         else:
-            if len(bins) != 2:
+            if len(bin_full) != 2:
+                raise Exception('Each line in bins needs 2 entries.')
+            if ((type(bin_full[0]) != float and type(bin_full[0]) != int) or
+                    (type(bin_full[1]) != float
+                     and type(bin_full[1]) != int)):
                 raise Exception(
-                    'Currently only a set of two energy bins is supported.')
-            for line in bins:
-                if len(line) != 2:
-                    raise Exception('Each line in bins needs 2 entries.')
+                    'The entries of each bins_full of bins need to be the '
+                    'minimum and maximum energies given in keV of the '
+                    'energy bins to analyse given as float or int.')
+            elif (bin_full[0] < 0.2 or bin_full[0] > 8.0
+                  or bin_full[1] < 0.2 or bin_full[1] > 8.0
+                  or bin_full[0] >= bin_full[1]):
+                raise Exception(
+                    'The energies must be given in keV and must follow '
+                    '0.2 <= E_min < E_max <= 8.0.')
+        if type(bins_ind) != list and type(bins_ind) != np.ndarray:
+            raise Exception('bins_ind must be array-like')
+        else:
+            if np.array(bins_ind).shape != (2, 2):
+                raise Exception('bins_ind must have shape (2,2).')
+            for line in bins_ind:
                 if ((type(line[0]) != float and type(line[0]) != int) or
                         (type(line[1]) != float and type(line[1]) != int)):
                     raise Exception(
-                        'The entries of each line of bins need to be the '
+                        'The entries of each line of bins_ind need to be the '
                         'minimum and maximum energies given in keV of the '
                         'energy bins to analyse given as float or int.')
                 elif (line[0] < 0.2 or line[0] > 8.0 or line[1] < 0.2 or
@@ -279,8 +302,16 @@ class HiMaXBi:
                     raise Exception(
                         'The energies must be given in keV and must follow '
                         '0.2 <= E_min < E_max <= 8.0.')
-        self._energy_bins_hr = np.array(bins, dtype=np.float64).tolist()
-        self._LC_extracted = False
+        if (bins_ind[0][0] < bin_full[0] or bins_ind[0][1] > bin_full[1]
+            or bins_ind[1][0] < bin_full[0] or bins_ind[1][1] > bin_full[1]):
+            raise Exception(
+                'The energy bins in bins_ind must be within the energy bins '
+                'in bins_full.')
+            
+        self._energy_bins_HR = ([np.array(bin_full, dtype=np.float64).tolist()]
+                                + np.array(bins_ind,
+                                           dtype=np.float64).tolist())
+        self._LC_HR_extracted = False
 
     def set_distance(self, distance):
         '''Set distance to source in kpc. The default is 50.
@@ -585,7 +616,7 @@ class HiMaXBi:
             raise Exception(
                 'Source and background extraction regions have to be defined '
                 'before running the script.')
-        for bin_e in self._energy_bins + self._energy_bins_hr:
+        for bin_e in self._energy_bins:
             replacements = [['@source_name', self._src_name],
                             ['@main_name', self._working_dir],
                             ['@result_dir', '.'],
@@ -620,6 +651,69 @@ class HiMaXBi:
         # problems during observation
         self._find_obs_periods(60 * 60 * 24 * 30)
         self._eRASS_vs_epoch()
+
+    def _extract_lc_hr(self, logname='lc_hr_extract_autosave'):
+        '''
+        Parameters
+        ----------
+        logname : str
+            name of logfile to safe output of sh script to.
+
+        Returns
+        -------
+        Creates sh files to extract light curve fits files and runs
+        them.
+
+        '''
+        self._logger.info('Extracting HR LC.')
+        if type(logname) != str:
+            raise Exception('logname must be a string.')
+        if self._skytile == '' or self._filelist == '':
+            raise Exception(
+                'Set the region name and list of eventfiles first with the '
+                'functions set_filelist and set_region.')
+        if not os.path.exists(self._esass):
+            raise Exception(f'File {self._esass} does not exist.')
+        if not (os.path.exists(self._working_dir+'/src.reg')
+                or not os.path.exists(self._working_dir+'/bkg.reg')):
+            raise Exception(
+                'Source and background extraction regions have to be defined '
+                'before running the script.')
+        bin_e = self._energy_bins_HR
+        replacements = [['@source_name', self._src_name],
+                        ['@main_name', self._working_dir],
+                        ['@result_dir', '.'],
+                        ['@region_code', self._skytile],
+                        ['@sources_list', self._filelist],
+                        ['@right_ascension', self._RA],
+                        ['@declination', self._Dec],
+                        ['@esass_location', self._esass],
+                        ['@binning', self._LC_prebinning],
+                        ['@emin0', bin_e[0][0]],
+                        ['@emax0', bin_e[0][1]],
+                        ['@emin1', bin_e[1][0]],
+                        ['@emax1', bin_e[1][1]],
+                        ['@emin2', bin_e[2][0]],
+                        ['@emax2', bin_e[2][1]]]
+        sh_file = self._working_dir_full + '/working/extract_lc_hr.sh'
+        sh_file = self._replace_in_sh(sh_file, replacements)
+        old_environ = os.environ.copy()
+        process = subprocess.Popen(
+            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()  # Wait for process to complete.
+        os.environ = old_environ
+
+        # iterate on the stdout line by line
+        if not logname == '':
+            filename = (f'{self._working_dir}/logfiles/lightcurves/'
+                        f'{logname}_{bin_e[0]}keV_{bin_e[1]}'
+                        'keV.log')
+            logstate = setup_logfile(self._logger, filename)
+            for line in process.stdout.readlines():
+                # to fix the weird b'something' format
+                self._logger.info(str(line)[2:-3] + '\n')
+            self._logger.handlers = logstate
+        self._LC_HR_extracted = True
 
     def _find_obs_periods(self, gapsize):
         self._logger.info('Finding Observation Periods.')
@@ -1761,514 +1855,6 @@ class HiMaXBi:
 
         self._logger.handlers = logstate
 
-    def plot_lc_HR(self, fracexp='0.15', mincounts='10',
-                   mode='mincounts_ul', show_eRASS=True,
-                   logname='lc_full_hr_autosave.log',
-                   time_axis='mjd', print_name=False, print_datetime=False,
-                   label_style='serif', label_size=16, figsize=[16, 21],
-                   colors=[], fileid='', toplab='', separate_TM=False,
-                   vlines=[], ticknumber_y=5, ticknumber_x=3, E_bins=[],
-                   lc_binning=-1, d=12, tilt=45, diag_color="k",
-                   short_time=True, fig_borders=[]):
-        '''Function to create full lightcurve with gaps cut out.
-
-        Parameters
-        ----------
-        fracexp : str or float, optional
-            Fractional exposure lower limit for times taken into account
-            for LC (noise reduction). The default is '0.15'.
-        mincounts : str, float or int, optional
-            Minimum number of counts for counts per bin to not be noted
-            as an upper limit as well as minimum number of counts per
-            bin for mode mincounts/mincounts_ul. The default is '10'.
-        mode : str, optional
-            Type of LC to be produced. Either 'ul', 'mincounts' or
-            'mincounts_ul'. The default is 'mincounts_ul'.
-        show_eRASS : bool, optional
-            True to show start/end dates of eRASSi as vertical lines.
-            The default is True.
-        logname : str, optional
-            Name of the logfile. The default is
-            'lc_full_broken_autosave.log'.
-        time_axis : str, optional
-            Defines the unit of time axis. Either 'mjd' or 's'. The
-            default is 'mjd'.
-        print_name : bool, optional
-            Print name of person who runs the skript. The default is
-            False.
-        print_datetime : bool, optional
-            Print date-time when skript was run. The default is False.
-        label_style : str, optional
-            Sets fontstyle of plots. Any possible style available for
-            matplotlib.pyplot.rc. The default is 'serif'.
-        label_size : float or int, optional
-            Sets fontsize. The default is 12.
-        figsize : array-like (2,), optional
-            Sets width and height of figure. The default is [8, 2.75].
-        colors : array of str (1,) or (2,), optional
-            Sets colors of plots. Any color available to matplotlib
-            possible. For mode 'ul' and 'mincounts' the first entry is
-            used, for mode 'mincounts_ul' the first entry sets color for
-            'ul' part, and the second for 'mincounts' part. The default
-            is [].
-        fileid : str, optional
-            Name of outputfile without filespecific ending. The default
-            is ''.
-        toplab : str, optional
-            Sets label of the plot. The default is ''.
-        separate_TM : bool, optional
-            Create LC for each TM. The default is False.
-        vlines : array of mjd-color-zorder combinations (n, 3), optional
-            Adds additional vertical lines in the plot at given MJD with
-            given color. The zorder entries need to be distinct negative
-            integers < -2. The default is [].
-        ticknumber_y : int, optional
-            Sets the approximate number of tickmarks along the y axis.
-            The default is 5.
-        ticknumber_x : int, optional
-            Sets the approximate number of tickmarks along the x axis in
-            each section. The default is 3.
-        E_bins : array-like (n,2), optional
-            Sets energy bins that should be analysed. For each bin E_min
-            and E_max must be given in keV. The default is [[0.2, 2.0],
-            [2.0, 8.0]]
-        lc_binning : str or float, optional
-            Sets initial lc binsize in seconds. The default is -1
-            (meaning the current value is not changeds)
-        d : str, int or float, optional
-            Size of gap markers in pt. The default is '12'.
-        tilt : str, int or float, optional
-            Tild of gap markers. The default is '45'.
-        diag_color : str, optional
-            Color of gap markers. The default is 'k'.
-        short_time : bool, optional
-            Shorten time stamps in x-axis by subtracting value of lowest
-            enrty. The default is True.
-        fig_borders : array-like (n,1), optional
-            Sets the borders of the figure (top, bottom, left, right).
-            The default is [0.97, 0.1, 0.05, 0.98].
-        '''
-        self._logger.info('Running plot_lc_HR.')
-        if type(logname) != str:
-            raise Exception('logname must be a string.')
-        if (type(mincounts) != str and type(mincounts) != float
-                and type(mincounts) != int):
-            raise Exception('mincounts must be a string, float or int.')
-        else:
-            try:
-                mincounts = float(mincounts)
-            except ValueError:
-                raise Exception('mincounts must be a number.')
-        if type(mode) != str:
-            raise Exception('mode must be a string.')
-        else:
-            if (mode != 'ul' and mode != 'mincounts'
-                    and mode != 'mincounts_ul'):
-                raise Exception('mode must be \'ul\', \'mincounts\' or '
-                                '\'mincounts_ul\'')
-        if type(fracexp) != str and type(fracexp) != float:
-            raise Exception('mincounts must be a string or float.')
-        else:
-            try:
-                fracexp = float(fracexp)
-            except ValueError:
-                raise Exception('fracexp must be a number.')
-        if type(show_eRASS) != bool:
-            raise Exception('show_eRASS must be a bool.')
-        if type(print_name) != bool:
-            raise Exception('print_name must be a bool.')
-        if type(print_datetime) != bool:
-            raise Exception('print_datetime must be a bool.')
-        if type(separate_TM) != bool:
-            raise Exception('separate_TM must be a bool.')
-        if type(time_axis) != str:
-            raise Exception('time_axis must be a string.')
-        else:
-            if time_axis != 'mjd' and time_axis != 's':
-                raise Exception('time_axis must be \'mjd\' or \'s\'')
-        if type(label_style) != str:
-            raise Exception('label_style must be a string.')
-        if type(label_size) != float and type(label_size) != int:
-            raise Exception('label_size must be a float or int.')
-        if ((type(figsize) != list and type(figsize) != np.ndarray)
-                or np.shape(figsize) != (2,)):
-            raise Exception('figsize must be (2,) array-like.')
-        if type(ticknumber_x) != int:
-            raise Exception('ticknumber_x must be an int.')
-        if type(ticknumber_y) != int:
-            raise Exception('ticknumber_y must be an int.')
-        if colors != []:
-            if ((type(colors) != list and type(colors) != np.ndarray)
-                    or (np.shape(colors) != (2,)
-                        and np.shape(colors) != (1,))):
-                raise Exception('colors must be (2,) or (1,) array-like.')
-        if type(fileid) != str:
-            raise Exception('fileid must be a string.')
-        if type(toplab) != str:
-            raise Exception('toplab must be a string.')
-        if type(vlines) != list and type(vlines) != np.ndarray:
-            raise Exception('vlines must be array-like')
-        else:
-            for line in vlines:
-                if len(line) != 3:
-                    raise Exception('Each line in vlines needs 3 entries.')
-                if type(line[0]) != float and type(line[0]) != int:
-                    raise Exception(
-                        'The first entry in each line of vlines needs to be '
-                        'the MJD given as float or int.')
-                if type(line[1]) != str:
-                    raise Exception(
-                        'The second entry in each line of vlines needs to be a'
-                        ' matplotlib color given as a string.')
-                if type(line[2]) != int:
-                    raise Exception(
-                        'The third entry in each line of vlines needs to be a '
-                        'negative integer < -2.')
-                elif line[2] >= -1:
-                    raise Exception(
-                        'The third entry in each line of vlines needs to be a '
-                        'negative integer < -2.')
-        if type(tilt) != float and type(tilt) != int and type(tilt) != str:
-            raise Exception('tilt must be a float, str or int.')
-        if type(d) != float and type(d) != str and type(d) != int:
-            raise Exception('d must be a float or str.')
-        if type(diag_color) != str:
-            raise Exception('diag_color must be a str.')
-        if type(fig_borders) != list and type(fig_borders) != np.ndarray:
-            raise Exception('fig_borders must be array-like')
-        else:
-            if len(fig_borders) != 4 and len(fig_borders) != 0:
-                raise Exception('fig_borders needs exactly 4 entries')
-            for entry in fig_borders:
-                if type(entry) != float:
-                    raise Exception(
-                        'Entries in fig_borders need to be of type float.')
-
-        os.chdir(self._working_dir_full + '/working/')
-
-        if lc_binning != -1:
-            self.set_LC_binning(lc_binning=lc_binning)
-        if np.array(E_bins).tolist() != []:
-            self.set_Ebins_HR(bins=E_bins)
-        if not self._LC_extracted and not self._debugging:
-            self._extract_lc()
-        if self._debugging:
-            self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
-            self._eRASS_vs_epoch()
-        logname_full = f'{self._working_dir}/logfiles/lightcurves/{logname}'
-        logstate = setup_logfile(self._logger, logname_full)
-        localtime = time.asctime(time.localtime(time.time()))
-
-        self._logger.info(localtime + '\n')
-        user = getpass.getuser()
-        plt.rc('text', usetex=True)
-        plt.rc('font', family=label_style, size=label_size)
-
-        if separate_TM:
-            TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
-        else:
-            TM_list = [0]
-        pxmin = []
-        pxmax = []
-        pymin = 0
-        pymax = 0
-        xflag = 0
-        axs_full = []
-        width_ratios = []
-        height_ratios = []
-
-        for TM in TM_list:
-            pfiles = []
-            if fileid == '':
-                outfile = (f'{self._working_dir}/results/lightcurves/'
-                           f'{self._src_name}_{self._skytile}_LC_TM{TM}20_'
-                           f'fracexp{fracexp}_hrLC')
-            else:
-                outfile = (f'{self._working_dir}/results/lightcurves/'
-                           f'{fileid}_hrLC')
-            fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
-            for i, bin_e in enumerate(self._energy_bins_hr):
-                if fileid == '':
-                    pfile = (f'./{self._src_name}_{self._skytile}_LC_TM{TM}20_'
-                             f'fracexp{fracexp}_{bin_e[0]}keV_{bin_e[1]}keV_'
-                             'hrLC')
-                else:
-                    pfile = f'./{fileid}_{bin_e[0]}keV_{bin_e[1]}keV_hrLC'
-                replacements = [['@esass_location', self._esass],
-                                ['@infile',
-                                 f'./{self._src_name}_{self._skytile}_eROSITA_'
-                                 f'PATall_1.0s_{bin_e[0]}keV_{bin_e[1]}keV_'
-                                 f'{TM}20_LightCurve_00001.fits'],
-                                ['@pfile', f'{pfile}.fits'],
-                                ['@selection', f'FRACEXP>{fracexp}']]
-                sh_file = self._working_dir_full + '/working/fselect_lc.sh'
-                sh_file = self._replace_in_sh(sh_file, replacements)
-                old_environ = os.environ.copy()
-                process = subprocess.Popen(
-                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                process.wait()  # Wait for process to complete.
-                os.environ = old_environ
-
-                ncols, nrows = len(self._obs_periods), 3
-
-                big_ax = fig1.add_subplot(310+1+i)
-                big_ax.set_frame_on(False)
-                big_ax.patch.set_facecolor("none")
-
-                axs = []
-                for _ in self._obs_periods:
-                    ax = fig1.add_subplot(111)
-                    axs.append(ax)
-                    axs_full.append(ax)
-
-                self._logger.info(f'Now working on {pfile}.fits\n')
-                hdulist = fits.open(f'{pfile}.fits')
-                pfiles.append(pfile)
-
-                if time_axis == 'mjd':
-                    xflag = 2
-                elif time_axis == 's':
-                    xflag = 1
-
-                if colors == []:
-                    colors = ['lightblue', 'black']
-
-                if short_time:
-                    if time_axis == 'mjd':
-                        time_rel = self._obs_periods[0][0]
-                    elif time_axis == 's':
-                        time_rel = ((self._obs_periods[0][0] - self._mjdref)
-                                    / (24. * 3600))
-                    else:
-                        time_rel = 0
-                        self._logger.error('time_rel not yet defined for this '
-                                           'time_axis.')
-                else:
-                    time_rel = 0
-
-                if mode == 'ul':
-                    pxmin, pxmax, pymin, pymax, _ = plot_lc_UL_broken_new(
-                        hdulist=hdulist, axs=axs, log=self._logger,
-                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        color=colors[1], obs_periods=self._obs_periods,
-                        short_time=short_time, time_rel=time_rel)
-                    pymin = min(pymin)
-                    pymax = max(pymax)
-                elif mode == 'mincounts':
-                    pxmin, pxmax, pymin, pymax, _ = plot_lc_mincounts_broken_new(
-                        hdulist=hdulist, axs=axs, log=self._logger,
-                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        color=colors[1], obs_periods=self._obs_periods,
-                        short_time=short_time, time_rel=time_rel)
-                    pymin = min(pymin)
-                    pymax = max(pymax)
-                elif mode == 'mincounts_ul':
-                    pxmin1, pxmax1, pymin1, pymax1, _ = plot_lc_UL_broken_new(
-                        hdulist=hdulist, axs=axs, log=self._logger,
-                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        color=colors[0], obs_periods=self._obs_periods,
-                        short_time=short_time, time_rel=time_rel)
-                    pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_broken_new(
-                        hdulist=hdulist, axs=axs, log=self._logger,
-                        mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                        color=colors[1], obs_periods=self._obs_periods,
-                        short_time=short_time, time_rel=time_rel)
-                    pxmin, pxmax, pymin, pymax = get_boundaries_broken(
-                        [[pxmin1, pxmax1, pymin1, pymax1],
-                         [pxmin2, pxmax2, pymin2, pymax2]])
-
-                hdulist.close()
-
-                big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
-
-                for ax in axs:
-                    for k in range(len(vlines)):
-                        ax.vlines(vlines[k][0] - time_rel, pymin, pymax,
-                                  colors=vlines[k][1], linestyle='dotted',
-                                  zorder=vlines[k][2])
-                    if show_eRASS:
-                        if time_axis == 'mjd':
-                            ax.vlines(self._ero_starttimes - time_rel, pymin, pymax,
-                                      colors='grey', linestyle='dotted',
-                                      zorder=-2)
-                        elif time_axis == 's':
-                            ax.vlines((np.array(self._ero_starttimes)
-                                       - self._mjdref) * 3600 * 24 - time_rel,
-                                      pymin, pymax, colors='grey',
-                                      linestyle='dotted', zorder=-4)
-
-                yscale = 'linear'  # if needed this needs to be programmed
-                if fig_borders == []:
-                    if yscale == 'log' and pymax / pymin * 2 <= ticknumber_y:
-                        fig_borders = [0.97, 0.1, 0.1, 0.98]
-                format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
-                                       ticknumber_x, ticknumber_y, ncols,
-                                       nrows, d, tilt, diag_color, big_ax,
-                                       yscale)
-
-                if i == 0:
-                    width_ratios = []
-                    height_ratios = [1/3, 1/3, 1/3]
-                    for i_ax in range(len(axs)):
-                        width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
-
-            ncols, nrows = len(self._obs_periods), 3
-
-            big_ax = fig1.add_subplot(313)
-            big_ax.set_frame_on(False)
-            big_ax.patch.set_facecolor("none")
-
-            axs = []
-            for _ in self._obs_periods:
-                ax = fig1.add_subplot(111)
-                axs.append(ax)
-                axs_full.append(ax)
-
-            self._logger.info(f'Now working on HR\n')
-            hdulist1 = fits.open(f'{pfiles[0]}.fits')
-            hdulist2 = fits.open(f'{pfiles[1]}.fits')
-
-            if time_axis == 'mjd':
-                xflag = 2
-            elif time_axis == 's':
-                xflag = 1
-
-            if colors == []:
-                colors = ['lightblue', 'black']
-
-            if mode == 'ul':
-                pxmin, pxmax, pymin, pymax, time_rel = plot_lc_UL_hr(
-                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs, log=self._logger,
-                    mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
-                    color=colors[1], obs_periods=self._obs_periods,
-                    short_time=short_time)
-                pymin = min(pymin)
-                pymax = max(pymax)
-            elif mode == 'mincounts':
-                pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_hr(
-                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
-                    log=self._logger, mjdref=self._mjdref, xflag=xflag,
-                    mincounts=mincounts, color=colors[1],
-                    obs_periods=self._obs_periods, short_time=short_time)
-                pymin = min(pymin)
-                pymax = max(pymax)
-            elif mode == 'mincounts_ul':
-                pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_UL_hr(
-                    hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
-                    log=self._logger, mjdref=self._mjdref, xflag=xflag,
-                    mincounts=mincounts, color=colors[0],
-                    obs_periods=self._obs_periods, short_time=short_time)
-                # pxmin2, pxmax2, pymin2, pymax2, _ = plot_lc_mincounts_hr(
-                #     hdulist_1=hdulist1, hdulist_2=hdulist2, axs=axs,
-                #     log=self._logger, mjdref=self._mjdref, xflag=xflag,
-                #     mincounts=mincounts, color=colors[1],
-                #     obs_periods=self._obs_periods, short_time=short_time,
-                #     time_rel=time_rel)
-                # pxmin, pxmax, pymin, pymax = get_boundaries_broken(
-                #     [[pxmin1, pxmax1, pymin1, pymax1],
-                #         [pxmin2, pxmax2, pymin2, pymax2]])
-                pymin = min(pymin1)
-                pymax = max(pymax1)
-
-            hdulist1.close()
-            hdulist2.close()
-
-            # plot time in s from beginning (xflag=1) or in MJD
-            if short_time:
-                if time_axis == 's':
-                    # , fontsize=12)
-                    big_ax.set_xlabel(f'Time - {time_rel} (s)')
-                elif time_axis == 'mjd':
-                    # , fontsize=12)
-                    big_ax.set_xlabel(f'MJD  - {time_rel} (days)')
-            else:
-                if time_axis == 's':
-                    big_ax.set_xlabel(r'Time (s)')  # , fontsize=12)
-                elif time_axis == 'mjd':
-                    big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
-
-            big_ax.set_ylabel(r'Hardness Ratio')  # , fontsize=12)
-
-            if print_name:
-                # user name and time
-                big_ax.text(1.015, 0.0, f'{user} - {localtime}',
-                            rotation=90, fontsize=8,
-                            verticalalignment='bottom',
-                            horizontalalignment='left',
-                            transform=big_ax.transAxes)
-            # eROSITA label
-                big_ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10,
-                            verticalalignment='bottom',
-                            horizontalalignment='left',
-                            transform=big_ax.transAxes)
-                big_ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10,
-                            verticalalignment='bottom',
-                            horizontalalignment='right',
-                            transform=big_ax.transAxes)
-            # label plot:
-                big_ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
-                            verticalalignment='bottom',
-                            horizontalalignment='center',
-                            transform=big_ax.transAxes)
-
-            for ax in axs:
-                for k in range(len(vlines)):
-                    ax.vlines(vlines[k][0] - time_rel, pymin, pymax,
-                              colors=vlines[k][1], linestyle='dotted',
-                              zorder=vlines[k][2])
-                if show_eRASS:
-                    if time_axis == 'mjd':
-                        ax.vlines(self._ero_starttimes - time_rel, pymin, pymax,
-                                  colors='grey', linestyle='dotted',
-                                  zorder=-2)
-                    elif time_axis == 's':
-                        ax.vlines((np.array(self._ero_starttimes)
-                                   - self._mjdref) * 3600 * 24 - time_rel,
-                                  pymin, pymax, colors='grey',
-                                  linestyle='dotted', zorder=-4)
-
-            yscale = 'linear'  # TODO this needs to be changed entirely anyways
-            format_axis_broken_new(fig1, axs, pxmin, pxmax, pymin, pymax,
-                                   ticknumber_x, ticknumber_y, ncols,
-                                   nrows, d, tilt, diag_color, big_ax, yscale)
-
-            gs = gridspec.GridSpec(ncols=ncols,
-                                   nrows=nrows,
-                                   height_ratios=height_ratios,
-                                   width_ratios=width_ratios)
-
-            fig1.set_tight_layout(True)
-            fig1.set_tight_layout(False)
-            wspace = 8.0 / figsize[0] * 0.05
-            if fig_borders == []:
-                fig_borders = [0.97, 0.1, 0.05, 0.98]
-            fig1.subplots_adjust(
-                wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
-                left=fig_borders[2], right=fig_borders[3])
-
-            for i_ax, ax in enumerate(axs_full):
-                ax.set_position(gs[i_ax].get_position(fig1))
-
-            self.gs = gs
-
-            self._width_ratios = width_ratios
-            self._fig = fig1
-            self._axes = axs_full
-            self._big_ax = big_ax
-
-            pltfile = outfile + ".pdf"
-            plt.savefig(pltfile)
-            self._logger.info(f'{pltfile} created\n')
-            pltfile = outfile + ".eps"
-            plt.savefig(pltfile)
-            self._logger.info(f'{pltfile} created\n')
-            pltfile = outfile + ".png"
-            plt.savefig(pltfile)
-            self._logger.info(f'{pltfile} created\n')
-
-        self._logger.handlers = logstate
-
     def plot_lc_bayes_broken(self, fracexp='0.15', mincounts='10',
                              mode='mincounts_scan', show_eRASS=True,
                              logfile='', stan_model='',
@@ -2772,6 +2358,526 @@ class HiMaXBi:
                 plt.savefig(pltfile)
                 pltfile = outfile + ".png"
                 plt.savefig(pltfile)
+
+            self._logger.handlers = logstate
+
+    def plot_hr_bayes_broken(self, fracexp='0.15', mincounts_full='10', 
+                             mincounts_ind = '1', mode='mincounts',
+                             show_eRASS=True, logfile='', stan_model='',
+                             alpha_bg=0.5, quantiles=[],
+                             time_axis='mjd', print_name=False,
+                             print_datetime=False, label_style='serif',
+                             label_size=16, figsize=[16, 16],
+                             colors=[], fileid='', toplab='',
+                             separate_TM=False, vlines=[], ticknumber_y=5,
+                             ticknumber_x=3, E_bin_full = [], E_bins=[],
+                             lc_binning=-1, d=12, tilt=45, diag_color="k",
+                             short_time=True, fig_borders=[], bbp0=0.01,
+                             bbmode='both', yscale='linear'):
+        '''Function to create full lightcurve with bayesian estimates
+        for source and background countrates with time gaps cut out.
+
+        Parameters
+        ----------
+        fracexp : str or float, optional
+            Fractional exposure lower limit for times taken into account
+            for LC (noise reduction). The default is '0.15'.
+        mincounts_full : str, float or int, optional
+            Minimum number of counts in the full energy range per
+            time bin for mode mincounts/mincounts_ul. The default is
+            '10'.
+        mincounts_ind : str, float or int, optional
+            Minimum number of counts in each of the two energy ranges
+            per time bin for mode mincounts/mincounts_ul. The default is
+            '1'.
+        mode : str, optional
+            Type of LC to be produced. Either 'scan', 'mincounts',
+            'mincounts_scan', 'mincounts_bb' (mincounts and bayesian
+            blocks overlay) or 'scan_bb' (scan with bayesian blocks
+            overlay). The default is 'mincounts_scan'.
+        show_eRASS : bool, optional
+            True to show start/end dates of eRASSi as vertical lines.
+            The default is True.
+        logfile : str, optional
+            Name of the logfile. The default is ''.
+        fexp_cut : float, optional
+            Minimum value of fractional exposure for time bins to be
+            used. The default is 0.15.
+        stan_model : str, optional
+            Name of the .stan file to use as a model when fitting. If
+            the default is used a standard Poisson model is used. The
+            default is ''.
+        alpha_bg : float, optional
+            alpha value for plotting the estimated background countrate.
+            The default is 0.5.
+        quantiles : array-like (3,) or (0,) float or int, optional
+            Quantiles to plot as lower boundary, expected value and
+            upper boundary. If the default is used, 1 sigma percentiles
+            and the median are used. The default is [].
+        time_axis : str, optional
+            Defines the unit of time axis. Either 'mjd' or 's'. The
+            default is 'mjd'.
+        print_name : bool, optional
+            Print name of person who runs the skript. The default is
+            False.
+        print_datetime : bool, optional
+            Print date-time when skript was run. The default is False.
+        label_style : str, optional
+            Sets fontstyle of plots. Any possible style available for
+            matplotlib.pyplot.rc. The default is 'serif'.
+        label_size : float or int, optional
+            Sets fontsize. The default is 12.
+        figsize : array-like (2,), optional
+            Sets width and height of figure. The default is [8, 2.75].
+        colors : array of str (1,) or (2,), optional
+            Sets colors of plots. Any color available to matplotlib
+            possible. For mode 'ul' and 'mincounts' the first entry is
+            used, for mode 'mincounts_ul' the first entry sets color for
+            'ul' part, and the second for 'mincounts' part. The default
+            is [].
+        fileid : str, optional
+            Name of outputfile without filespecific ending. The default
+            is ''.
+        toplab : str, optional
+            Sets label of the plot. The default is ''.
+        separate_TM : bool, optional
+            Create LC for each TM. The default is False.
+        vlines : array of mjd-color-zorder combinations (n, 3), optional
+            Adds additional vertical lines in the plot at given MJD with
+            given color. The zorder entries need to be distinct negative
+            integers < -2. The default is [].
+        ticknumber_y : int, optional
+            Sets the approximate number of tickmarks along the y axis.
+            The default is 5.
+        ticknumber_x : int, optional
+            Sets the approximate number of tickmarks along the x axis in
+            each section. The default is 3.
+        E_bin_full : array-like (2,), optional
+            Sets full energy bin. E_min and E_max must be given in keV.
+            The default is [0.2, 8.0].
+        E_bins : array-like (2,2), optional
+            Sets energy bins that should be analysed. For each bin E_min
+            and E_max must be given in keV. The default is
+            [[0.2, 2.0], [0.2, 8.0]].
+        lc_binning : str or float, optional
+            Sets initial lc binsize in seconds. The default is -1
+            (meaning the current value is not changeds)
+        d : str, int or float, optional
+            Size of gap markers in pt. The default is '12'.
+        tilt : str, int or float, optional
+            Tild of gap markers. The default is '45'.
+        diag_color : str, optional
+            Color of gap markers. The default is 'k'.
+        short_time : bool, optional
+            Shorten time stamps in x-axis by subtracting value of lowest
+            enrty. The default is True.
+        fig_borders : array-like (n,1), optional
+            Sets the borders of the figure (top, bottom, left, right).
+            The default is [0.97, 0.1, 0.05, 0.98].
+        bbp0 : float, optional
+            Value used for p0 when running astropy's bayesian blocks.
+            The default is '0.01'.
+        bbmode : str, optional
+            Mode which bayesian block contours to draw. Either 'sc'
+            (source counts only), 'both' (one overlay for source and
+            background counts each) or 'sum' (overlay for sc+bg counts).
+            The default is 'both'.
+        yscale : str, optional
+            Scale for yaxis of LC, either 'linear' or 'log'. The default
+            is 'linear'.
+        '''
+        self._logger.info(f'Running plot_lc_HR in mode {mode}.')
+        if type(logfile) != str:
+            raise Exception('logdir must be a string.')
+        if (type(mincounts_full) != str and type(mincounts_full) != float
+                and type(mincounts_full) != int):
+            raise Exception('mincounts_full must be a string, float or int.')
+        else:
+            try:
+                mincounts_full = float(mincounts_full)
+            except ValueError:
+                raise Exception('mincounts_full must be a number.')
+        if (type(mincounts_ind) != str and type(mincounts_ind) != float
+                and type(mincounts_ind) != int):
+            raise Exception('mincounts_ind must be a string, float or int.')
+        else:
+            try:
+                mincounts_ind = float(mincounts_ind)
+            except ValueError:
+                raise Exception('mincounts_ind must be a number.')
+        if type(mode) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if (mode != 'scan'
+                and mode != 'mincounts'
+                and mode != 'mincounts_scan'
+                and mode != 'mincounts_bb'
+                    and mode != 'scan_bb'):
+                raise Exception('mode must be \'scan\', \'mincounts\', '
+                                '\'mincounts_scan\', \'mincounts_bb\' or'
+                                '\'scan_bb\'.')
+            if mode != 'mincounts':
+                raise Exception('Currently only mode \'mincounts\' is '
+                                'implemented.')
+        if type(fracexp) != str and type(fracexp) != float:
+            raise Exception('mincounts must be a string or float.')
+        else:
+            try:
+                fracexp = float(fracexp)
+            except ValueError:
+                raise Exception('fracexp must be a number.')
+        if type(show_eRASS) != bool:
+            raise Exception('show_eRASS must be a bool.')
+        if type(print_name) != bool:
+            raise Exception('print_name must be a bool.')
+        if type(print_datetime) != bool:
+            raise Exception('print_datetime must be a bool.')
+        if type(separate_TM) != bool:
+            raise Exception('separate_TM must be a bool.')
+        if type(stan_model) != str:
+            raise Exception('stan_model must be a string.')
+        if type(time_axis) != str:
+            raise Exception('time_axis must be a string.')
+        else:
+            if time_axis != 'mjd' and time_axis != 's':
+                raise Exception('time_axis must be \'mjd\' or \'s\'')
+        if type(label_style) != str:
+            raise Exception('label_style must be a string.')
+        if type(label_size) != float and type(label_size) != int:
+            raise Exception('label_size must be a float or int.')
+        if type(alpha_bg) != float:
+            raise Exception('alpha_bg must be a float.')
+        if ((type(figsize) != list and type(figsize) != np.ndarray)
+                or np.shape(figsize) != (2,)):
+            raise Exception('figsize must be (2,) array-like.')
+        if ((type(quantiles) != list and type(quantiles) != np.ndarray)
+                or (np.shape(quantiles) != (3,) and
+                    np.shape(quantiles) != (0,))):
+            raise Exception('quantiles must be (3,) or (0,) array-like.')
+        if type(ticknumber_x) != int:
+            raise Exception('ticknumber_x must be an int.')
+        if type(ticknumber_y) != int:
+            raise Exception('ticknumber_y must be an int.')
+        if colors != []:
+            if ((type(colors) != list and type(colors) != np.ndarray)
+                    or (np.shape(colors) != (2,)
+                        and np.shape(colors) != (1,))):
+                raise Exception('colors must be (2,) or (1,) array-like.')
+        if type(fileid) != str:
+            raise Exception('fileid must be a string.')
+        if type(toplab) != str:
+            raise Exception('toplab must be a string.')
+        if type(vlines) != list and type(vlines) != np.ndarray:
+            raise Exception('vlines must be array-like')
+        else:
+            for line in vlines:
+                if len(line) != 3:
+                    raise Exception('Each line in vlines needs 3 entries.')
+                if type(line[0]) != float and type(line[0]) != int:
+                    raise Exception(
+                        'The first entry in each line of vlines needs to be '
+                        'the MJD given as float or int.')
+                if type(line[1]) != str:
+                    raise Exception(
+                        'The second entry in each line of vlines needs to be a'
+                        ' matplotlib color given as a string.')
+                if type(line[2]) != int:
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a '
+                        'negative integer < -2.')
+                elif line[2] >= -1:
+                    raise Exception(
+                        'The third entry in each line of vlines needs to be a '
+                        'negative integer < -2.')
+        if type(tilt) != float and type(tilt) != int and type(tilt) != str:
+            raise Exception('tilt must be a float, str or int.')
+        if type(d) != float and type(d) != str and type(d) != int:
+            raise Exception('d must be a float or str.')
+        if type(diag_color) != str:
+            raise Exception('diag_color must be a str.')
+        if type(fig_borders) != list and type(fig_borders) != np.ndarray:
+            raise Exception('fig_borders must be array-like')
+        else:
+            if len(fig_borders) != 4 and len(fig_borders) != 0:
+                raise Exception('fig_borders needs exactly 4 entries')
+            for entry in fig_borders:
+                if type(entry) != float:
+                    raise Exception(
+                        'Entries in fig_borders need to be of type float.')
+        if type(bbp0) != float:
+            raise Exception('tilt must be a float.')
+        if type(bbmode) != str:
+            raise Exception('bbmode must be a str.')
+        else:
+            if (bbmode != 'sc'
+                and bbmode != 'both'
+                    and bbmode != 'sum'):
+                raise Exception('bbmode must be \'sc\', \'both\' or \'sum\'')
+        if type(yscale) != str:
+            raise Exception('mode must be a string.')
+        else:
+            if (yscale != 'linear'
+                    and yscale != 'log'):
+                raise Exception('yscale must be \'linear\' or \'log\'.')
+
+        os.chdir(self._working_dir_full + '/working/')
+
+        if stan_model == '':
+            stan_model = (self._working_dir_full
+                          + '/working/lc_hr_model_simu.stan')
+        if np.shape(quantiles) == (0,):
+            quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
+
+        if lc_binning != -1:
+            self.set_LC_binning(lc_binning=lc_binning)
+        if (np.array(E_bins).tolist() != []
+            or np.array(E_bin_full).tolist() != []):
+            self.set_Ebins_HR(E_bin_full, E_bins)
+        if not self._LC_extracted and not self._debugging:
+            self._extract_lc()
+        if not self._LC_HR_extracted and not self._debugging:
+            self._extract_lc_hr()
+        if self._debugging:
+            self._LC_extracted = True
+            self._LC_HR_extracted = True
+            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._eRASS_vs_epoch()
+        localtime = time.asctime(time.localtime(time.time()))
+
+        user = getpass.getuser()
+        plt.rc('text', usetex=True)
+        plt.rc('font', family=label_style, size=label_size)
+
+        if separate_TM:
+            TM_list = [0, 1, 2, 3, 4, 5, 6, 7]
+        else:
+            TM_list = [0]
+
+        if short_time:
+            if time_axis == 'mjd':
+                time_rel = self._obs_periods[0][0]
+            elif time_axis == 's':
+                time_rel = ((self._obs_periods[0][0] - self._mjdref)
+                            / (24. * 3600))
+            else:
+                time_rel = 0
+                self._logger.error('time_rel not yet defined for this '
+                                   'time_axis.')
+        else:
+            time_rel = 0
+        pxmin = []
+        pxmax = []
+        pymin = 0
+        pymax = 0
+        xflag = 0
+
+        if logfile == '':
+            logfile = (f'LC_HR_fexp{fracexp}.log')
+        logfile = self._working_dir_full + '/logfiles/lightcurves/' + logfile
+        if os.path.exists(logfile):
+            os.remove(logfile)
+        logstate = setup_logfile(self._logger, logfile)
+        for TM in TM_list:
+            if fileid == '':
+                outfile = (f'{self._working_dir}/results/lightcurves/'
+                            f'{self._src_name}_{self._skytile}_LC_TM{TM}20_'
+                            f'fracexp{fracexp}_HR_'
+                            f'brokenLC_bayes_{mode}')
+            else:
+                outfile = (f'{self._working_dir}/results/lightcurves/'
+                            f'{fileid}_HR_'
+                            f'brokenLC_bayes_{mode}')
+            if yscale != 'linear':
+                outfile += f'_{yscale}'
+
+            fig1 = plt.figure(figsize=(figsize[0], figsize[1]))
+
+            ncols, nrows = len(self._obs_periods), 3
+
+            big_ax = fig1.add_subplot(111)
+            big_ax.set_frame_on(False)
+            big_ax.patch.set_facecolor("none")
+
+            axs = []
+            for _ in self._obs_periods:
+                ax1 = fig1.add_subplot(111)
+                ax2 = fig1.add_subplot(111)
+                ax3 = fig1.add_subplot(111)
+                axs.append([ax1, ax2, ax3])
+
+            hdulist = fits.open(f'./{self._src_name}_{self._skytile}_eROSITA_'
+                                 f'PATall_1.0s_HR_{TM}20_LightCurve_00001.'
+                                 'fits')
+
+            if time_axis == 'mjd':
+                xflag = 2
+            elif time_axis == 's':
+                xflag = 1
+
+            if colors == []:
+                colors = ['lightblue', 'black']
+
+            if mode == 'scan':
+                continue
+                # pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
+                #     hdulist=hdulist, axs=axs, log=self._logger,
+                #     mjdref=self._mjdref, xflag=xflag, color=colors[1],
+                #     obs_periods=self._obs_periods, short_time=short_time,
+                #     stan_model=stan_model, quantiles=quantiles,
+                #     time_rel=time_rel, fexp_cut=float(fracexp),
+                #     alpha_bg=alpha_bg, yscale=yscale)
+            elif mode == 'mincounts':
+                pxmin, pxmax, pymin, pymax, time_rel = plot_hr_mincounts_broken_bayes(
+                    hdulist=hdulist, axs=axs, log=self._logger,
+                    mjdref=self._mjdref, xflag=xflag,
+                    mincounts_full= mincounts_full,
+                    mincounts_ind = mincounts_ind,
+                    color=colors[1], obs_periods=self._obs_periods,
+                    short_time=short_time, stan_model=stan_model,
+                    quantiles=quantiles, time_rel=time_rel,
+                    fexp_cut=float(fracexp), alpha_bg=alpha_bg,
+                    yscale=yscale)
+            # elif mode == 'mincounts_scan':
+            #     pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
+            #         hdulist=hdulist, axs=axs, log=self._logger,
+            #         mjdref=self._mjdref, xflag=xflag, color=colors[0],
+            #         obs_periods=self._obs_periods, short_time=short_time,
+            #         stan_model=stan_model, quantiles=quantiles,
+            #         time_rel=time_rel, fexp_cut=float(fracexp),
+            #         alpha_bg=alpha_bg, yscale=yscale)
+            #     pxmin2, pxmax2, pymin2, pymax2, time_rel = plot_lc_mincounts_broken_bayes(
+            #         hdulist=hdulist, axs=axs, log=self._logger,
+            #         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+            #         color=colors[1], obs_periods=self._obs_periods,
+            #         short_time=short_time, stan_model=stan_model,
+            #         quantiles=quantiles, time_rel=time_rel,
+            #         fexp_cut=float(fracexp), alpha_bg=alpha_bg,
+            #         yscale=yscale)
+            #     pymin = min([pymin1, pymin2])
+            #     pymax = max([pymax1, pymax2])
+            #     pxmin = np.min([pxmin1, pxmin2], axis=0)
+            #     pxmax = np.max([pxmax1, pxmax2], axis=0)
+            # elif mode == 'mincounts_bb':
+            #     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_mincounts_broken_bayes(
+            #         hdulist=hdulist, axs=axs, log=self._logger,
+            #         mjdref=self._mjdref, xflag=xflag, mincounts=mincounts,
+            #         color=colors[1], obs_periods=self._obs_periods,
+            #         short_time=short_time, stan_model=stan_model,
+            #         quantiles=quantiles, time_rel=time_rel,
+            #         fexp_cut=float(fracexp), alpha_bg=alpha_bg,
+            #         bblocks=True, bbmode=bbmode, bbp0=bbp0, yscale=yscale)
+            # elif mode == 'scan_bb':
+            #     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
+            #         hdulist=hdulist, axs=axs, log=self._logger,
+            #         mjdref=self._mjdref, xflag=xflag, color=colors[1],
+            #         obs_periods=self._obs_periods, short_time=short_time,
+            #         stan_model=stan_model, quantiles=quantiles,
+            #         time_rel=time_rel, fexp_cut=float(fracexp),
+            #         alpha_bg=alpha_bg, bblocks=True, bbmode=bbmode,
+            #         bbp0=bbp0, yscale=yscale)
+
+            hdulist.close()
+
+            # plot time in s from beginning (xflag=1) or in MJD
+            if short_time:
+                if time_axis == 's':
+                    # , fontsize=12)
+                    big_ax.set_xlabel(f'Time - {time_rel} (s)')
+                elif time_axis == 'mjd':
+                    # , fontsize=12)
+                    big_ax.set_xlabel(f'MJD  - {time_rel} (days)')
+            else:
+                if time_axis == 's':
+                    big_ax.set_xlabel(r'Time (s)')  # , fontsize=12)
+                elif time_axis == 'mjd':
+                    big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
+
+            big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
+
+            if print_name:
+                # user name and time
+                big_ax.text(1.015, 0.0, f'{user} - {localtime}',
+                            rotation=90, fontsize=8,
+                            verticalalignment='bottom',
+                            horizontalalignment='left',
+                            transform=big_ax.transAxes)
+            # eROSITA label
+                big_ax.text(0.0, 1.015, 'eROSITA', rotation=0, fontsize=10,
+                            verticalalignment='bottom',
+                            horizontalalignment='left',
+                            transform=big_ax.transAxes)
+                big_ax.text(1.0, 1.015, 'MPE', rotation=0, fontsize=10,
+                            verticalalignment='bottom',
+                            horizontalalignment='right',
+                            transform=big_ax.transAxes)
+            # label plot:
+                big_ax.text(0.5, 1.015, toplab, rotation=0, fontsize=10,
+                            verticalalignment='bottom',
+                            horizontalalignment='center',
+                            transform=big_ax.transAxes)
+
+            big_ax.set_yscale(yscale)
+            for erange in axs:
+                for i_en, ax in enumerate(erange):
+                    if i_en != 2:
+                        ax.set_yscale(yscale)  # set yscale to log if wanted
+                    for i in range(len(vlines)):
+                        ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
+                                    colors=vlines[i][1], linestyle='dotted',
+                                    zorder=vlines[i][2])
+                    if show_eRASS:
+                        if time_axis == 'mjd':
+                            ax.vlines(self._ero_starttimes - time_rel, pymin,
+                                        pymax, colors='grey', linestyle='dotted',
+                                        zorder=-2)
+                        elif time_axis == 's':
+                            ax.vlines((np.array(self._ero_starttimes)
+                                        - self._mjdref) * 3600 * 24 - time_rel,
+                                        pymin, pymax, colors='grey',
+                                        linestyle='dotted', zorder=-4)
+
+            format_axis_hr(fig1, axs, pxmin, pxmax, pymin, pymax,
+                           ticknumber_x, ticknumber_y, ncols,
+                           nrows, d, tilt, diag_color, big_ax, yscale)
+
+            if fig_borders == []:
+                if yscale == 'log' and pymax / pymin * 2 <= ticknumber_y:
+                    fig_borders = [0.97, 0.1, 0.1, 0.98]
+                else:
+                    fig_borders = [0.97, 0.1, 0.05, 0.98]
+            fig1.set_tight_layout(True)
+            fig1.set_tight_layout(False)
+            wspace = 8.0 / figsize[0] * 0.05
+            fig1.subplots_adjust(
+                wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
+                left=fig_borders[2], right=fig_borders[3])
+
+            width_ratios = []
+            height_ratios = [1, 1, 1]
+            for i_ax in range(len(axs)):
+                width_ratios.append(pxmax[i_ax] - pxmin[i_ax])
+
+            gs = gridspec.GridSpec(ncols=ncols,
+                                    nrows=nrows,
+                                    height_ratios=height_ratios,
+                                    width_ratios=width_ratios)
+
+            for i_ax, group in enumerate(axs):
+                for i_en, ax in enumerate(group):
+                    index = i_en * ncols + i_ax
+                    ax.set_position(gs[index].get_position(fig1))
+
+            self._width_ratios = width_ratios
+            self._fig = fig1
+            self._axes = axs
+            self._big_ax = big_ax
+
+            pltfile = outfile + ".pdf"
+            plt.savefig(pltfile)
+            pltfile = outfile + ".eps"
+            plt.savefig(pltfile)
+            pltfile = outfile + ".png"
+            plt.savefig(pltfile)
 
             self._logger.handlers = logstate
 
@@ -3465,7 +3571,8 @@ class HiMaXBi:
                               prompting=False, plot_bkg=True,
                               src_markers=[], bkg_markers=[],
                               src_linestyles=[], bkg_linestyle='--',
-                              set_hatch=False, fig_borders = []):
+                              set_hatch=False, fig_borders = [],
+                              spec_files = []):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3627,6 +3734,8 @@ class HiMaXBi:
             Sets figure borders for matplotlib.pyplot.figure object. The order
              is top, bottom, left, right. The
             default is [0.97, 0.07, 0.14, 0.97].
+        spec_files : array-like (n,) str, optional
+            File names for spectrum data to be analysed. The default is [].
         '''
         fit_model = None
         self._logger.info('Running plot_spectra.')
