@@ -2667,8 +2667,8 @@ class HiMaXBi:
             time_rel = 0
         pxmin = []
         pxmax = []
-        pymin = 0
-        pymax = 0
+        pymin = []
+        pymax = []
         xflag = 0
 
         if logfile == '':
@@ -2827,21 +2827,21 @@ class HiMaXBi:
                                     zorder=vlines[i][2])
                     if show_eRASS:
                         if time_axis == 'mjd':
-                            ax.vlines(self._ero_starttimes - time_rel, pymin,
-                                        pymax, colors='grey', linestyle='dotted',
-                                        zorder=-2)
+                            ax.vlines(self._ero_starttimes - time_rel,
+                                      pymin[i_en], pymax[i_en], colors='grey',
+                                      linestyle='dotted', zorder=-2)
                         elif time_axis == 's':
                             ax.vlines((np.array(self._ero_starttimes)
-                                        - self._mjdref) * 3600 * 24 - time_rel,
-                                        pymin, pymax, colors='grey',
-                                        linestyle='dotted', zorder=-4)
+                                       - self._mjdref) * 3600 * 24 - time_rel,
+                                       pymin[i_en], pymax[i_en],colors='grey',
+                                       linestyle='dotted', zorder=-4)
 
             format_axis_hr(fig1, axs, pxmin, pxmax, pymin, pymax,
                            ticknumber_x, ticknumber_y, ncols,
                            nrows, d, tilt, diag_color, big_ax, yscale)
 
             if fig_borders == []:
-                if yscale == 'log' and pymax / pymin * 2 <= ticknumber_y:
+                if yscale == 'log':# and pymax / pymin * 2 <= ticknumber_y:
                     fig_borders = [0.97, 0.1, 0.1, 0.98]
                 else:
                     fig_borders = [0.97, 0.1, 0.05, 0.98]
