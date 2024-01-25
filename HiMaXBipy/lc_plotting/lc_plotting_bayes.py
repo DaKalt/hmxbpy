@@ -1318,11 +1318,10 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             N2 = len(scs2[k])
     for k in range(len(scs2)):
         while len(scs2[k]) < N2:
-            dts[k].append(0)
             scs2[k].append(0)
             fexps2[k].append(0)
             bgs2[k].append(0)
-            bgrats[k].append(0)
+    print(f'N1: {N1}, N2: {N2}')
 
     data = {}
     data['M'] = len(scs1)
