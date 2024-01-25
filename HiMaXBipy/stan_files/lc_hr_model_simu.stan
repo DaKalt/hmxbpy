@@ -47,7 +47,9 @@ model {
 }
 generated quantities {
     array[M] real<lower=-1,upper=1> frac;
-    frac = (sc_rate2 - sc_rate1) / (sc_rate2 + sc_rate1);
+    for (m in 1:M) {
+        frac[m] = (sc_rate2[m] - sc_rate1[m]) / (sc_rate2[m] + sc_rate1[m]);
+    }
     array[M] real<lower=0> sc_bg_rate1;
     for (m in 1:M) {
         sc_bg_rate1[m] = sc_rate1[m] + bg_rate1[m];
