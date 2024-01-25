@@ -1374,7 +1374,7 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
     big_ax.set_yticklabels(axs[0][0].get_yticklabels(), alpha=0)
     pymin_big = min(pymin[:2])
     pymax_big = max(pymax[:2])
-    big_ax.set_ybound(lower=pymin_big, upper=pymaxmax)
+    big_ax.set_ybound(lower=pymin_big, upper=pymax_big)
 
 
 def plot_lc_mincounts_hr(hdulist_1, hdulist_2, axs, log, mjdref, xflag,
