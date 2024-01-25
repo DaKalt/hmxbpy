@@ -1321,7 +1321,6 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             scs2[k].append(0)
             fexps2[k].append(0)
             bgs2[k].append(0)
-    print(f'N1: {N1}, N2: {N2}')
 
     data = {}
     data['M'] = len(scs1)
@@ -1478,7 +1477,7 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                     
 
     for i_ax, group in enumerate(axs):
-        for i_en, ax in group:
+        for i_en, ax in enumerate(group):
             if xflag == 1:
                 xtime_part = xtime[(mjd > obs_periods[i_ax][0]) *
                                 (mjd < obs_periods[i_ax][1])]
