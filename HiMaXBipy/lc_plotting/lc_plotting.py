@@ -1282,9 +1282,9 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
                 ax.spines.right.set_visible(False)
                 ax.spines.left.set_visible(False)
                 ax.tick_params(which='major', left=False, labelleft=False,
-                            right=False, labelright=False)
+                               right=False, labelright=False)
                 ax.tick_params(which='minor', left=False, labelleft=False,
-                            right=False, labelright=False)
+                               right=False, labelright=False)
 
             if i_ax == 0 or i_ax == len(axs) - 1:
                 if yscale == 'linear':
@@ -1341,8 +1341,10 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
                     xticks.append(j * tick_size_x + centre_x - shift_x)
             if len(xticks) <= 1:
                 xticks = [centre_x - np.round(tick_size_x / 2),
-                        centre_x + np.round(tick_size_x / 2)]
+                          centre_x + np.round(tick_size_x / 2)]
             ax.set_xticks(xticks)
+            if i_en == 0 or i_en == 1:
+                ax.set_xticklabels(['']*len(xticks), minor = False)
             if i_ax == 0:
                 start_x = xticks[0]
             elif i_ax == len(axs) - 1:
@@ -1371,7 +1373,7 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
     big_ax.set_xticklabels([start_x, end_x], alpha=0)
 
     big_ax.set_yticks(axs[0][0].get_yticks())
-    big_ax.set_yticklabels(axs[0][0].get_yticklabels(), alpha=0)
+    big_ax.set_yticklabels(axs[0][3].get_yticklabels(), alpha=0)
     pymin_big = min(pymin[:2])
     pymax_big = max(pymax[:2])
     big_ax.set_ybound(lower=pymin_big, upper=pymax_big)

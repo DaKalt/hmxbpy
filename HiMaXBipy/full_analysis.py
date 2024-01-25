@@ -2792,7 +2792,11 @@ class HiMaXBi:
                 elif time_axis == 'mjd':
                     big_ax.set_xlabel(r'MJD (days)')  # , fontsize=12)
 
-            big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
+            # big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
+            big_ax.set_ylabel(r'Count rate (cts/s)', alpha=0.0)
+            axs[0][0].set_ylabel(r'Count rate (cts/s)')
+            axs[0][1].set_ylabel(r'Count rate (cts/s)')
+            axs[0][2].set_ylabel(r'HR')
 
             if print_name:
                 # user name and time
@@ -2823,8 +2827,8 @@ class HiMaXBi:
                         ax.set_yscale(yscale)  # set yscale to log if wanted
                     for i in range(len(vlines)):
                         ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
-                                    colors=vlines[i][1], linestyle='dotted',
-                                    zorder=vlines[i][2])
+                                  colors=vlines[i][1], linestyle='dotted',
+                                  zorder=vlines[i][2])
                     if show_eRASS:
                         if time_axis == 'mjd':
                             ax.vlines(self._ero_starttimes - time_rel,
@@ -2842,15 +2846,15 @@ class HiMaXBi:
 
             if fig_borders == []:
                 if yscale == 'log':# and pymax / pymin * 2 <= ticknumber_y:
-                    fig_borders = [0.97, 0.1, 0.1, 0.98]
+                    fig_borders = [0.97, 0.05, 0.1, 0.98]
                 else:
-                    fig_borders = [0.97, 0.1, 0.05, 0.98]
+                    fig_borders = [0.97, 0.05, 0.1, 0.98]
             fig1.set_tight_layout(True)
             fig1.set_tight_layout(False)
             wspace = 8.0 / figsize[0] * 0.05
             fig1.subplots_adjust(
                 wspace=wspace, top=fig_borders[0], bottom=fig_borders[1],
-                left=fig_borders[2], right=fig_borders[3])
+                left=fig_borders[2], right=fig_borders[3], hspace = 0.0)
 
             width_ratios = []
             height_ratios = [1, 1, 1]
@@ -2868,7 +2872,7 @@ class HiMaXBi:
                     ax.set_position(gs[index].get_position(fig1))
 
             self._width_ratios = width_ratios
-            self._fig = fig1
+            self._fig_hr = fig1
             self._axes = axs
             self._big_ax = big_ax
 
