@@ -32,7 +32,7 @@ model {
         for (n in 1:N1) {
             if (dt[m,n] > 0) {
                 sc1[m,n] ~ poisson((sc_rate1[m] + bg_rate1[m]) * (dt[m,n]*frac_exp1[m,n]));
-                bg1[m,n] ~ poisson(bg_rate1[m] / bg_ratio1[m,n] * (dt[m,n]*frac_exp1[m,n]));
+                bg1[m,n] ~ poisson(bg_rate1[m] / bg_ratio[m,n] * (dt[m,n]*frac_exp1[m,n]));
             }
         }
     }
@@ -40,7 +40,7 @@ model {
         for (n in 1:N2) {
             if (dt[m,n] > 0) {
                 sc1[m,n] ~ poisson((sc_rate2[m] + bg_rate2[m]) * (dt[m,n]*frac_exp2[m,n]));
-                bg1[m,n] ~ poisson(bg_rate2[m] / bg_ratio2[m,n] * (dt[m,n]*frac_exp2[m,n]));
+                bg1[m,n] ~ poisson(bg_rate2[m] / bg_ratio[m,n] * (dt[m,n]*frac_exp2[m,n]));
             }
         }
     }
