@@ -308,7 +308,7 @@ class HiMaXBi:
                 'The energy bins in bins_ind must be within the energy bins '
                 'in bins_full.')
             
-        self._energy_bins_HR = ([np.array(bin_full, dtype=np.float64).tolist()]
+        self._energy_bins_hr = ([np.array(bin_full, dtype=np.float64).tolist()]
                                 + np.array(bins_ind,
                                            dtype=np.float64).tolist())
         self._LC_HR_extracted = False
@@ -679,7 +679,7 @@ class HiMaXBi:
             raise Exception(
                 'Source and background extraction regions have to be defined '
                 'before running the script.')
-        bin_e = self._energy_bins_HR
+        bin_e = self._energy_bins_hr
         replacements = [['@source_name', self._src_name],
                         ['@main_name', self._working_dir],
                         ['@result_dir', '.'],
