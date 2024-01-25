@@ -8,8 +8,8 @@ data {
     array[M,N2] int<lower=0> sc2;
     array[M,N2] int<lower=0> bg2;
     array[M,N2] real<lower=0> frac_exp2;
-    array[M,N] real<lower=0> dt;
-    array[M,N] real<lower=0> bg_ratio;
+    array[M,N1] real<lower=0> dt;
+    array[M,N1] real<lower=0> bg_ratio;
 }
 parameters {
     array[M] real<lower=-3,upper=4> log_cr_sc1;
