@@ -1252,7 +1252,7 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
     start_x, end_x = 0, 0
 
     for i_ax, group in enumerate(axs):
-        for ax in group:
+        for i_en, ax in enumerate(group):
             loc = plticker.MultipleLocator(base=10.0)
             ax.yaxis.set_major_locator(loc)
             x_formatter = plticker.ScalarFormatter(useOffset=False)
@@ -1288,30 +1288,35 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
 
             if i_ax == 0 or i_ax == len(axs) - 1:
                 if yscale == 'linear':
-                    tick_size_y = round_to_1((pymax - pymin) / ticknumber_y)
+                    tick_size_y = round_to_1((pymax[i_en] - pymin[i_en])
+                                             / ticknumber_y)
                     yticks = []
-                    for j in range(-2*int(ticknumber_y), 2*int(ticknumber_y) + 1):
-                        if j * tick_size_y > pymin and j * tick_size_y < pymax:
+                    for j in range(-2 * int(ticknumber_y),
+                                   2 * int(ticknumber_y) + 1):
+                        if (j * tick_size_y > pymin[i_en]
+                            and j * tick_size_y < pymax[i_en]):
                             yticks.append(j * tick_size_y)
                     ax.set_yticks(yticks)
                 elif yscale == 'log':
                     yticks = []
                     yticklabes = []
-                    for power in range(int(np.floor(np.log10(pymin))),
-                                    int(np.ceil(np.log10(pymax)))):
-                        if (np.log10(pymax/pymin) >= 2 * ticknumber_y
-                                and power % 2 == 1):
+                    for power in range(int(np.floor(np.log10(pymin[i_en]))),
+                                    int(np.ceil(np.log10(pymax[i_en])))):
+                        if (np.log10(pymax[i_en]/pymin[i_en]) >= 2
+                            * ticknumber_y and power % 2 == 1):
                             continue
                         yticks.append(10**power)
                         yticklabes.append('$\\mathdefault{10^{%i}}$' % (power))
-                        if np.log10(pymax/pymin) * 4 <= ticknumber_y:
+                        if (np.log10(pymax[i_en]/pymin[i_en])
+                            * 4 <= ticknumber_y):
                             yticks.append(2 * 10 ** power)
-                            yticklabes.append('$\\mathdefault{2\\times10^{%i}}$'
-                                            % (power))
-                        if np.log10(pymax/pymin) * 2 <= ticknumber_y:
+                            yticklabes.append('$\\mathdefault{2\\times10^{%i}}'
+                                              '$' % (power))
+                        if (np.log10(pymax[i_en]/pymin[i_en])
+                            * 2 <= ticknumber_y):
                             yticks.append(5 * 10 ** power)
-                            yticklabes.append('$\\mathdefault{5\\times10^{%i}}$'
-                                            % (power))
+                            yticklabes.append('$\\mathdefault{5\\times10^{%i}}'
+                                              '$' % (power))
                     ax.set_yticks(yticks, labels=yticklabes)
 
                 # longest_y = ''
@@ -1344,7 +1349,7 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
                 end_x = xticks[-1]
 
             ax.set_xbound(lower=pxmins[i_ax], upper=pxmaxs[i_ax])
-            ax.set_ybound(lower=pymin, upper=pymax)
+            ax.set_ybound(lower=pymin[i_en], upper=pymax[i_en])
 
     big_ax.tick_params(left=True, bottom=True,
                        right=True, top=True)
