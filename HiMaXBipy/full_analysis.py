@@ -2681,12 +2681,12 @@ class HiMaXBi:
             if fileid == '':
                 outfile = (f'{self._working_dir}/results/lightcurves/'
                             f'{self._src_name}_{self._skytile}_LC_TM{TM}20_'
-                            f'fracexp{fracexp}_HR_'
-                            f'brokenLC_bayes_{mode}')
+                            f'fracexp{fracexp}_HR_{mincounts_full}_'
+                            f'{mincounts_ind}_brokenLC_bayes_{mode}')
             else:
                 outfile = (f'{self._working_dir}/results/lightcurves/'
-                            f'{fileid}_HR_'
-                            f'brokenLC_bayes_{mode}')
+                            f'{fileid}_HR_mincounts_{mincounts_full}_'
+                            f'{mincounts_ind}_brokenLC_bayes_{mode}')
             if yscale != 'linear':
                 outfile += f'_{yscale}'
 
