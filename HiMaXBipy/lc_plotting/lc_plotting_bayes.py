@@ -1505,8 +1505,9 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                 xtime_short = xtime.copy()
 
             xm = (xmax-xmin)*0.05
-            pxmin.append(xmin - xm)
-            pxmax.append(xmax + xm)
+            if i_en == 0:
+                pxmin.append(xmin - xm)
+                pxmax.append(xmax + xm)
 
             if xflag == 1:
                 t = xtime_short
