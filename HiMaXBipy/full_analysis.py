@@ -2776,6 +2776,8 @@ class HiMaXBi:
             #         alpha_bg=alpha_bg, bblocks=True, bbmode=bbmode,
             #         bbp0=bbp0, yscale=yscale)
 
+            print(pxmin)
+            print(pxmax)
             hdulist.close()
 
             # plot time in s from beginning (xflag=1) or in MJD
@@ -2794,10 +2796,10 @@ class HiMaXBi:
 
             # big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
             big_ax.set_ylabel(r'Count rate (cts/s)', alpha=0.0)
-            axs[0][0].set_ylabel(f'Count rate {self._energy_bins_hr[0][0]} -'
-                                 f' {self._energy_bins_hr[0][1]} keV (cts/s)')
-            axs[0][1].set_ylabel(f'Count rate {self._energy_bins_hr[1][0]} -'
+            axs[0][0].set_ylabel(f'Count rate {self._energy_bins_hr[1][0]} -'
                                  f' {self._energy_bins_hr[1][1]} keV (cts/s)')
+            axs[0][1].set_ylabel(f'Count rate {self._energy_bins_hr[2][0]} -'
+                                 f' {self._energy_bins_hr[2][1]} keV (cts/s)')
             axs[0][2].set_ylabel(r'HR')
 
             if print_name:
