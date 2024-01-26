@@ -2794,8 +2794,10 @@ class HiMaXBi:
 
             # big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
             big_ax.set_ylabel(r'Count rate (cts/s)', alpha=0.0)
-            axs[0][0].set_ylabel(r'Count rate (cts/s)')
-            axs[0][1].set_ylabel(r'Count rate (cts/s)')
+            axs[0][0].set_ylabel(f'Count rate {self._energy_bins_hr[0][0]} -'
+                                 f' {self._energy_bins_hr[0][1]} keV (cts/s)')
+            axs[0][1].set_ylabel(f'Count rate {self._energy_bins_hr[1][0]} -'
+                                 f' {self._energy_bins_hr[1][1]} keV (cts/s)')
             axs[0][2].set_ylabel(r'HR')
 
             if print_name:
@@ -2846,9 +2848,9 @@ class HiMaXBi:
 
             if fig_borders == []:
                 if yscale == 'log':# and pymax / pymin * 2 <= ticknumber_y:
-                    fig_borders = [0.97, 0.05, 0.1, 0.98]
+                    fig_borders = [0.97, 0.05, 0.08, 0.98]
                 else:
-                    fig_borders = [0.97, 0.05, 0.1, 0.98]
+                    fig_borders = [0.97, 0.05, 0.08, 0.98]
             fig1.set_tight_layout(True)
             fig1.set_tight_layout(False)
             wspace = 8.0 / figsize[0] * 0.05
