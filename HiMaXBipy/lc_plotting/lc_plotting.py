@@ -1287,7 +1287,7 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
                                right=False, labelright=False)
 
             if i_ax == 0 or i_ax == len(axs) - 1:
-                if yscale == 'linear':
+                if yscale == 'linear' or i_en == 2:
                     tick_size_y = round_to_1((pymax[i_en] - pymin[i_en])
                                              / ticknumber_y)
                     yticks = []
@@ -1301,7 +1301,7 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
                     yticks = []
                     yticklabes = []
                     for power in range(int(np.floor(np.log10(pymin[i_en]))),
-                                    int(np.ceil(np.log10(pymax[i_en])))):
+                                       int(np.ceil(np.log10(pymax[i_en])))):
                         if (np.log10(pymax[i_en]/pymin[i_en]) >= 2
                             * ticknumber_y and power % 2 == 1):
                             continue
