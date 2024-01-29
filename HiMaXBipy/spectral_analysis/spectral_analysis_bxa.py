@@ -44,8 +44,12 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
     for igroup in range(n_srcfiles):
         if n_srcfiles > 1:
             label = f'{epoch_type} {igroup+1}'
+            color_srcbkg = colors[igroup]
+            color_bkg = colors[igroup]
         else:
             label = f'{epoch_type}'
+            color_srcbkg = colors[0]
+            color_bkg = colors[1]
         isource = 2*igroup + 1
         Plot.xAxis = 'keV'
         Plot('data')
@@ -54,7 +58,7 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
         data = Plot.y(isource).copy()
         data_err = Plot.yErr(isource).copy()
         ax_spec.errorbar(EkeV, data, xerr=EkeV_err, yerr=data_err,
-                         color=colors[igroup], marker=src_markers[igroup],
+                         color=color_srcbkg, marker=src_markers[igroup],
                          label=label, linestyle='', zorder=5)
         bkg = (bkg_factors[igroup] *
                np.array(Plot.y(isource+1).copy())).tolist()
@@ -63,7 +67,7 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
         EkeV_bkg = Plot.x(isource+1).copy()
         EkeV_bkg_err = Plot.xErr(isource+1).copy()
         ax_spec.errorbar(EkeV_bkg, bkg, xerr=EkeV_bkg_err, yerr=bkg_err,
-                         color=colors[igroup], marker=bkg_markers[igroup],
+                         color=color_bkg, marker=bkg_markers[igroup],
                          linestyle='', zorder=4)
 
         model = Plot.model(isource).copy()
@@ -107,12 +111,24 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
     output['model_bkg'] = bkg_models
 
     for igroup in range(n_srcfiles):
+        if n_srcfiles > 1:
+            color_srcbkg = colors[igroup]
+            color_src = colors[igroup]
+            color_bkg = colors[igroup]
+        else:
+            color_srcbkg = colors[0]
+            color_src = colors[1]
+            color_bkg = colors[2]
+        #src+bkg
         models = []
         bands = []
         Plot.add = False
         Plot.background = False
+        if igroup == 0:
+            output['test'] = posterior_predictions_plot(analyser, plottype='data', nsamples=100, group=2*igroup+1)
         for content in posterior_predictions_plot(analyser, plottype='data',
-                                                  nsamples=100, group=2*igroup+1):
+                                                  nsamples=100,
+                                                  group=2*igroup+1):
             xmid = content[:, 0]
             ndata_columns = 6 if Plot.background else 4
             ncomponents = content.shape[1]-ndata_columns
@@ -128,7 +144,7 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
         for band, label in zip(bands, 'model prediction'):
             if label == 'ignore':
                 continue
-            lineargs = dict(drawstyle='steps', color=colors[igroup], zorder=3,
+            lineargs = dict(drawstyle='steps', color=color_srcbkg, zorder=3,
                             linewidth=0.8, linestyle=src_linestyles[igroup])
             shadeargs = dict(color=lineargs['color'], zorder=2)
             band.shade(alpha=0.5, **shadeargs)
@@ -136,12 +152,45 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
             band.line(label=label, **lineargs)
 
+        # #src
+        # models = []
+        # bands = []
+        # Plot.add = False
+        # Plot.background = False
+        # for content in posterior_predictions_plot(analyser, plottype='data',
+        #                                           nsamples=100,
+        #                                           group=2*igroup+1):
+        #     xmid = content[:, 0]
+        #     ndata_columns = 6 if Plot.background else 4
+        #     ncomponents = content.shape[1]-ndata_columns
+        #     model_contributions = []
+        #     for component in range(ncomponents):
+        #         y = content[:, ndata_columns+component]
+        #         if component >= len(bands):
+        #             bands.append(PredictionBand(xmid, ax_spec))
+        #         bands[component].add(y)
+        #         model_contributions.append(y)
+        #     models.append(model_contributions)
+
+        # for band, label in zip(bands, 'model prediction'):
+        #     if label == 'ignore':
+        #         continue
+        #     lineargs = dict(drawstyle='steps', color=color_srcbkg, zorder=3,
+        #                     linewidth=0.8, linestyle=src_linestyles[igroup])
+        #     shadeargs = dict(color=lineargs['color'], zorder=2)
+        #     band.shade(alpha=0.5, **shadeargs)
+        #     shadeargs = dict(**shadeargs, hatch=hatches[igroup])
+        #     band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
+        #     band.line(label=label, **lineargs)
+
+        #bkg
         models = []
         bands = []
         Plot.add = False
         Plot.background = False
         for content in posterior_predictions_plot(analyser, plottype='data',
-                                                  nsamples=100, group=2*igroup+2):
+                                                  nsamples=100,
+                                                  group=2*igroup+2):
             xmid = content[:, 0]
             ndata_columns = 6 if Plot.background else 4
             ncomponents = content.shape[1]-ndata_columns
@@ -157,7 +206,7 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
         for band, label in zip(bands, 'model prediction'):
             if label == 'ignore':
                 continue
-            lineargs = dict(drawstyle='steps', color=colors[igroup], zorder=1,
+            lineargs = dict(drawstyle='steps', color=color_bkg, zorder=1,
                             linestyle=bkg_linestyle, linewidth=0.8)
             shadeargs = dict(color=lineargs['color'], zorder=0)
             band.shade(alpha=0.5, **shadeargs)
@@ -362,8 +411,8 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
 
-    fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
-    fig_lum.savefig(f'{working_dir}/corner_luminosities.pdf')
+    #fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
+    #fig_lum.savefig(f'{working_dir}/corner_luminosities.pdf')
     #this is just to check if analyser.set_best_fit() does its job
     AllData.show()
     AllModels.show()
