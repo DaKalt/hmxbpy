@@ -2776,8 +2776,6 @@ class HiMaXBi:
             #         alpha_bg=alpha_bg, bblocks=True, bbmode=bbmode,
             #         bbp0=bbp0, yscale=yscale)
 
-            print(pxmin)
-            print(pxmax)
             hdulist.close()
 
             # plot time in s from beginning (xflag=1) or in MJD
@@ -4147,6 +4145,10 @@ class HiMaXBi:
             os.remove(f'{self._working_dir_full}/results/spectra/{model}'
                       f'{suffix}/corner_full.pdf')
         if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
+                          f'{suffix}/corner_lums.pdf'):
+            os.remove(f'{self._working_dir_full}/results/spectra/{model}'
+                      f'{suffix}/corner_lums.pdf')
+        if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
                           f'{suffix}/diagnostic/trace.pdf'):
             os.remove(f'{self._working_dir_full}/results/spectra/{model}'
                       f'{suffix}/diagnostic/trace.pdf')
@@ -4163,6 +4165,9 @@ class HiMaXBi:
         shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
                     'plots/trace.pdf', f'{self._working_dir_full}/results/'
                     f'spectra/{model}{suffix}/diagnostic/trace.pdf')
+        shutil.copy(f'{self._working_dir_full}/working/corner_lums.pdf',
+                    f'{self._working_dir_full}/results/'
+                    f'spectra/{model}{suffix}/corner_lums.pdf')
                 
         fig_corner = plot_corner(analyser, ntransf, self._logger)
         fig_corner.savefig(f'{self._working_dir_full}/results/spectra/'

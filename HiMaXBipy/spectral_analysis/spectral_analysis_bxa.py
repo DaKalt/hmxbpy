@@ -329,6 +329,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
 
     absorbed_F = []
     unabsorbed_L = []
+    luminosity_chains = []
     for ispec in range(n_srcfiles):
         src = srcs[ispec]
         fluxes = []
@@ -352,6 +353,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                          lum(np.percentile(flux, quantiles[1]), distance),
                          lum(np.percentile(flux, quantiles[2]), distance)]
             lums.append(lums_band)
+            luminosity_chains.append(lum(flux, distance))
             if band == E_ranges[0] and ispec == 0:
                 AllModels.show()
             for inH, nH in enumerate(nHs_froz):
@@ -360,6 +362,8 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
 
+    fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
+    fig_lum.savefig(f'{working_dir}/corner_luminosities.pdf')
     #this is just to check if analyser.set_best_fit() does its job
     AllData.show()
     AllModels.show()
@@ -394,6 +398,20 @@ def plot_corner(analyser, ntransf, log) -> Figure:
     fig = corner.corner(data[mask,:], weights=weights[mask],
                         labels=paramnames, show_titles=True, quiet=True)
     # logging.warning = oldfunc
+    return fig
+
+def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
+    '''Make a corner plot with fluxes instead of norms.'''
+    paramnames = analyser.results['paramnames'][:ntransf]
+    data = np.array(analyser.posterior.T[:ntransf].T)
+    i_norm = 1
+    for i_name, entry in enumerate(paramnames):
+        if entry.lower.find('norm') > -1:
+            paramnames[i_name] = f'Luminosity {i_norm} (erg/s)'
+            data[i_name] = lum_chains[i_norm-1]
+            i_norm += 1
+    
+    fig = corner.corner(data, labels=paramnames, show_titles=True, quiet=True)
     return fig
 
 def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
