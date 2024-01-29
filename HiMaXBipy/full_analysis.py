@@ -76,7 +76,7 @@ class HiMaXBi:
     _mjdref = 51543.875
     _ero_starttimes = np.array([58828, 59011, 59198, 59381, 59567])
     _energy_bins = [[0.2, 8.0]]
-    _energy_bins_hr = [[0.2, 8.0], [0.2, 2.0], [2.0, 8.0]]
+    _energy_bins_hr = [[0.2, 8.0], [0.2, 2.0], [2.0, 5.0]]
     _grouping = 1
     _ownership = 'x'
     _distance = 50.
@@ -2458,7 +2458,7 @@ class HiMaXBi:
         E_bins : array-like (2,2), optional
             Sets energy bins that should be analysed. For each bin E_min
             and E_max must be given in keV. The default is
-            [[0.2, 2.0], [0.2, 8.0]].
+            [[0.2, 2.0], [0.2, 5.0]].
         lc_binning : str or float, optional
             Sets initial lc binsize in seconds. The default is -1
             (meaning the current value is not changeds)
