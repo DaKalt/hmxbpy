@@ -4075,6 +4075,7 @@ class HiMaXBi:
                           colors, src_markers, bkg_markers, epoch_type,
                           bkg_factors, analyser, src_linestyles,
                           bkg_linestyle, hatches, ntransf)
+        source._output = output
 
         fig.canvas.draw()
         fig.set_tight_layout(True)
