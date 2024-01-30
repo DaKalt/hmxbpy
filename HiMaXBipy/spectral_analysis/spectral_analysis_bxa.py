@@ -357,7 +357,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                 fac_src.values = [1, 0.1, 0.1, 0.1, 10, 10]
                 # fac_bkg.link = fac_src #ToDo: I think this is wrong,
                 # corrected below
-                fac_bkg.calues = [1, -1]
+                fac_bkg.values = [1, -1]
                 model = AllModels(groupNum=2*groupid+1,
                                   modName=f'bkgmod{bkgid}')
                 norm = bxa.create_jeffreys_prior_for(model, fac_src)
