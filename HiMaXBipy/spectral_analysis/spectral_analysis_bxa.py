@@ -422,13 +422,13 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         unabsorbed_L.append(lums)
 
     fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
-    fig_lum.savefig(f'{working_dir}/corner_luminosities.pdf')
+    fig_lum.savefig(f'{working_dir}/corner_lums.pdf')
         
     # this is just to check if analyser.set_best_fit() does its job
     AllData.show()
     AllModels.show()
 
-    return absorbed_F, unabsorbed_L, bkg_factors, analyser, ntransf
+    return absorbed_F, unabsorbed_L, bkg_factors, analyser, ntransf, luminosity_chains
 
 def plot_corner(analyser, ntransf, log) -> Figure:
     """Make a corner plot with corner. Altered from ultranest."""
