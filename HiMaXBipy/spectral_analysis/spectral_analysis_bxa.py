@@ -11,6 +11,7 @@ import bxa.xspec as bxa
 import corner
 import json
 import logging
+from matplotlib import gridspec
 from matplotlib.dates import EPOCH_OFFSET
 from matplotlib.figure import Figure
 from matplotlib.pyplot import figure
@@ -20,6 +21,7 @@ import os
 from xspec import Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,\
     Plot
 
+from HiMaXBipy.io.package_data import num2text
 from HiMaXBipy.spectral_analysis.modded_function import PredictionBand,\
     posterior_predictions_plot
 
@@ -27,10 +29,9 @@ from HiMaXBipy.spectral_analysis.modded_function import PredictionBand,\
 def lum(flux, distance):
     return 4. * np.pi * (distance * 1000 * 3.0857 * 10 ** 18) ** 2 * 10 ** flux
 
-
 def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
              src_markers, bkg_markers, epoch_type, bkg_factors, analyser,
-             src_linestyles, bkg_linestyle, hatches, ntransf):
+             src_linestyles, bkg_linestyle, hatches, plot_src=False, ):
     energies = {}
     fluxes = {}
     backgrounds = {}
@@ -152,36 +153,43 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
             band.line(label=label, **lineargs)
 
-        # #src
-        # models = []
-        # bands = []
-        # Plot.add = False
-        # Plot.background = False
-        # for content in posterior_predictions_plot(analyser, plottype='data',
-        #                                           nsamples=100,
-        #                                           group=2*igroup+1):
-        #     xmid = content[:, 0]
-        #     ndata_columns = 6 if Plot.background else 4
-        #     ncomponents = content.shape[1]-ndata_columns
-        #     model_contributions = []
-        #     for component in range(ncomponents):
-        #         y = content[:, ndata_columns+component]
-        #         if component >= len(bands):
-        #             bands.append(PredictionBand(xmid, ax_spec))
-        #         bands[component].add(y)
-        #         model_contributions.append(y)
-        #     models.append(model_contributions)
+        #src
+        if plot_src:
+            models = []
+            bands = []
+            Plot.add = False
+            Plot.background = False
+            fac_src = AllModels(groupNum=2*igroup+1,
+                                modName=f'bkgmod{igroup+1}').constant.factor
+            fac_src.values = [0, -1, 0, 0, 10, 10]
+            for content in posterior_predictions_plot(analyser,
+                                                      plottype='data',
+                                                    nsamples=100,
+                                                    group=2*igroup+1):
+                xmid = content[:, 0]
+                ndata_columns = 6 if Plot.background else 4
+                ncomponents = content.shape[1]-ndata_columns
+                model_contributions = []
+                for component in range(ncomponents):
+                    y = content[:, ndata_columns+component]
+                    if component >= len(bands):
+                        bands.append(PredictionBand(xmid, ax_spec))
+                    bands[component].add(y)
+                    model_contributions.append(y)
+                models.append(model_contributions)
 
-        # for band, label in zip(bands, 'model prediction'):
-        #     if label == 'ignore':
-        #         continue
-        #     lineargs = dict(drawstyle='steps', color=color_srcbkg, zorder=3,
-        #                     linewidth=0.8, linestyle=src_linestyles[igroup])
-        #     shadeargs = dict(color=lineargs['color'], zorder=2)
-        #     band.shade(alpha=0.5, **shadeargs)
-        #     shadeargs = dict(**shadeargs, hatch=hatches[igroup])
-        #     band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
-        #     band.line(label=label, **lineargs)
+            for band, label in zip(bands, 'model prediction'):
+                if label == 'ignore':
+                    continue
+                lineargs = dict(drawstyle='steps', color=color_srcbkg,
+                                zorder=3, linewidth=0.8,
+                                linestyle=src_linestyles[igroup])
+                shadeargs = dict(color=lineargs['color'], zorder=2)
+                band.shade(alpha=0.5, **shadeargs)
+                shadeargs = dict(**shadeargs, hatch=hatches[igroup])
+                band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
+                band.line(label=label, **lineargs)
+            analyser.set_best_fit()
 
         #bkg
         models = []
@@ -347,7 +355,9 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
             # has to be set, see https://heasarc.gsfc.nasa.gov/docs/asca/abc_backscal.html
             if groupid+1 == bkgid:
                 fac_src.values = [1, 0.1, 0.1, 0.1, 10, 10]
-                fac_bkg.link = fac_src
+                # fac_bkg.link = fac_src #ToDo: I think this is wrong,
+                # corrected below
+                fac_bkg.calues = [1, -1]
                 model = AllModels(groupNum=2*groupid+1,
                                   modName=f'bkgmod{bkgid}')
                 norm = bxa.create_jeffreys_prior_for(model, fac_src)
@@ -411,9 +421,10 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
 
-    #fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
-    #fig_lum.savefig(f'{working_dir}/corner_luminosities.pdf')
-    #this is just to check if analyser.set_best_fit() does its job
+    fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
+    fig_lum.savefig(f'{working_dir}/corner_luminosities.pdf')
+        
+    # this is just to check if analyser.set_best_fit() does its job
     AllData.show()
     AllModels.show()
 
@@ -455,7 +466,7 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
     data = np.array(analyser.posterior.T[:ntransf].T)
     i_norm = 1
     for i_name, entry in enumerate(paramnames):
-        if entry.lower.find('norm') > -1:
+        if entry.lower().find('log(bkg mod f') == 0:
             paramnames[i_name] = f'Luminosity {i_norm} (erg/s)'
             data[i_name] = lum_chains[i_norm-1]
             i_norm += 1
@@ -522,3 +533,114 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
         line += '\\\\ \n'
         tex_file.write(line)
     tex_file.write('%s\\\\ \n' % ('& '*(len(tex_info) + 2*len(E_ranges))))
+
+def setup_axis(Emin, Emax, figsize):
+    fig = plt.figure(figsize=(figsize[0], figsize[1]))
+    ax_spec = fig.add_subplot(111)
+    ax_res = fig.add_subplot(111)
+    ax_spec.set_yscale('log')
+
+    xticks = []
+    xlabels = []
+    for tick in [0.5, 1, 5, 10]:
+        if tick>Emin and tick<Emax:
+            xticks.append(tick)
+            xlabels.append(num2text(tick))
+
+    xminorticks = []
+    xminorlabels = []
+    xminorticks.append(Emin)
+    xminorlabels.append(num2text(Emin))
+    for tick in [0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 2, 3, 4, 6, 7, 8, 9]:
+        if tick>Emin and tick<Emax:
+            xminorticks.append(tick)
+            xminorlabels.append('')
+    xminorticks.append(Emax)
+    xminorlabels.append(num2text(Emax))
+
+    for ax in [ax_spec, ax_res]:
+        ax.set_xscale('log')
+
+        ax.grid(which='major', axis='both', zorder=-1,
+                color='#111111', linewidth=0.8)
+        ax.grid(which='minor', axis='both', zorder=-1,
+                color='#222222', linewidth=0.5, linestyle=':')
+
+        ax.tick_params(axis='x', which='major', direction='in',
+                        top='on', pad=9, length=5, width=1.5)  # , labelsize=10)
+        ax.tick_params(axis='x', which='minor', direction='in',
+                        top='on', pad=9, length=3)  # , labelsize=0)
+        ax.tick_params(axis='y', which='major', direction='in',
+                        right='on', length=5, width=1.5)  # , labelsize=10)
+        ax.tick_params(axis='y', which='minor', direction='in',
+                        right='on', length=3)  # , labelsize=0)
+        ax.set_xticks(xticks, minor=False)
+        ax.set_xticks(xminorticks, minor=True)
+        ax.set_xticklabels(xminorlabels, minor=True)
+
+    ax_res.set_yticks([0], minor=False)
+    ax_res.set_yticks([-4, -2, 2, 4], minor=True)
+    ax_res.set_yticklabels(['-4', '-2', '2', '4'], minor=True)
+    ax_res.set_xticklabels(xlabels, minor=False)
+
+    ax_spec.set_xticklabels(['']*len(xticks), minor = False)
+    ax_spec.set_xticklabels(['']*len(xminorticks), minor=True)
+
+    ax_res_invis = fig.add_subplot(111)
+    ax_res_invis.set_frame_on(False)
+    ax_res_invis.patch.set_facecolor("none")
+
+    return fig, ax_spec, ax_res, ax_res_invis
+
+def format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders, rescale_F,
+                    rescale_chi, E_ranges, src_files, ncols, nrows,
+                    height_ratios, width_ratios):
+    fig.canvas.draw()
+    fig.set_tight_layout(True)
+    fig.set_tight_layout(False)
+    if len(src_files) > 1:
+        ax_spec.legend(bbox_to_anchor=(-0.044, 1.02), loc='upper right',
+                        handletextpad=0.1, fontsize=12)
+    # hspace = 8.0 / figsize[1] * 0.05
+    hspace = 0
+    fig.subplots_adjust(
+        hspace=hspace, top=fig_borders[0], bottom=fig_borders[1],
+        left=fig_borders[2], right=fig_borders[3])
+
+    ax_res_invis.tick_params(left=True, bottom=True,
+                                right=True, top=True)
+    ax_res_invis.tick_params(axis='x', which='major', direction='in',
+                                top='on',   pad=9, length=0)  # , labelsize=10)
+    ax_res_invis.tick_params(axis='x', which='minor', direction='in',
+                                top='on',   length=0)  # , labelsize=0)
+    ax_res_invis.tick_params(axis='y', which='major', direction='in',
+                                right='on', length=0)  # , labelsize=10)
+    ax_res_invis.tick_params(axis='y', which='minor', direction='in',
+                                right='on', length=0)
+
+    ax_res_invis.set_xbound(lower=0, upper=1)
+    ax_res_invis.set_xticks([0, 1])
+    ax_res_invis.set_xticklabels(['0', '1'], alpha=0)
+
+    ax_res_invis.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
+    ax_res_invis.set_yticks(ax_spec.get_yticks())
+    ax_res_invis.set_yticklabels(ax_spec.get_yticklabels(), alpha=0)
+
+    gs = gridspec.GridSpec(ncols=ncols,
+                            nrows=nrows,
+                            height_ratios=height_ratios,
+                            width_ratios=width_ratios)
+
+    ax_spec.set_position(gs[0].get_position(fig))
+    ax_res.set_position(gs[1].get_position(fig))
+    ax_res_invis.set_position(gs[1].get_position(fig))
+
+    ax_spec.set_ylabel('Counts s$^{-1}$ keV$^{-1}$')
+    ax_res_invis.set_ylabel('$\\Delta\\chi$')
+    ax_res.set_xlabel('Energy (keV)')
+
+    ax_spec.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
+    ax_res.set_ybound(lower=rescale_chi[0], upper=rescale_chi[1])
+
+    ax_spec.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
+    ax_res.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])

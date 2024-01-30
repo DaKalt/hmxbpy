@@ -43,7 +43,7 @@ from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,
 from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
-    plot_bxa, plot_corner, write_tex
+    plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2
 from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple,\
     abb, abb_simple
 
@@ -3990,63 +3990,12 @@ class HiMaXBi:
         if rebin == False:
             rebin_params = [0, 0]
 
-        fig = plt.figure(figsize=(figsize[0], figsize[1]))
-        ax_spec = fig.add_subplot(111)
-        ax_res = fig.add_subplot(111)
-        ax_spec.set_yscale('log')
-
         Emin = E_ranges[0][0]
         Emax = E_ranges[0][1]
 
-        xticks = []
-        xlabels = []
-        for tick in [0.5, 1, 5, 10]:
-            if tick>Emin and tick<Emax:
-                xticks.append(tick)
-                xlabels.append(num2text(tick))
-
-        xminorticks = []
-        xminorlabels = []
-        xminorticks.append(Emin)
-        xminorlabels.append(num2text(Emin))
-        for tick in [0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9, 2, 3, 4, 6, 7, 8, 9]:
-            if tick>Emin and tick<Emax:
-                xminorticks.append(tick)
-                xminorlabels.append('')
-        xminorticks.append(Emax)
-        xminorlabels.append(num2text(Emax))
-
-        for ax in [ax_spec, ax_res]:
-            ax.set_xscale('log')
-
-            ax.grid(which='major', axis='both', zorder=-1,
-                    color='#111111', linewidth=0.8)
-            ax.grid(which='minor', axis='both', zorder=-1,
-                    color='#222222', linewidth=0.5, linestyle=':')
-
-            ax.tick_params(axis='x', which='major', direction='in',
-                           top='on', pad=9, length=5, width=1.5)  # , labelsize=10)
-            ax.tick_params(axis='x', which='minor', direction='in',
-                           top='on', pad=9, length=3)  # , labelsize=0)
-            ax.tick_params(axis='y', which='major', direction='in',
-                           right='on', length=5, width=1.5)  # , labelsize=10)
-            ax.tick_params(axis='y', which='minor', direction='in',
-                           right='on', length=3)  # , labelsize=0)
-            ax.set_xticks(xticks, minor=False)
-            ax.set_xticks(xminorticks, minor=True)
-            ax.set_xticklabels(xminorlabels, minor=True)
-
-        ax_res.set_yticks([0], minor=False)
-        ax_res.set_yticks([-4, -2, 2, 4], minor=True)
-        ax_res.set_yticklabels(['-4', '-2', '2', '4'], minor=True)
-        ax_res.set_xticklabels(xlabels, minor=False)
-
-        ax_spec.set_xticklabels(['']*len(xticks), minor = False)
-        ax_spec.set_xticklabels(['']*len(xminorticks), minor=True)
-
-        ax_res_invis = fig.add_subplot(111)
-        ax_res_invis.set_frame_on(False)
-        ax_res_invis.patch.set_facecolor("none")
+        fig, ax_spec, ax_res, ax_res_invis = setup_axis(Emin, Emax, figsize)
+        fig_src, ax_spec_src, ax_res_src, ax_res_invis_src = \
+            setup_axis(Emin, Emax, figsize)
 
         src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
 
@@ -4074,62 +4023,22 @@ class HiMaXBi:
         output = plot_bxa(rebin_params, src_files, ax_spec, ax_res,
                           colors, src_markers, bkg_markers, epoch_type,
                           bkg_factors, analyser, src_linestyles,
-                          bkg_linestyle, hatches, ntransf)
+                          bkg_linestyle, hatches)
         self._output = output
+        _ = plot_bxa(rebin_params, src_files, ax_spec_src, ax_res_src, colors,
+                     src_markers, bkg_markers, epoch_type, bkg_factors,
+                     analyser, src_linestyles, bkg_linestyle, hatches)
 
-        fig.canvas.draw()
-        fig.set_tight_layout(True)
-        fig.set_tight_layout(False)
-        if len(src_files) > 1:
-            ax_spec.legend(bbox_to_anchor=(-0.044, 1.02), loc='upper right',
-                           handletextpad=0.1, fontsize=12)
-        # hspace = 8.0 / figsize[1] * 0.05
-        hspace = 0
-        fig.subplots_adjust(
-            hspace=hspace, top=fig_borders[0], bottom=fig_borders[1],
-            left=fig_borders[2], right=fig_borders[3])
-
-        ax_res_invis.tick_params(left=True, bottom=True,
-                                 right=True, top=True)
-        ax_res_invis.tick_params(axis='x', which='major', direction='in',
-                                 top='on',   pad=9, length=0)  # , labelsize=10)
-        ax_res_invis.tick_params(axis='x', which='minor', direction='in',
-                                 top='on',   length=0)  # , labelsize=0)
-        ax_res_invis.tick_params(axis='y', which='major', direction='in',
-                                 right='on', length=0)  # , labelsize=10)
-        ax_res_invis.tick_params(axis='y', which='minor', direction='in',
-                                 right='on', length=0)
-
-        ax_res_invis.set_xbound(lower=0, upper=1)
-        ax_res_invis.set_xticks([0, 1])
-        ax_res_invis.set_xticklabels(['0', '1'], alpha=0)
-
-        ax_res_invis.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
-        ax_res_invis.set_yticks(ax_spec.get_yticks())
-        ax_res_invis.set_yticklabels(ax_spec.get_yticklabels(), alpha=0)
-
+        ncols = 1
+        nrows = 2
         width_ratios = [1]
         height_ratios = [5, 3]
-
-        gs = gridspec.GridSpec(ncols=1,
-                               nrows=2,
-                               height_ratios=height_ratios,
-                               width_ratios=width_ratios)
-
-        ax_spec.set_position(gs[0].get_position(fig))
-        ax_res.set_position(gs[1].get_position(fig))
-        ax_res_invis.set_position(gs[1].get_position(fig))
-
-        ax_spec.set_ylabel('Counts s$^{-1}$ keV$^{-1}$')
-        ax_res_invis.set_ylabel('$\\Delta\\chi$')
-        ax_res.set_xlabel('Energy (keV)')
-
-        ax_spec.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
-        ax_res.set_ybound(lower=rescale_chi[0], upper=rescale_chi[1])
-
-        ax_spec.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
-        ax_res.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
-
+        format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
+                        rescale_F, rescale_chi, E_ranges, src_files, ncols,
+                        nrows, height_ratios, width_ratios)
+        format_axis_pt2(fig_src, ax_spec_src, ax_res_src, ax_res_invis_src,
+                        fig_borders, rescale_F, rescale_chi, E_ranges,
+                        src_files, ncols, nrows, height_ratios, width_ratios)
         
         if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
                               f'{model}{suffix}'):
@@ -4141,6 +4050,8 @@ class HiMaXBi:
                         f'{suffix}/diagnostic')
         fig.savefig(f'{self._working_dir_full}/results/spectra/{model}{suffix}'
                     '/spectrum.pdf')
+        fig_src.savefig(f'{self._working_dir_full}/results/spectra/{model}'
+                        f'{suffix}/spectrum_src.pdf')
         if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
                           f'{suffix}/corner_full.pdf'):
             os.remove(f'{self._working_dir_full}/results/spectra/{model}'

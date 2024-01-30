@@ -1301,23 +1301,19 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         istart_old = istart
         istart = i + 1
 
-    N1 = 0
-    N2 = 0
+    N = 0
     for k in range(len(scs1)):
-        if len(scs1[k]) > N1:
-            N1 = len(scs1[k])
+        if len(scs1[k]) > N:
+            N = len(scs1[k])
     for k in range(len(scs1)):
-        while len(scs1[k]) < N1:
+        while len(scs1[k]) < N:
             dts[k].append(0)
             scs1[k].append(0)
             fexps1[k].append(0)
             bgs1[k].append(0)
             bgrats[k].append(0)
     for k in range(len(scs2)):
-        if len(scs2[k]) > N2:
-            N2 = len(scs2[k])
-    for k in range(len(scs2)):
-        while len(scs2[k]) < N2:
+        while len(scs2[k]) < N:
             scs2[k].append(0)
             fexps2[k].append(0)
             bgs2[k].append(0)
@@ -1326,11 +1322,10 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     data['M'] = len(scs1)
     data['dt'] = np.array(dts)
     data['bg_ratio'] = np.array(bgrats)
-    data['N1'] = N1
+    data['N'] = N
     data['sc1'] = np.array(scs1)
     data['frac_exp1'] = np.array(fexps1)
     data['bg1'] = np.array(bgs1)
-    data['N2'] = N2
     data['sc2'] = np.array(scs2)
     data['frac_exp2'] = np.array(fexps2)
     data['bg2'] = np.array(bgs2)

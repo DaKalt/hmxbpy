@@ -1,6 +1,5 @@
 data {
-    int<lower=0> N1;
-    int<lower=0> N2;
+    int<lower=0> N;
     int<lower=0> M;
     array[M,N1] int<lower=0> sc1;
     array[M,N1] int<lower=0> bg1;
