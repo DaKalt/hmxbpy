@@ -428,7 +428,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
     AllData.show()
     AllModels.show()
 
-    return absorbed_F, unabsorbed_L, bkg_factors, analyser, ntransf, luminosity_chains
+    return absorbed_F, unabsorbed_L, bkg_factors, analyser, ntransf, flux
 
 def plot_corner(analyser, ntransf, log) -> Figure:
     """Make a corner plot with corner. Altered from ultranest."""
