@@ -1,14 +1,14 @@
 data {
     int<lower=0> N;
     int<lower=0> M;
-    array[M,N1] int<lower=0> sc1;
-    array[M,N1] int<lower=0> bg1;
-    array[M,N1] real<lower=0> frac_exp1;
-    array[M,N2] int<lower=0> sc2;
-    array[M,N2] int<lower=0> bg2;
-    array[M,N2] real<lower=0> frac_exp2;
-    array[M,N1] real<lower=0> dt;
-    array[M,N1] real<lower=0> bg_ratio;
+    array[M,N] int<lower=0> sc1;
+    array[M,N] int<lower=0> bg1;
+    array[M,N] real<lower=0> frac_exp1;
+    array[M,N] int<lower=0> sc2;
+    array[M,N] int<lower=0> bg2;
+    array[M,N] real<lower=0> frac_exp2;
+    array[M,N] real<lower=0> dt;
+    array[M,N] real<lower=0> bg_ratio;
 }
 parameters {
     array[M] real<lower=-3,upper=4> log_cr_sc1;
@@ -28,7 +28,7 @@ transformed parameters {
 }
 model {
     for (m in 1:M) {
-        for (n in 1:N1) {
+        for (n in 1:N) {
             if (dt[m,n] > 0) {
                 sc1[m,n] ~ poisson((sc_rate1[m] + bg_rate1[m]) * (dt[m,n]*frac_exp1[m,n]));
                 bg1[m,n] ~ poisson(bg_rate1[m] / bg_ratio[m,n] * (dt[m,n]*frac_exp1[m,n]));
@@ -36,7 +36,7 @@ model {
         }
     }
     for (m in 1:M) {
-        for (n in 1:N2) {
+        for (n in 1:N) {
             if (dt[m,n] > 0) {
                 sc1[m,n] ~ poisson((sc_rate2[m] + bg_rate2[m]) * (dt[m,n]*frac_exp2[m,n]));
                 bg1[m,n] ~ poisson(bg_rate2[m] / bg_ratio[m,n] * (dt[m,n]*frac_exp2[m,n]));
