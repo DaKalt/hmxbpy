@@ -471,7 +471,7 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
     for i_name, entry in enumerate(paramnames):
         if entry.lower().find('norm') >= 0:
             log_scale = int(np.log10(np.median(lum_chains[i_norm-1])))
-            paramnames[i_name] = 'L$_{X,%s}$ (10$^{%s}$ erg/s)' % \
+            paramnames[i_name] = 'L$_{%s}$ (10$^{%s}$ erg/s)' % \
                 (i_norm, log_scale)
             data[i_name] = lum_chains[i_norm-1] / 10**log_scale
             i_norm += 1
