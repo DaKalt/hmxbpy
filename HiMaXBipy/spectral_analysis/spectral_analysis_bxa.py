@@ -405,6 +405,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                 nH.values = 1e-5
             for nH in nHs_mod:
                 nH.values = 1e-5
+            AllModels.show()
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')[:,0]
             lums_band = [lum(np.log10(np.percentile(flux, quantiles[0])),
@@ -470,7 +471,7 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
     for i_name, entry in enumerate(paramnames):
         if entry.lower().find('norm') >= 0:
             log_scale = int(np.log10(np.median(lum_chains[i_norm-1])))
-            paramnames[i_name] = 'L$_{X,%s}$ (e%s erg s$^{-1}$)' % \
+            paramnames[i_name] = 'L$_{X,%s}$ (10$^{%s}$ erg/s)' % \
                 (i_norm, log_scale)
             data[i_name] = lum_chains[i_norm-1] / 10**log_scale
             i_norm += 1

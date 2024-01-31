@@ -4011,7 +4011,7 @@ class HiMaXBi:
         working_dir = f'{self._working_dir_full}/working'
         NH = self._NH * 1e-22
         abs_F, unabs_L, bkg_factors, analyser, ntransf, luminosity_chains = \
-            fit_bxa(abund, distance, E_ranges,
+            fit_bxa(abund, self._distance, E_ranges,
                     fit_model, NH, self._logger, prompting,
                     quantiles, src_files, fit_statistic, suffix,
                     resume, working_dir, self._Z)
