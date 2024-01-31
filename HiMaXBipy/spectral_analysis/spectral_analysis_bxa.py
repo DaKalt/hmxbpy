@@ -407,11 +407,14 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                 nH.values = 1e-5
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')[:,0]
-            lums_band = [lum(np.percentile(flux, quantiles[0]), distance),
-                         lum(np.percentile(flux, quantiles[1]), distance),
-                         lum(np.percentile(flux, quantiles[2]), distance)]
+            lums_band = [lum(np.log10(np.percentile(flux, quantiles[0])),
+                             distance),
+                         lum(np.log10(np.percentile(flux, quantiles[1])),
+                             distance),
+                         lum(np.log10(np.percentile(flux, quantiles[2])),
+                             distance)]
             lums.append(lums_band)
-            luminosity_chains.append(lum(flux, distance))
+            luminosity_chains.append(lum(np.log10(flux), distance))
             if band == E_ranges[0] and ispec == 0:
                 AllModels.show()
             for inH, nH in enumerate(nHs_froz):
@@ -465,7 +468,7 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
     data = np.array(analyser.posterior.T[:ntransf].T)
     i_norm = 1
     for i_name, entry in enumerate(paramnames):
-        if entry.lower().find('log(bkg mod f') == 0:
+        if entry.lower().find('norm') >= 0:
             paramnames[i_name] = f'Luminosity {i_norm} (erg/s)'
             data[i_name] = lum_chains[i_norm-1]
             i_norm += 1
