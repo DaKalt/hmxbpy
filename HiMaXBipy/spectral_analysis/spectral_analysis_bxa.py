@@ -423,8 +423,8 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
 
-    fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
-    fig_lum.savefig(f'{working_dir}/corner_lums.pdf')
+    #fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
+    #fig_lum.savefig(f'{working_dir}/corner_lums.pdf')
         
     # this is just to check if analyser.set_best_fit() does its job
     AllData.show()
