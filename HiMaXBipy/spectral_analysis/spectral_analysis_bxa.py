@@ -355,9 +355,8 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
             # has to be set, see https://heasarc.gsfc.nasa.gov/docs/asca/abc_backscal.html
             if groupid+1 == bkgid:
                 fac_src.values = [1, 0.1, 0.1, 0.1, 10, 10]
-                # fac_bkg.link = fac_src #ToDo: I think this is wrong,
-                # corrected below
-                fac_bkg.values = [1, -1]
+                fac_bkg.link = fac_src #this is correct, more
+                # information when fitting both at the same time
                 model = AllModels(groupNum=2*groupid+1,
                                   modName=f'bkgmod{bkgid}')
                 norm = bxa.create_jeffreys_prior_for(model, fac_src)
@@ -396,7 +395,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         for band in E_ranges:
             old_nh = []
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
-                                              f' {band[1]}')
+                                              f' {band[1]}')[:,0]
             fluxes_band = [np.percentile(flux, quantiles[0]),
                            np.percentile(flux, quantiles[1]),
                            np.percentile(flux, quantiles[2])]
@@ -407,7 +406,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
             for nH in nHs_mod:
                 nH.values = 1e-5
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
-                                              f' {band[1]}')
+                                              f' {band[1]}')[:,0]
             lums_band = [lum(np.percentile(flux, quantiles[0]), distance),
                          lum(np.percentile(flux, quantiles[1]), distance),
                          lum(np.percentile(flux, quantiles[2]), distance)]

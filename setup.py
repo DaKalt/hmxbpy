@@ -44,7 +44,7 @@ setup(
         'HiMaXBipy/json_files',
 
     ],
-    version='v1.0.276',
+    version='v1.0.277',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',
