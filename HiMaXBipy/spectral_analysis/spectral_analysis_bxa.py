@@ -423,8 +423,8 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
 
-    #fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
-    #fig_lum.savefig(f'{working_dir}/corner_lums.pdf')
+    fig_lum = plot_corner_flux(analyser, luminosity_chains, ntransf)
+    fig_lum.savefig(f'{working_dir}/corner_lums.pdf')
         
     # this is just to check if analyser.set_best_fit() does its job
     AllData.show()
@@ -465,14 +465,16 @@ def plot_corner(analyser, ntransf, log) -> Figure:
 def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
     '''Make a corner plot with fluxes instead of norms.'''
     paramnames = analyser.results['paramnames'][:ntransf]
-    data = np.array(analyser.posterior.T[:ntransf].T)
+    data = np.array(analyser.posterior.T[:ntransf])
     i_norm = 1
     for i_name, entry in enumerate(paramnames):
         if entry.lower().find('norm') >= 0:
-            paramnames[i_name] = f'Luminosity {i_norm} (erg/s)'
-            data[i_name] = lum_chains[i_norm-1]
+            log_scale = int(np.log10(np.median(lum_chains[i_norm-1])))
+            paramnames[i_name] = 'L$_{X,%s}$ (e%s erg s$^{-1}$)' % \
+                (i_norm, log_scale)
+            data[i_name] = lum_chains[i_norm-1] / 10**log_scale
             i_norm += 1
-    
+    data = data.T
     fig = corner.corner(data, labels=paramnames, show_titles=True, quiet=True)
     return fig
 
