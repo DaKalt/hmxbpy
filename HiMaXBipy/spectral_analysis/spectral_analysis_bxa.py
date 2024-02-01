@@ -161,6 +161,11 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             Plot.add = False
             Plot.background = False
             posterior_backup = analyser.posterior.copy()
+            frac_backup = AllModels(groupNum=2*igroup+1,
+                                    modName=f'bkgmod{igroup+1}')\
+                                        .constant.factor.values.copy()
+            AllModels(groupNum=2*igroup+1, modName=f'bkgmod{igroup+1}')\
+                .constant.factor.values = [0, -1, 0, 0, 10, 10]
             for i_line in range(len(analyser.posterior)):
                 analyser.posterior[i_line][ntransf+igroup] = -10
             for content in posterior_predictions_plot(analyser,
@@ -192,8 +197,10 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
                 band.line(label=label, **lineargs)
             print('here')
             AllModels.show()
+            AllModels(groupNum=2*igroup+1, modName=f'bkgmod{igroup+1}')\
+                .constant.factor.values = frac_backup.copy()
             analyser.posterior = posterior_backup.copy()
-            del posterior_backup
+            del posterior_backup, frac_backup
             analyser.set_best_fit()
             AllModels.show()
 
