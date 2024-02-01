@@ -161,7 +161,7 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             Plot.add = False
             Plot.background = False
             posterior_backup = analyser.posterior.copy()
-            for i_line in range(analyser.posterior):
+            for i_line in range(len(analyser.posterior)):
                 analyser.posterior[i_line][ntransf+igroup] = -10
             for content in posterior_predictions_plot(analyser,
                                                       plottype='data',
