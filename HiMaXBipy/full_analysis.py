@@ -4039,7 +4039,8 @@ class HiMaXBi:
                         nrows, height_ratios, width_ratios)
         format_axis_pt2(fig_src, ax_spec_src, ax_res_src, ax_res_invis_src,
                         fig_borders, rescale_F, rescale_chi, E_ranges,
-                        src_files, ncols, nrows, height_ratios, width_ratios)
+                        src_files, ncols, nrows, height_ratios, width_ratios,
+                        plot_src=True)
         
         if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
                               f'{model}{suffix}'):

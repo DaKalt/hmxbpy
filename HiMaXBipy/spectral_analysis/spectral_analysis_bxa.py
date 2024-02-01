@@ -118,8 +118,8 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             color_bkg = colors[igroup]
         else:
             color_srcbkg = colors[0]
-            color_src = colors[1]
-            color_bkg = colors[2]
+            color_src = colors[2]
+            color_bkg = colors[1]
         #src+bkg
         models = []
         bands = []
