@@ -51,7 +51,7 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
         else:
             label = f'{epoch_type}'
             color_srcbkg = colors[0]
-            color_bkg = colors[1]
+            color_bkg = colors[2]
         isource = 2*igroup + 1
         Plot.xAxis = 'keV'
         Plot('data')
@@ -119,8 +119,8 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             color_bkg = colors[igroup]
         else:
             color_srcbkg = colors[0]
-            color_src = colors[2]
-            color_bkg = colors[1]
+            color_src = colors[1]
+            color_bkg = colors[2]
         #src+bkg
         models = []
         bands = []
@@ -187,7 +187,7 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             for band, label in zip(bands, 'model prediction'):
                 if label == 'ignore':
                     continue
-                lineargs = dict(drawstyle='steps', color=color_srcbkg,
+                lineargs = dict(drawstyle='steps', color=color_src,
                                 zorder=3, linewidth=0.8,
                                 linestyle=src_linestyles[igroup])
                 shadeargs = dict(color=lineargs['color'], zorder=2)
