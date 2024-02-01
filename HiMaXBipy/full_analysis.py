@@ -4013,13 +4013,13 @@ class HiMaXBi:
 
         working_dir = f'{self._working_dir_full}/working'
         NH = self._NH * 1e-22
-        abs_F, unabs_L, bkg_factors, analyser, ntransf, luminosity_chains = \
+        abs_F, unabs_L, bkg_factors, analyser, ntransf = \
             fit_bxa(abund, self._distance, E_ranges,
                     fit_model, NH, self._logger, prompting,
                     quantiles, src_files, fit_statistic, suffix,
                     resume, working_dir, self._Z)
         self._analyser = analyser
-        self._lum_chain = luminosity_chains
+        # self._lum_chain = luminosity_chains
         if tbin_f == 'eRASS' or tbin_f == 'epoch':
             epoch_type = tbin_f
         else:
@@ -4027,12 +4027,12 @@ class HiMaXBi:
         output = plot_bxa(rebin_params, src_files, ax_spec, ax_res,
                           colors, src_markers, bkg_markers, epoch_type,
                           bkg_factors, analyser, src_linestyles,
-                          bkg_linestyle, hatches)
+                          bkg_linestyle, hatches, ntransf)
         self._output = output
         _ = plot_bxa(rebin_params, src_files, ax_spec_src, ax_res_src, colors,
                      src_markers, bkg_markers, epoch_type, bkg_factors,
                      analyser, src_linestyles, bkg_linestyle, hatches,
-                     plot_src=True)
+                     ntransf, plot_src=True)
 
         ncols = 1
         nrows = 2

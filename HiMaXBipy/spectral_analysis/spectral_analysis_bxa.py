@@ -31,7 +31,8 @@ def lum(flux, distance):
 
 def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
              src_markers, bkg_markers, epoch_type, bkg_factors, analyser,
-             src_linestyles, bkg_linestyle, hatches, plot_src=False, ):
+             src_linestyles, bkg_linestyle, hatches, ntransf,
+             plot_src=False, ):
     energies = {}
     fluxes = {}
     backgrounds = {}
@@ -159,13 +160,13 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             bands = []
             Plot.add = False
             Plot.background = False
-            fac_src = AllModels(groupNum=2*igroup+1,
-                                modName=f'bkgmod{igroup+1}').constant.factor
-            fac_src.values = [0, -1, 0, 0, 10, 10]
+            posterior_backup = analyser.posterior.copy()
+            for i_line in range(analyser.posterior):
+                analyser.posterior[i_line][ntransf+igroup] = -10
             for content in posterior_predictions_plot(analyser,
                                                       plottype='data',
-                                                    nsamples=100,
-                                                    group=2*igroup+1):
+                                                      nsamples=100,
+                                                      group=2*igroup+1):
                 xmid = content[:, 0]
                 ndata_columns = 6 if Plot.background else 4
                 ncomponents = content.shape[1]-ndata_columns
@@ -191,7 +192,10 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
                 band.line(label=label, **lineargs)
             print('here')
             AllModels.show()
+            analyser.posterior = posterior_backup.copy()
+            del posterior_backup
             analyser.set_best_fit()
+            AllModels.show()
 
         #bkg
         models = []
@@ -433,7 +437,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
     AllData.show()
     AllModels.show()
 
-    return absorbed_F, unabsorbed_L, bkg_factors, analyser, ntransf, luminosity_chains
+    return absorbed_F, unabsorbed_L, bkg_factors, analyser, ntransf
 
 def plot_corner(analyser, ntransf, log) -> Figure:
     """Make a corner plot with corner. Altered from ultranest."""
