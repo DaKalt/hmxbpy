@@ -4028,7 +4028,8 @@ class HiMaXBi:
         self._output = output
         _ = plot_bxa(rebin_params, src_files, ax_spec_src, ax_res_src, colors,
                      src_markers, bkg_markers, epoch_type, bkg_factors,
-                     analyser, src_linestyles, bkg_linestyle, hatches)
+                     analyser, src_linestyles, bkg_linestyle, hatches,
+                     plot_src=True)
 
         ncols = 1
         nrows = 2
@@ -4039,8 +4040,7 @@ class HiMaXBi:
                         nrows, height_ratios, width_ratios)
         format_axis_pt2(fig_src, ax_spec_src, ax_res_src, ax_res_invis_src,
                         fig_borders, rescale_F, rescale_chi, E_ranges,
-                        src_files, ncols, nrows, height_ratios, width_ratios,
-                        plot_src=True)
+                        src_files, ncols, nrows, height_ratios, width_ratios)
         
         if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
                               f'{model}{suffix}'):
