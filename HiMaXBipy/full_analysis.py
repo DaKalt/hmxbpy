@@ -4047,6 +4047,9 @@ class HiMaXBi:
                 mins.append(1.1 * np.max(output['src_fluxes'][key][0]
                                          + output['src_fluxes'][key][1]))
                 maxs.append(np.min(output['src_fluxes'][key][0]) / 1.2)
+            print(mins)
+            print(maxs)
+            print(output['src_fluxes'])
             min = np.min(mins)
             max = np.max(maxs)
             rescale_F = [min, max]
