@@ -48,7 +48,7 @@ from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple,\
     abb, abb_simple
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
-cmap = cm.get_cmap('Paired')
+cmap = cm.get_cmap('copper')
 color_palette = [cmap(0.1), cmap(0.0), cmap(0.5), cmap(0.4), cmap(0.3),
                  cmap(0.2), cmap(0.7), cmap(0.6), cmap(0.9), cmap(0.8)]
 pnt_palette = ['.', 'v', '^', 's', '*', '1', 'o', 'p', 'D', 'x']
@@ -377,7 +377,7 @@ class HiMaXBi:
         ----------
         correct_mol : bool, optional
             Turn on correction factor of NHI value by 1.25. See
-            Wilingale+2013, MNRAS 431, 394–404 for a discussion on this.
+            Wilingale+2013, MNRAS 431, 394-404 for a discussion on this.
             The default is False.
         '''
         if type(correct_mol) != bool:
