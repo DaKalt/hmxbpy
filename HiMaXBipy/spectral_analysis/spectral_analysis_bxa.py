@@ -189,6 +189,8 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
                 shadeargs = dict(**shadeargs, hatch=hatches[igroup])
                 band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
                 band.line(label=label, **lineargs)
+            print('here')
+            AllModels.show()
             analyser.set_best_fit()
 
         #bkg

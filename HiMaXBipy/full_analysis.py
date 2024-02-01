@@ -48,9 +48,9 @@ from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple,\
     abb, abb_simple
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
-cmap = cm.get_cmap('copper')
-color_palette = [cmap(0.1), cmap(0.0), cmap(0.5), cmap(0.4), cmap(0.3),
-                 cmap(0.2), cmap(0.7), cmap(0.6), cmap(0.9), cmap(0.8)]
+cmap = cm.get_cmap('cubehelix')
+color_palette = [cmap(0.0), cmap(0.5), cmap(0.2), cmap(0.6), cmap(0.3),
+                 cmap(0.7), cmap(0.4), cmap(0.8), cmap(0.5), cmap(0.9)]
 pnt_palette = ['.', 'v', '^', 's', '*', '1', 'o', 'p', 'D', 'x']
 hatch_palette = ['//', '++', 'xx', 'oo', '..', '**', '\\\\', '||', '--', 'OO']
 
