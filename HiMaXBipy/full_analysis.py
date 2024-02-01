@@ -3571,7 +3571,7 @@ class HiMaXBi:
                               log_suffix='.log', Z=-1, distance=-1,
                               model='apl', NH=-1., rebin=True,
                               rebin_params=[5, 20], rescale=False,
-                              rescale_F=[1e-6, 1.], rescale_chi=[-5., 5.],
+                              rescale_F=[], rescale_chi=[-5., 5.],
                               fit_statistic='cstat', colors=[], markers=[],
                               title='', TM_list=[0], return_array=False,
                               abund='wilm', tbins=[[]],
@@ -3641,7 +3641,8 @@ class HiMaXBi:
             default is False.
         rescale_F :  float array-like (2,), optional
             Sets rescale parameters for top plot during plotting. The
-            default is [1e-6, 1.].
+            default is [], where the plot is used for finding the
+            borders.
         rescale_chi :  float array-like (2,), optional
             Sets rescale parameters for bottom plot during plotting. The
             default is [-5., 5.].
@@ -3813,14 +3814,15 @@ class HiMaXBi:
         if type(rescale_F) != list and type(rescale_F) != np.ndarray:
             raise Exception('rescale_F must be array-like')
         else:
-            for entry in rescale_F:
-                if type(entry) != float:
-                    raise Exception(
-                        'The entries of rescale_F need to be given as float.')
-                if entry <= 0:
-                    raise Exception('The entries of rescale_F need to be >0.')
-            if len(rescale_F) != 2:
-                raise Exception('rescale_F needs exactly 2 entries.')
+            if not len(rescale_F) == 0:
+                for entry in rescale_F:
+                    if type(entry) != float:
+                        raise Exception(
+                            'The entries of rescale_F need to be given as float.')
+                    if entry <= 0:
+                        raise Exception('The entries of rescale_F need to be >0.')
+                if len(rescale_F) != 2:
+                    raise Exception('rescale_F needs exactly 2 entries.')
         if type(rescale_chi) != list and type(rescale_chi) != np.ndarray:
             raise Exception('rescale_chi must be array-like')
         else:
@@ -4038,6 +4040,16 @@ class HiMaXBi:
         nrows = 2
         width_ratios = [1]
         height_ratios = [5, 3]
+        if rescale_F == []:
+            mins = []
+            maxs = []
+            for key in output['src_fluxes'].keys():
+                mins.append(1.1 * np.max(output['src_fluxes'][key][0]
+                                         + output['src_fluxes'][key][1]))
+                maxs.append(np.min(output['src_fluxes'][key][0]) / 1.2)
+            min = np.min(mins)
+            max = np.max(maxs)
+            rescale_F = [min, max]
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_ranges, src_files, ncols,
                         nrows, height_ratios, width_ratios)
