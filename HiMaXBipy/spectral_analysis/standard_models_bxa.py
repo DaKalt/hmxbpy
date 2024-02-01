@@ -28,7 +28,8 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
     gamma = srcmod.powerlaw.PhoIndex
     gamma.values = [1, 0.1, -2, -2, 4, 4]
     p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
-    p_gamma['name'] = '$\alpha$'
+    p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
+    # uses alpha
     transformations.append(p_gamma)
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
@@ -55,7 +56,7 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
     gamma = srcmod.powerlaw.PhoIndex
     gamma.values = [1, 0.1, -2, -2, 4, 4]
     p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
-    p_gamma['name'] = '$\alpha$'
+    p_gamma['name'] = '$\\alpha$'
     transformations.append(p_gamma)
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
