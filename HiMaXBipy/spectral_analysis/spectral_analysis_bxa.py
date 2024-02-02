@@ -473,7 +473,7 @@ def plot_corner(analyser, ntransf, log) -> Figure:
     # logging.warning = lambda *args, **kwargs: None
     fig = corner.corner(data[mask,:], weights=weights[mask],
                         labels=paramnames, show_titles=True, quiet=True,
-                        title_kwargs={'fontsize': 14})
+                        title_kwargs={'fontsize': 12})
     # logging.warning = oldfunc
     return fig
 
@@ -491,7 +491,7 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
             i_norm += 1
     data = data.T
     fig = corner.corner(data, labels=paramnames, show_titles=True, quiet=True,
-                        title_kwargs={'fontsize': 14})
+                        title_kwargs={'fontsize': 12})
     return fig
 
 def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
