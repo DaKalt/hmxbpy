@@ -472,7 +472,8 @@ def plot_corner(analyser, ntransf, log) -> Figure:
     # oldfunc = logging.warning
     # logging.warning = lambda *args, **kwargs: None
     fig = corner.corner(data[mask,:], weights=weights[mask],
-                        labels=paramnames, show_titles=True, quiet=True)
+                        labels=paramnames, show_titles=True, quiet=True,
+                        title_kwargs={'fontsize': 14})
     # logging.warning = oldfunc
     return fig
 
@@ -489,12 +490,13 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
             data[i_name] = lum_chains[i_norm-1] / 10**log_scale
             i_norm += 1
     data = data.T
-    fig = corner.corner(data, labels=paramnames, show_titles=True, quiet=True)
+    fig = corner.corner(data, labels=paramnames, show_titles=True, quiet=True,
+                        title_kwargs={'fontsize': 14})
     return fig
 
 def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
               E_ranges):
-    tex_file.write('\\begin{{tabular}}{{%s}}\n' % ('c' * (1+len(tex_info)
+    tex_file.write('\\begin{tabular}{%s}\n' % ('c' * (1+len(tex_info)
                                                           +2*len(E_ranges))))
     tex_file.write('\\hline\\hline\n')
     line_1 = ''
@@ -504,11 +506,11 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
     for i in range(len(tex_info)):
         line_2 += tex_info[i][1]
     for entry in E_ranges:
-        line_1 += (' & \\mbox{{F$_{{\\rm x; %s-%s}}$}} '
-                   '& \\mbox{{L$_{{\\rm x; %s-%s}}$}}' % (entry[0], entry[1],
+        line_1 += (' & \\mbox{F$_{\\rm x; %s-%s}$} '
+                   '& \\mbox{L$_{\\rm x; %s-%s}$}' % (entry[0], entry[1],
                                                           entry[0], entry[1]))
-        line_2 += (' & $\\times$erg cm$^{{-2}}$s$^{{-1}}$ & '
-                   '$\\times$erg s$^{{-1}}$')
+        line_2 += (' & $\\times$erg cm$^{-2}$s$^{-1}$ & '
+                   '$\\times$erg s$^{-1}$')
     tex_file.write(f'Part & {line_1} \\\\ \n')
     tex_file.write(f'-- & {line_2} \\\\ \n')
     tex_file.write('\\hline\n')
@@ -551,6 +553,7 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
         line += '\\\\ \n'
         tex_file.write(line)
     tex_file.write('%s\\\\ \n' % ('& '*(len(tex_info) + 2*len(E_ranges))))
+    tex_file.write('\\end{tabular}\n')
 
 def setup_axis(Emin, Emax, figsize):
     fig = plt.figure(figsize=(figsize[0], figsize[1]))

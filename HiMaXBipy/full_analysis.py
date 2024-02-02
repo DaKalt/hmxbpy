@@ -2730,7 +2730,8 @@ class HiMaXBi:
                 #     time_rel=time_rel, fexp_cut=float(fracexp),
                 #     alpha_bg=alpha_bg, yscale=yscale)
             elif mode == 'mincounts':
-                pxmin, pxmax, pymin, pymax, time_rel = plot_hr_mincounts_broken_bayes(
+                pxmin, pxmax, pymin, pymax, time_rel = \
+                    plot_hr_mincounts_broken_bayes(
                     hdulist=hdulist, axs=axs, log=self._logger,
                     mjdref=self._mjdref, xflag=xflag,
                     mincounts_full= mincounts_full,
@@ -3581,7 +3582,8 @@ class HiMaXBi:
                               src_markers=[], bkg_markers=[],
                               src_linestyles=[], bkg_linestyle='--',
                               set_hatch=False, fig_borders = [],
-                              spec_files = []):
+                              spec_files = [], label_style='serif',
+                              label_size=16):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3741,11 +3743,17 @@ class HiMaXBi:
             model predictions for different spectra. The default is
             False.
         fig_borders :  float array-like (4,), optional
-            Sets figure borders for matplotlib.pyplot.figure object. The order
-             is top, bottom, left, right. The
+            Sets figure borders for matplotlib.pyplot.figure object.
+            The order is top, bottom, left, right. The
             default is [0.97, 0.07, 0.14, 0.97].
         spec_files : array-like (n,) str, optional
-            File names for spectrum data to be analysed. The default is [].
+            File names for spectrum data to be analysed. The default is
+            [].
+        label_style : str, optional
+            Sets fontstyle of plots. Any possible style available for
+            matplotlib.pyplot.rc. The default is 'serif'.
+        label_size : float or int, optional
+            Sets fontsize. The default is 12.
         '''
         fit_model = None
         self._logger.info('Running plot_spectra.')
@@ -3952,6 +3960,10 @@ class HiMaXBi:
                     raise Exception('The entries of fig_borders must be '
                                     'between 0 and 1.')
 
+        user = getpass.getuser()
+        plt.rc('text', usetex=True)
+        plt.rc('font', family=label_style, size=label_size) #ToDo: add everywhere relevant
+
         tex_info = []
         if model == 'apl':
             fit_model = apl
@@ -3978,8 +3990,9 @@ class HiMaXBi:
         os.environ['EROBACK'] = f'{self._json_dir_}/erosita_merged_1024.json'
 
         # these stay hardcoded but need to be adjusted
+        # top, bottom, left, right
         if len(fig_borders) == 0:
-            fig_borders = [0.97, 0.07, 0.14, 0.97]
+            fig_borders = [0.98, 0.09, 0.14, 0.97]
         figsize = [6, 8]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
