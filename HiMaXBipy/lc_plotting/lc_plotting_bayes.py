@@ -558,7 +558,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                        quantiles[1], axis=0)
             for ax in axs:
                 ax.stairs(sc_rate_bb, t_blocked, color=color, zorder=2,
-                          linestyle='--')
+                          linestyle='--', baseline = None)
         elif bbmode == 'sum':
             err = np.max(sc_bg_rate_err, axis=0)
             err = np.min([sc_bg_rate, err], axis=0)
@@ -611,7 +611,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                           quantiles[1], axis=0)
             for ax in axs:
                 ax.stairs(sc_bg_rate_bb, t_blocked, color=color, zorder=2,
-                          linestyle='--')
+                          linestyle='--', baseline = None)
         if bbmode == 'both':
             err = np.max(bg_rate_err, axis=0)
             err = np.min([bg_rate, err], axis=0)
@@ -664,7 +664,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                        quantiles[1], axis=0)
             for ax in axs:
                 ax.stairs(bg_rate_bb, t_blocked, color=color, zorder=2,
-                          linestyle='--')
+                          linestyle='--', baseline = None)
 
     logger_stan.handlers = []
 
@@ -1060,7 +1060,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                        quantiles[1], axis=0)
             for ax in axs:
                 ax.stairs(sc_rate_bb, t_blocked, color=color, zorder=2,
-                          linestyle='--')
+                          linestyle='--', baseline = None)
         elif bbmode == 'sum':
             err = np.max(sc_bg_rate_err, axis=0)
             err = np.min([sc_bg_rate, err], axis=0)
@@ -1113,7 +1113,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                           quantiles[1], axis=0)
             for ax in axs:
                 ax.stairs(sc_bg_rate_bb, t_blocked, color=color, zorder=2,
-                          linestyle='--')
+                          linestyle='--', baseline = None)
         if bbmode == 'both':
             err = np.max(bg_rate_err, axis=0)
             err = np.min([bg_rate, err], axis=0)
@@ -1166,7 +1166,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                        quantiles[1], axis=0)
             for ax in axs:
                 ax.stairs(bg_rate_bb, t_blocked, color=color, zorder=2,
-                          linestyle='--')
+                          linestyle='--', baseline = None)
 
     logger_stan.handlers = []
 
