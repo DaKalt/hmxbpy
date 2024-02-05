@@ -36,7 +36,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-20, 1e-20, 1e20, 1e20]
         p_norm = bxa.create_jeffreys_prior_for(model, norm)
-        p_norm['name'] = f'log(pl norm{groupid+1})'
+        p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
@@ -63,7 +63,7 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-20, 1e-20, 1e20, 1e20]
         p_norm = bxa.create_jeffreys_prior_for(model, norm)
-        p_norm['name'] = f'log(pl norm{groupid+1})'
+        p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
@@ -89,7 +89,7 @@ def abb_simple(Model, AllModels, bxa, galnh, Z, n):
         norm = model.bbodyrad.norm
         norm.values = [1e-4, 0.1, 1e-20, 1e-20, 1e20, 1e20]
         p_norm = bxa.create_jeffreys_prior_for(model, norm)
-        p_norm['name'] = f'log(bb norm{groupid+1})'
+        p_norm['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.bbodyrad.norm.values = [0, -1]  # this needs to be tested
@@ -135,7 +135,7 @@ def abb(Model, AllModels, bxa, galnh, Z, n):
         norm = model.bbodyrad.norm
         norm.values = [1e-4, 0.1, 1e-20, 1e-20, 1e20, 1e20]
         p_norm = bxa.create_jeffreys_prior_for(model, norm)
-        p_norm['name'] = f'log(bb norm{groupid+1})'
+        p_norm['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.bbodyrad.norm.values = [0, -1]  # this needs to be tested

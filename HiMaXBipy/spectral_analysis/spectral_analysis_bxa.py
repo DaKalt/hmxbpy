@@ -583,9 +583,9 @@ def setup_axis(Emin, Emax, figsize):
         ax.set_xscale('log')
 
         ax.grid(which='major', axis='both', zorder=-1,
-                color='#111111', linewidth=0.8)
+                color='#111111', linewidth=0.4)
         ax.grid(which='minor', axis='both', zorder=-1,
-                color='#222222', linewidth=0.5, linestyle=':')
+                color='#222222', linewidth=0.25, linestyle=':')
 
         ax.tick_params(axis='x', which='major', direction='in',
                         top='on', pad=9, length=5, width=1.5)  # , labelsize=10)
