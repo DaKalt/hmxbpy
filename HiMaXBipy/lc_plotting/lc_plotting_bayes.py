@@ -664,7 +664,8 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                        quantiles[1], axis=0)
             for ax in axs:
                 ax.stairs(bg_rate_bb, t_blocked, color=color, zorder=2,
-                          linestyle='--', baseline = None)
+                          linestyle='--', baseline = None,
+                          alpha=alpha_bg)
 
     logger_stan.handlers = []
 
@@ -1166,7 +1167,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                        quantiles[1], axis=0)
             for ax in axs:
                 ax.stairs(bg_rate_bb, t_blocked, color=color, zorder=2,
-                          linestyle='--', baseline = None)
+                          linestyle='--', baseline = None,
+                          alpha=alpha_bg)
 
     logger_stan.handlers = []
 
