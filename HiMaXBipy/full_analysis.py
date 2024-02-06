@@ -4410,7 +4410,7 @@ class HiMaXBi:
 
     def create_RGB(self, fname='RGB', time=[], red = [0.2, 1.0],
                    green = [1.0, 2.0], blue = [2.0, 4.5], smoothing = 10,
-                   figsize = 8, label_style = 'serif', label_size = 16,
+                   figsize = 6, label_style = 'serif', label_size = 16,
                    src_color = 'white', bkg_color = 'cyan',
                    src_region = 'src.reg', bkg_region = 'bkg.reg',
                    fig_borders = [0.968, 0.116, 0.151, 0.970],
@@ -4420,6 +4420,13 @@ class HiMaXBi:
                    non_linearity = 10., size_factor = 1.2):
         
 
+        if not self._LC_extracted and not self._debugging:
+            self._extract_lc()
+        if self._debugging:
+            self._LC_extracted = True
+            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._eRASS_vs_epoch()
+            
         filename = (f'{self._working_dir}/logfiles/rgb/'
                     f'{fname}.log')
         logstate = setup_logfile(self._logger, filename)
