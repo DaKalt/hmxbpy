@@ -42,9 +42,10 @@ setup(
         'HiMaXBipy/tex_style',
         'HiMaXBipy/bxa_models',
         'HiMaXBipy/json_files',
+        'HiMaXBipy/rgb',
 
     ],
-    version='v1.0.302',
+    version='v1.0.303',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',
@@ -65,5 +66,6 @@ setup(
         'bxa>=4.0.7',
         'cmdstanpy>=1.1.0',
         'corner>=2.2.1',
+        'pyregion>=2.2.0',
     ],
 )

@@ -38,8 +38,10 @@ from HiMaXBipy.io.logging import setup_logfile, setup_logger, set_loglevel
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
     plot_lc_mincounts_broken_new, format_axis_broken_new, format_axis_hr
-from HiMaXBipy.lc_plotting.lc_plotting_bayes import plot_lc_eROday_broken_bayes,\
-    plot_lc_mincounts_broken_bayes, plot_hr_mincounts_broken_bayes
+from HiMaXBipy.lc_plotting.lc_plotting_bayes import \
+    plot_lc_eROday_broken_bayes, plot_lc_mincounts_broken_bayes, \
+    plot_hr_mincounts_broken_bayes
+from HiMaXBipy.rgb.rgb_tasks import plot_rgb
 from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
@@ -138,7 +140,7 @@ class HiMaXBi:
             if not os.path.exists(self._working_dir_full + subdir):
                 os.mkdir(self._working_dir_full + subdir)
         for subdir in ['/results', '/logfiles']:
-            for subsubdir in ['/lightcurves', '/spectra']:
+            for subsubdir in ['/lightcurves', '/spectra', '/rgb']:
                 if not os.path.exists(self._working_dir_full + subdir
                                       + subsubdir):
                     os.mkdir(self._working_dir_full + subdir + subsubdir)
@@ -709,8 +711,7 @@ class HiMaXBi:
         # iterate on the stdout line by line
         if not logname == '':
             filename = (f'{self._working_dir}/logfiles/lightcurves/'
-                        f'{logname}_{bin_e[0]}keV_{bin_e[1]}'
-                        'keV.log')
+                        f'{logname}.log')
             logstate = setup_logfile(self._logger, filename)
             for line in process.stdout.readlines():
                 # to fix the weird b'something' format
@@ -1870,7 +1871,7 @@ class HiMaXBi:
                              ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
                              tilt=45, diag_color="k", short_time=True,
                              fig_borders=[],
-                             bbp0=0.01, bbmode='both', yscale='linear'):
+                             bbp0=0.01, bbmode='both', yscale='log'):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
 
@@ -2376,7 +2377,7 @@ class HiMaXBi:
                              ticknumber_x=3, E_bin_full = [], E_bins=[],
                              lc_binning=-1, d=12, tilt=45, diag_color="k",
                              short_time=True, fig_borders=[], bbp0=0.01,
-                             bbmode='both', yscale='linear'):
+                             bbmode='both', yscale='log'):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
 
@@ -4407,6 +4408,94 @@ class HiMaXBi:
         self._LC_extracted = False
         self._debugging = False
 
+    def create_RGB(self, fname='RGB', time=[], red = [0.2, 1.0],
+                   green = [1.0, 2.0], blue = [2.0, 4.5], smoothing = 10,
+                   figsize = 8, label_style = 'serif', label_size = 16,
+                   src_color = 'white', bkg_color = 'cyan',
+                   src_region = 'src.reg', bkg_region = 'bkg.reg',
+                   fig_borders = [0.968, 0.116, 0.151, 0.970],
+                   red_lims = [1. * 10 ** -5, 50. * 10 ** -5],
+                   green_lims = [1. * 10 ** -5, 50. * 10 ** -5],
+                   blue_lims = [2. * 10 ** -5, 20. * 10 ** -5],
+                   non_linearity = 10., size_factor = 1.2):
+        
+
+        filename = (f'{self._working_dir}/logfiles/rgb/'
+                    f'{fname}.log')
+        logstate = setup_logfile(self._logger, filename)
+        os.chdir(self._working_dir_full + '/working/')
+
+        # select events
+        if time == []:
+            if self._obs_periods[0][0] < self._ero_starttimes[0]:
+                start = self._obs_periods[0][0]
+                name = 'eRASS01'
+            else:
+                name = 'eRASS1'
+                start = self._ero_starttimes[0]
+            stop = self._ero_starttimes[1]
+        else:
+            start = time[0]
+            stop = time[1]
+            name = 'custom_period'
+        start = ((start - self._mjdref) * 24. * 3600.)
+        stop = ((stop - self._mjdref) * 24. * 3600.)
+        replacements = [['@esass_location', self._esass],
+                        ['@infiles', self._filelist],
+                        ['@outfile',
+                        f'./{name}_events.fits'],
+                        ['@start',
+                        f'{start}'],
+                        ['@stop', f'{stop}']]
+        sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
+        sh_file = self._replace_in_sh(sh_file, replacements)
+        old_environ = os.environ.copy()
+        process = subprocess.Popen(
+            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()  # Wait for process to complete.
+        os.environ = old_environ
+        for line in process.stdout.readlines():
+            # to fix weird b'something' format
+            self._logger.debug(str(line)[2:-3] + '\n')
+        
+        # create RGB image files
+        replacements = [['@esass_location', self._esass],
+                        ['@RA0', self._RA],
+                        ['@Dec0', self._Dec],
+                        ['@r1', red[0]],
+                        ['@r2', red[1]],
+                        ['@g1', green[0]],
+                        ['@g2', green[1]],
+                        ['@b1', blue[0]],
+                        ['@b2', blue[1]],
+                        ['@eventfile',f'./{name}_events'],
+                        ['@smoothing', smoothing]]
+        sh_file = self._working_dir_full + '/working/create_rgb_images.sh'
+        sh_file = self._replace_in_sh(sh_file, replacements)
+        old_environ = os.environ.copy()
+        process = subprocess.Popen(
+            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()  # Wait for process to complete.
+        os.environ = old_environ
+        for line in process.stdout.readlines():
+            # to fix weird b'something' format
+            self._logger.debug(str(line)[2:-3] + '\n')
+        
+        # plot RGB
+        r_file = (f'rima_{red[0]}-{red[1]}_{name}_events_020_smooth'
+                  f'{smoothing}.fits')
+        g_file = (f'rima_{green[0]}-{green[1]}_{name}_events_020_smooth'
+                  f'{smoothing}.fits')
+        b_file = (f'rima_{blue[0]}-{blue[1]}_{name}_events_020_smooth'
+                  f'{smoothing}.fits')
+        fig = plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
+                       src_region, bkg_region, fig_borders, red_lims,
+                       green_lims, blue_lims, non_linearity, size_factor,
+                       r_file, g_file, b_file)
+        fig.savefig(f'{self._working_dir}/results/rgb/{fname}.pdf')
+
+        self._logger.handlers = logstate
+
     def run_standard(self):
         '''
         Returns
@@ -4421,3 +4510,25 @@ class HiMaXBi:
         self.plot_lc_broken()
         # self.plot_spectra()
         self.plot_lc_bayes_broken()
+
+
+
+# RA0=@RA0
+# DE0=@Dec0
+
+# r1=@r1
+# r2=@r2
+# g1=@g1
+# g2=@g2
+# b1=@b1
+# b2=@b2
+
+# ener="${r1}-${r2}"
+# eneg="${g1}-${g2}"
+# eneb="${b1}-${b2}"
+# enet="${r1}-${b2}"
+
+# eventfile=@eventfile
+
+# smoothing=@smoothing
+# smooth="smooth${smoothing}"

@@ -23,7 +23,7 @@ except ValueError:
 def plot_lc_eROday_broken_bayes_old(hdulist, axs, log, mjdref, xflag,
                                     color, obs_periods, short_time, stan_model,
                                     quantiles, time_rel=0, fexp_cut=0.15,
-                                    alpha_bg=0.5):
+                                    alpha_bg=0.3):
     '''
     Lightcurve rebinned to eROdays with countrates optained with Bayesian fit
     assuming Poissionian distribution for counts and log
@@ -196,7 +196,7 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, log, mjdref, xflag,
 def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                 color, obs_periods, short_time, stan_model,
                                 quantiles, time_rel=0, fexp_cut=0.15,
-                                alpha_bg=0.5, bblocks=False, bbp0=0.01,
+                                alpha_bg=0.3, bblocks=False, bbp0=0.01,
                                 bbmode='both', yscale='linear'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
@@ -498,7 +498,10 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
         pymin = ymin - (ymax-ymin)*0.05
         pymax = ymax + (ymax-ymin)*0.05
     elif yscale == 'log':
-        ymin = min([min(sc_rate_lower), min(bg_rate_lower)])
+        if max(bg_rate_lower) > min(sc_rate_lower) * 1e-1:
+            ymin = min([min(sc_rate_lower), min(bg_rate_lower)])
+        else:
+            ymin = min(sc_rate_lower)
         pymin = ymin / ((ymax/ymin) ** 0.05)
         pymax = ymax * ((ymax/ymin) ** 0.05)
     else:
@@ -676,7 +679,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                    mincounts, color, obs_periods,
                                    short_time, stan_model, quantiles,
                                    time_rel=0, fexp_cut=0.15,
-                                   alpha_bg=0.5, bblocks=False, bbp0=0.01,
+                                   alpha_bg=0.3, bblocks=False, bbp0=0.01,
                                    bbmode='both', yscale='linear'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
@@ -1001,7 +1004,10 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         pymin = ymin - (ymax-ymin)*0.05
         pymax = ymax + (ymax-ymin)*0.05
     elif yscale == 'log':
-        ymin = min([min(sc_rate_lower), min(bg_rate_lower)])
+        if max(bg_rate_lower) > min(sc_rate_lower) * 1e-1:
+            ymin = min([min(sc_rate_lower), min(bg_rate_lower)])
+        else:
+            ymin = min(sc_rate_lower)
         pymin = ymin / ((ymax/ymin) ** 0.05)
         pymax = ymax * ((ymax/ymin) ** 0.05)
     else:
@@ -1178,7 +1184,7 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                    mincounts_full, mincounts_ind, color,
                                    obs_periods, short_time, stan_model,
                                    quantiles, time_rel=0, fexp_cut=0.15,
-                                   alpha_bg=0.5, bblocks=False, bbp0=0.01,
+                                   alpha_bg=0.3, bblocks=False, bbp0=0.01,
                                    bbmode='both', yscale='linear'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
@@ -1546,8 +1552,14 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                  ymax2 + (ymax2-ymin)*0.05,
                  1]
     elif yscale == 'log':
-        ymin1 = min([min(sc_rate_lower1), min(bg_rate_lower1)])
-        ymin2 = min([min(sc_rate_lower2), min(bg_rate_lower2)])
+        if max(bg_rate_lower1) > min(sc_rate_lower1) * 1e-1:
+            ymin1 = min([min(sc_rate_lower1), min(bg_rate_lower1)])
+        else:
+            ymin1 = min(sc_rate_lower1)
+        if max(bg_rate_lower2) > min(sc_rate_lower2) * 1e-1:
+            ymin2 = min([min(sc_rate_lower2), min(bg_rate_lower2)])
+        else:
+            ymin2 = min(sc_rate_lower2)
         pymin = [ymin1 / ((ymax1/ymin1) ** 0.05),
                  ymin2 / ((ymax2/ymin2) ** 0.05),
                  -1]
