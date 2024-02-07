@@ -4503,6 +4503,8 @@ class HiMaXBi:
                     f'{smoothing}.fits')
             b_file = (f'rima_{blue[0]}-{blue[1]}_{name}_events_020_smooth'
                     f'{smoothing}.fits')
+        src_region = f'{self._working_dir_full}/{src_region}'
+        bkg_region = f'{self._working_dir_full}/{bkg_region}'
         fig = plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
                        src_region, bkg_region, fig_borders, red_lims,
                        green_lims, blue_lims, non_linearity, size_factor,
