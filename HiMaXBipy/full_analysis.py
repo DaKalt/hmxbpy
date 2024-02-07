@@ -55,6 +55,12 @@ color_palette = [cmap(0.0), cmap(0.5), cmap(0.2), cmap(0.6), cmap(0.3),
                  cmap(0.7), cmap(0.4), cmap(0.8), cmap(0.5), cmap(0.9)]
 pnt_palette = ['.', 'v', '^', 's', '*', '1', 'o', 'p', 'D', 'x']
 hatch_palette = ['//', '++', 'xx', 'oo', '..', '**', '\\\\', '||', '--', 'OO']
+r_eRASS01 = ('/data40s/galaxy/eROSITA/LMC/eRASS1/rima_0.2-1.0_em01_020_'
+             'EventList_c020_smooth10.fits')
+g_eRASS01 = ('/data40s/galaxy/eROSITA/LMC/eRASS1/rima_1.0-2.0_em01_020_'
+             'EventList_c020_smooth10.fits')
+b_eRASS01 = ('/data40s/galaxy/eROSITA/LMC/eRASS1/rima_2.0-4.5_em01_020_'
+             'EventList_c020_smooth10.fits')
 
 # Checking heasoft/xspec version, since it does not have proper versioning
 try:
@@ -4417,84 +4423,86 @@ class HiMaXBi:
                    red_lims = [1. * 10 ** -5, 50. * 10 ** -5],
                    green_lims = [1. * 10 ** -5, 50. * 10 ** -5],
                    blue_lims = [2. * 10 ** -5, 20. * 10 ** -5],
-                   non_linearity = 10., size_factor = 1.2):
+                   non_linearity = 10., size_factor = 1.2,
+                   r_file = r_eRASS01, g_file = g_eRASS01,
+                   b_file = b_eRASS01):
         
 
-        if not self._LC_extracted and not self._debugging:
-            self._extract_lc()
-        if self._debugging:
-            self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
-            self._eRASS_vs_epoch()
-            
         filename = (f'{self._working_dir}/logfiles/rgb/'
                     f'{fname}.log')
         logstate = setup_logfile(self._logger, filename)
         os.chdir(self._working_dir_full + '/working/')
+        if r_file == '' or g_file == '' or b_file == '':
+            if not self._LC_extracted and not self._debugging:
+                self._extract_lc()
+            if self._debugging:
+                self._LC_extracted = True
+                self._find_obs_periods(60 * 60 * 24 * 30)
+                self._eRASS_vs_epoch()
 
-        # select events
-        if time == []:
-            if self._obs_periods[0][0] < self._ero_starttimes[0]:
-                start = self._obs_periods[0][0]
-                name = 'eRASS01'
+            # select events
+            if time == []:
+                if self._obs_periods[0][0] < self._ero_starttimes[0]:
+                    start = self._obs_periods[0][0]
+                    name = 'eRASS01'
+                else:
+                    name = 'eRASS1'
+                    start = self._ero_starttimes[0]
+                stop = self._ero_starttimes[1]
             else:
-                name = 'eRASS1'
-                start = self._ero_starttimes[0]
-            stop = self._ero_starttimes[1]
-        else:
-            start = time[0]
-            stop = time[1]
-            name = 'custom_period'
-        start = ((start - self._mjdref) * 24. * 3600.)
-        stop = ((stop - self._mjdref) * 24. * 3600.)
-        replacements = [['@esass_location', self._esass],
-                        ['@infiles', self._filelist],
-                        ['@outfile',
-                        f'./{name}_events.fits'],
-                        ['@start',
-                        f'{start}'],
-                        ['@stop', f'{stop}']]
-        sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
-        sh_file = self._replace_in_sh(sh_file, replacements)
-        old_environ = os.environ.copy()
-        process = subprocess.Popen(
-            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()  # Wait for process to complete.
-        os.environ = old_environ
-        for line in process.stdout.readlines():
-            # to fix weird b'something' format
-            self._logger.debug(str(line)[2:-3] + '\n')
-        
-        # create RGB image files
-        replacements = [['@esass_location', self._esass],
-                        ['@RA0', self._RA],
-                        ['@Dec0', self._Dec],
-                        ['@r1', red[0]],
-                        ['@r2', red[1]],
-                        ['@g1', green[0]],
-                        ['@g2', green[1]],
-                        ['@b1', blue[0]],
-                        ['@b2', blue[1]],
-                        ['@eventfile',f'./{name}_events'],
-                        ['@smoothing', smoothing]]
-        sh_file = self._working_dir_full + '/working/create_rgb_images.sh'
-        sh_file = self._replace_in_sh(sh_file, replacements)
-        old_environ = os.environ.copy()
-        process = subprocess.Popen(
-            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()  # Wait for process to complete.
-        os.environ = old_environ
-        for line in process.stdout.readlines():
-            # to fix weird b'something' format
-            self._logger.debug(str(line)[2:-3] + '\n')
-        
-        # plot RGB
-        r_file = (f'rima_{red[0]}-{red[1]}_{name}_events_020_smooth'
-                  f'{smoothing}.fits')
-        g_file = (f'rima_{green[0]}-{green[1]}_{name}_events_020_smooth'
-                  f'{smoothing}.fits')
-        b_file = (f'rima_{blue[0]}-{blue[1]}_{name}_events_020_smooth'
-                  f'{smoothing}.fits')
+                start = time[0]
+                stop = time[1]
+                name = 'custom_period'
+            start = ((start - self._mjdref) * 24. * 3600.)
+            stop = ((stop - self._mjdref) * 24. * 3600.)
+            replacements = [['@esass_location', self._esass],
+                            ['@infiles', self._filelist],
+                            ['@outfile',
+                            f'./{name}_events.fits'],
+                            ['@start',
+                            f'{start}'],
+                            ['@stop', f'{stop}']]
+            sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
+            sh_file = self._replace_in_sh(sh_file, replacements)
+            old_environ = os.environ.copy()
+            process = subprocess.Popen(
+                [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
+            os.environ = old_environ
+            for line in process.stdout.readlines():
+                # to fix weird b'something' format
+                self._logger.debug(str(line)[2:-3] + '\n')
+            
+            # create RGB image files
+            replacements = [['@esass_location', self._esass],
+                            ['@RA0', self._RA],
+                            ['@Dec0', self._Dec],
+                            ['@r1', red[0]],
+                            ['@r2', red[1]],
+                            ['@g1', green[0]],
+                            ['@g2', green[1]],
+                            ['@b1', blue[0]],
+                            ['@b2', blue[1]],
+                            ['@eventfile',f'{name}_events'],
+                            ['@smoothing', smoothing]]
+            sh_file = self._working_dir_full + '/working/create_rgb_images.sh'
+            sh_file = self._replace_in_sh(sh_file, replacements)
+            old_environ = os.environ.copy()
+            process = subprocess.Popen(
+                [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
+            os.environ = old_environ
+            for line in process.stdout.readlines():
+                # to fix weird b'something' format
+                self._logger.debug(str(line)[2:-3] + '\n')
+            
+            # plot RGB
+            r_file = (f'rima_{red[0]}-{red[1]}_{name}_events_020_smooth'
+                    f'{smoothing}.fits')
+            g_file = (f'rima_{green[0]}-{green[1]}_{name}_events_020_smooth'
+                    f'{smoothing}.fits')
+            b_file = (f'rima_{blue[0]}-{blue[1]}_{name}_events_020_smooth'
+                    f'{smoothing}.fits')
         fig = plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
                        src_region, bkg_region, fig_borders, red_lims,
                        green_lims, blue_lims, non_linearity, size_factor,
@@ -4518,24 +4526,3 @@ class HiMaXBi:
         # self.plot_spectra()
         self.plot_lc_bayes_broken()
 
-
-
-# RA0=@RA0
-# DE0=@Dec0
-
-# r1=@r1
-# r2=@r2
-# g1=@g1
-# g2=@g2
-# b1=@b1
-# b2=@b2
-
-# ener="${r1}-${r2}"
-# eneg="${g1}-${g2}"
-# eneb="${b1}-${b2}"
-# enet="${r1}-${b2}"
-
-# eventfile=@eventfile
-
-# smoothing=@smoothing
-# smooth="smooth${smoothing}"
