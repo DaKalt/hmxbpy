@@ -27,11 +27,11 @@ def plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
     wcs = WCS(header_r)
 
     # regions
-    src_region = pyregion.open(src_region).as_imagecoord(header_r)
-    patch_list_src, artist_list_src = src_region.get_mpl_patches_texts()
+    src_rg = pyregion.open(src_region).as_imagecoord(header_r)
+    patch_list_src, artist_list_src = src_rg.get_mpl_patches_texts()
 
-    bkg_region = pyregion.open(bkg_region).as_imagecoord(header_r)
-    patch_list_bkg, artist_list_bkg = bkg_region.get_mpl_patches_texts()
+    bkg_rg = pyregion.open(bkg_region).as_imagecoord(header_r)
+    patch_list_bkg, artist_list_bkg = bkg_rg.get_mpl_patches_texts()
 
     maxs_x = []
     maxs_y = []
@@ -74,7 +74,12 @@ def plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
     img[:,:,2] = np.arcsinh(non_linearity * b_img) / np.arcsinh(non_linearity)
 
     # plotting
-    fig = plt.figure(figsize = (figsize,0.95*figsize))
+    show_labels = True
+    if show_labels == True:
+        factor = 0.9
+    else:
+        factor = 0.9
+    fig = plt.figure(figsize = (figsize,factor*figsize))
     ax = fig.add_subplot(111, projection=wcs)
 
     ax.imshow(img, aspect = 'equal')

@@ -1336,6 +1336,8 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     data['sc2'] = np.array(scs2)
     data['frac_exp2'] = np.array(fexps2)
     data['bg2'] = np.array(bgs2)
+    if True:
+        return data, 1, 1, 1, 1
 
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)

@@ -4421,7 +4421,7 @@ class HiMaXBi:
                    figsize = 6, label_style = 'serif', label_size = 16,
                    src_color = 'white', bkg_color = 'cyan',
                    src_region = 'src.reg', bkg_region = 'bkg.reg',
-                   fig_borders = [0.968, 0.116, 0.151, 0.970],
+                   fig_borders = [0.968, 0.140, 0.170, 0.970],
                    red_lims = [1. * 10 ** -5, 50. * 10 ** -5],
                    green_lims = [1. * 10 ** -5, 50. * 10 ** -5],
                    blue_lims = [2. * 10 ** -5, 20. * 10 ** -5],
