@@ -26,10 +26,6 @@ def plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
     img = np.zeros((r_img.shape[0], r_img.shape[1], 3), dtype=float)
     wcs = WCS(header_r)
 
-    img[:,:,0] = np.arcsinh(non_linearity * r_img) / np.arcsinh(non_linearity)
-    img[:,:,1] = np.arcsinh(non_linearity * g_img) / np.arcsinh(non_linearity)
-    img[:,:,2] = np.arcsinh(non_linearity * b_img) / np.arcsinh(non_linearity)
-
     # regions
     src_region = pyregion.open(src_region).as_imagecoord(header_r)
     patch_list_src, artist_list_src = src_region.get_mpl_patches_texts()
@@ -72,6 +68,10 @@ def plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
     r_img = (r_img - r_min) / (r_max - r_min)
     g_img = (g_img - g_min) / (g_max - g_min)
     b_img = (b_img - b_min) / (b_max - b_min)
+
+    img[:,:,0] = np.arcsinh(non_linearity * r_img) / np.arcsinh(non_linearity)
+    img[:,:,1] = np.arcsinh(non_linearity * g_img) / np.arcsinh(non_linearity)
+    img[:,:,2] = np.arcsinh(non_linearity * b_img) / np.arcsinh(non_linearity)
 
     # plotting
     fig = plt.figure(figsize = (figsize,0.95*figsize))
