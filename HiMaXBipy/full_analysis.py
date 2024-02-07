@@ -2748,6 +2748,8 @@ class HiMaXBi:
                     quantiles=quantiles, time_rel=time_rel,
                     fexp_cut=float(fracexp), alpha_bg=alpha_bg,
                     yscale=yscale)
+                if True:
+                    return pxmin
             # elif mode == 'mincounts_scan':
             #     pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
             #         hdulist=hdulist, axs=axs, log=self._logger,
