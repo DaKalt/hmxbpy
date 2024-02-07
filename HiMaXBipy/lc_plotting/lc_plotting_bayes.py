@@ -1339,7 +1339,7 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
 
     # loading stan model
     model = CmdStanModel(stan_file=stan_model)
-    fit = model.sample(data=data, show_progress=False)
+    fit = model.sample(data=data, show_progress=True)
     if True:
         return fit, 1, 1, 1, 1
     sc_rate_lower1 = np.percentile(fit.stan_variables()['sc_rate1'],
