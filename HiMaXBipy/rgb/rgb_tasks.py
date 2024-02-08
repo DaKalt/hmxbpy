@@ -38,7 +38,7 @@ def plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
     mins_x = []
     mins_y = []
 
-    for p in patch_list_src + patch_list_bkg:
+    for p in patch_list_src:
         center = p.get_center()
         width = p.get_width()
         height = p.get_height()
@@ -54,8 +54,23 @@ def plot_rgb(figsize, label_style, label_size, src_color, bkg_color,
 
     center_x = (max_x + min_x) / 2.
     center_y = (max_y + min_y) / 2.
-    width = max_x - min_x
-    height = max_y - min_y
+
+    for p in patch_list_bkg:
+        center = p.get_center()
+        width = p.get_width()
+        height = p.get_height()
+        maxs_x.append(center[0] + width / 2.)
+        maxs_y.append(center[1] + height / 2.)
+        mins_x.append(center[0] - width / 2.)
+        mins_y.append(center[1] - height / 2.)
+
+    max_x = max(maxs_x)
+    max_y = max(maxs_y)
+    min_x = min(mins_x)
+    min_y = min(mins_y)
+
+    width = 2 * max(abs(max_x - center_x), abs(center_x - min_x))
+    height = 2 * max(abs(max_y - center_y), abs(center_y - min_y))
     size = size_factor * max(width, height)
 
     r_img[r_img<r_min] = r_min
