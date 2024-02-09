@@ -96,6 +96,8 @@ class HiMaXBi:
     _NH = 6e20
     _NH_set = False
     _create_epochs = False
+    _min_dist = 60 * 60 * 24 * 30
+    _check_period_length = True
 
     def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
@@ -660,7 +662,7 @@ class HiMaXBi:
         self._LC_extracted = True
         # one month gap minimum to sort out possible short gaps due to
         # problems during observation
-        self._find_obs_periods(60 * 60 * 24 * 30)
+        self._find_obs_periods(self._min_dist)
         self._eRASS_vs_epoch()
 
     def _extract_lc_hr(self, logname='lc_hr_extract_autosave'):
@@ -753,7 +755,8 @@ class HiMaXBi:
         # getting rid of spurious LC entries for obs_periods < 1 day
         index = []
         for i in range(len(self._obs_periods)):
-            if self._obs_periods[i][1] - self._obs_periods[i][0] < 1:
+            if (self._obs_periods[i][1] - self._obs_periods[i][0] < 1
+                and self._check_period_length):
                 index.append(i)
         self._obs_periods = np.delete(self._obs_periods, index, axis=0)
 
@@ -954,7 +957,7 @@ class HiMaXBi:
             self._extract_lc()
         if self._debugging:
             self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._find_obs_periods(self._min_dist)
             self._eRASS_vs_epoch()
         logname_full = f'{self._working_dir}/logfiles/lightcurves/{logname}'
         logstate = setup_logfile(self._logger, logname_full)
@@ -1303,7 +1306,7 @@ class HiMaXBi:
             self._extract_lc()
         if self._debugging:
             self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._find_obs_periods(self._min_dist)
             self._eRASS_vs_epoch()
         logname_full = f'{self._working_dir}/logfiles/lightcurves/{logname}'
         logstate = setup_logfile(self._logger, logname_full)
@@ -1706,7 +1709,7 @@ class HiMaXBi:
             self._extract_lc()
         if self._debugging:
             self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._find_obs_periods(self._min_dist)
             self._eRASS_vs_epoch()
 
         xflag = 0
@@ -2120,7 +2123,7 @@ class HiMaXBi:
             self._extract_lc()
         if self._debugging:
             self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._find_obs_periods(self._min_dist)
             self._eRASS_vs_epoch()
         localtime = time.asctime(time.localtime(time.time()))
 
@@ -2650,7 +2653,7 @@ class HiMaXBi:
         if self._debugging:
             self._LC_extracted = True
             self._LC_HR_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._find_obs_periods(self._min_dist)
             self._eRASS_vs_epoch()
         localtime = time.asctime(time.localtime(time.time()))
 
@@ -3229,7 +3232,7 @@ class HiMaXBi:
             self._extract_lc()
         if self._debugging:
             self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._find_obs_periods(self._min_dist)
             self._eRASS_vs_epoch()
         if not self._NH_set:
             self._logger.warning('Source specific NH not set yet. '
@@ -4006,7 +4009,7 @@ class HiMaXBi:
             self._extract_lc()
         if self._debugging:
             self._LC_extracted = True
-            self._find_obs_periods(60 * 60 * 24 * 30)
+            self._find_obs_periods(self._min_dist)
             self._eRASS_vs_epoch()
 
         logstate = setup_logfile(self._logger, logname)
@@ -4437,7 +4440,7 @@ class HiMaXBi:
                 self._extract_lc()
             if self._debugging:
                 self._LC_extracted = True
-                self._find_obs_periods(60 * 60 * 24 * 30)
+                self._find_obs_periods(self._min_dist)
                 self._eRASS_vs_epoch()
 
             # select events
