@@ -1559,8 +1559,12 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                             linestyle='None', color=color, fmt='o',
                             zorder=6)
 
-    ymax1 = max([max(sc_rate_upper1), max(bg_rate_upper1)])
-    ymax2 = max([max(sc_rate_upper2), max(bg_rate_upper2)])
+    if alpha_bg > 0:
+        ymax1 = max([max(sc_rate_upper1), max(bg_rate_upper1)])
+        ymax2 = max([max(sc_rate_upper2), max(bg_rate_upper2)])
+    else:
+        ymax1 = max(sc_rate_upper1)
+        ymax2 = max(sc_rate_upper2)
     if yscale == 'linear':
         ymin = 0
         pymin = [ymin - (ymax1-ymin)*0.05,
@@ -1570,11 +1574,11 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                  ymax2 + (ymax2-ymin)*0.05,
                  1]
     elif yscale == 'log':
-        if max(bg_rate_lower1) > min(sc_rate_lower1) * 1e-1:
+        if max(bg_rate_lower1) > min(sc_rate_lower1) * 1e-1 and alpha_bg > 0:
             ymin1 = min([min(sc_rate_lower1), min(bg_rate_lower1)])
         else:
             ymin1 = min(sc_rate_lower1)
-        if max(bg_rate_lower2) > min(sc_rate_lower2) * 1e-1:
+        if max(bg_rate_lower2) > min(sc_rate_lower2) * 1e-1 and alpha_bg > 0:
             ymin2 = min([min(sc_rate_lower2), min(bg_rate_lower2)])
         else:
             ymin2 = min(sc_rate_lower2)
