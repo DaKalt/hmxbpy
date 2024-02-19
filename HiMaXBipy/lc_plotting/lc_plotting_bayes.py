@@ -498,7 +498,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
         pymin = ymin - (ymax-ymin)*0.05
         pymax = ymax + (ymax-ymin)*0.05
     elif yscale == 'log':
-        if max(bg_rate_lower) > min(sc_rate_lower) * 1e-1:
+        if max(bg_rate_lower) > min(sc_rate_lower) * 1e-1 and alpha_bg > 0:
             ymin = min([min(sc_rate_lower), min(bg_rate_lower)])
         else:
             ymin = min(sc_rate_lower)
@@ -1010,7 +1010,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         pymin = ymin - (ymax-ymin)*0.05
         pymax = ymax + (ymax-ymin)*0.05
     elif yscale == 'log':
-        if max(bg_rate_lower) > min(sc_rate_lower) * 1e-1:
+        if max(bg_rate_lower) > min(sc_rate_lower) * 1e-1 and alpha_bg > 0:
             ymin = min([min(sc_rate_lower), min(bg_rate_lower)])
         else:
             ymin = min(sc_rate_lower)
