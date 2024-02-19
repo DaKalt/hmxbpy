@@ -559,8 +559,11 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
             fit = model.sample(data=data, show_progress=False)
             sc_rate_bb = np.percentile(fit.stan_variables()['sc_rate'],
                                        quantiles[1], axis=0)
+            t_blocked_plot = t_blocked.copy()
+            t_blocked_plot[0] = t[0] - terr[0]
+            t_blocked_plot[-1] = t[-1] + terr[-1]
             for ax in axs:
-                ax.stairs(sc_rate_bb, t_blocked, color=color, zorder=2,
+                ax.stairs(sc_rate_bb, t_blocked_plot, color=color, zorder=2,
                           linestyle='--', baseline = None)
         elif bbmode == 'sum':
             err = np.max(sc_bg_rate_err, axis=0)
@@ -1071,8 +1074,11 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             fit = model.sample(data=data, show_progress=False)
             sc_rate_bb = np.percentile(fit.stan_variables()['sc_rate'],
                                        quantiles[1], axis=0)
+            t_blocked_plot = t_blocked.copy()
+            t_blocked_plot[0] = t[0] - terr[0]
+            t_blocked_plot[-1] = t[-1] + terr[-1]
             for ax in axs:
-                ax.stairs(sc_rate_bb, t_blocked, color=color, zorder=2,
+                ax.stairs(sc_rate_bb, t_blocked_plot, color=color, zorder=2,
                           linestyle='--', baseline = None)
         elif bbmode == 'sum':
             err = np.max(sc_bg_rate_err, axis=0)
