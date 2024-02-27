@@ -196,7 +196,7 @@ def plot_lc_eROday_broken_bayes_old(hdulist, axs, log, mjdref, xflag,
 def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                 color, obs_periods, short_time, stan_model,
                                 quantiles, time_rel=0, fexp_cut=0.15,
-                                alpha_bg=0.3, bblocks=False, bbp0=0.01,
+                                alpha_bg=0.3, bblocks=False, bbp0=0.003,
                                 bbmode='both', yscale='linear'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
@@ -688,7 +688,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                    mincounts, color, obs_periods,
                                    short_time, stan_model, quantiles,
                                    time_rel=0, fexp_cut=0.15,
-                                   alpha_bg=0.3, bblocks=False, bbp0=0.01,
+                                   alpha_bg=0.3, bblocks=False, bbp0=0.003,
                                    bbmode='both', yscale='linear'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
@@ -1202,7 +1202,7 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                    mincounts_full, mincounts_ind, color,
                                    obs_periods, short_time, stan_model,
                                    quantiles, time_rel=0, fexp_cut=0.15,
-                                   alpha_bg=0.3, bblocks=False, bbp0=0.01,
+                                   alpha_bg=0.3, bblocks=False, bbp0=0.003,
                                    bbmode='both', yscale='linear'):
     '''
     Lightcurve rebinned to eROdays with countrates optained with

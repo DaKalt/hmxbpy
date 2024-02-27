@@ -1880,7 +1880,7 @@ class HiMaXBi:
                              ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
                              tilt=45, diag_color="k", short_time=True,
                              fig_borders=[],
-                             bbp0=0.01, bbmode='both', yscale='log'):
+                             bbp0=0.003, bbmode='both', yscale='log'):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
 
@@ -2385,7 +2385,7 @@ class HiMaXBi:
                              separate_TM=False, vlines=[], ticknumber_y=5,
                              ticknumber_x=3, E_bin_full = [], E_bins=[],
                              lc_binning=-1, d=12, tilt=45, diag_color="k",
-                             short_time=True, fig_borders=[], bbp0=0.01,
+                             short_time=True, fig_borders=[], bbp0=0.003,
                              bbmode='both', yscale='log'):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
