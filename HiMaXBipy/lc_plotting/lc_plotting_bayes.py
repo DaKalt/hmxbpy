@@ -514,6 +514,10 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.min([sc_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_rate, sigma=err,
                                         fitness='measures', p0=bbp0)
+            for i in range(1, len(t_blocked) - 1):
+                entry_tb = t_blocked[i]
+                index_tb = len(t[t < entry_tb])
+                t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -570,6 +574,10 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.min([sc_bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_bg_rate, sigma=err,
                                         fitness='measures', p0=bbp0)
+            for i in range(1, len(t_blocked) - 1):
+                entry_tb = t_blocked[i]
+                index_tb = len(t[t < entry_tb])
+                t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -626,6 +634,10 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.min([bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, bg_rate, sigma=err,
                                         fitness='measures', p0=bbp0)
+            for i in range(1, len(t_blocked) - 1):
+                entry_tb = t_blocked[i]
+                index_tb = len(t[t < entry_tb])
+                t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -1029,6 +1041,10 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.min([sc_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_rate, sigma=err,
                                         fitness='measures', p0=bbp0)
+            for i in range(1, len(t_blocked) - 1):
+                entry_tb = t_blocked[i]
+                index_tb = len(t[t < entry_tb])
+                t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -1085,6 +1101,10 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.min([sc_bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, sc_bg_rate, sigma=err,
                                         fitness='measures', p0=bbp0)
+            for i in range(1, len(t_blocked) - 1):
+                entry_tb = t_blocked[i]
+                index_tb = len(t[t < entry_tb])
+                t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
             fexps_bb = []
@@ -1141,6 +1161,10 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
             err = np.min([bg_rate, err], axis=0)
             t_blocked = bayesian_blocks(t, bg_rate, sigma=err,
                                         fitness='measures', p0=bbp0)
+            for i in range(1, len(t_blocked) - 1):
+                entry_tb = t_blocked[i]
+                index_tb = len(t[t < entry_tb])
+                t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
             fexps_bb = []
