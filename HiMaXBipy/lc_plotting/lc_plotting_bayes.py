@@ -516,7 +516,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                         fitness='measures', p0=bbp0)
             for i in range(1, len(t_blocked) - 1):
                 entry_tb = t_blocked[i]
-                index_tb = len(t[t < entry_tb])
+                index_tb = len(t[t < entry_tb]) + 1
                 t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
@@ -576,7 +576,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                         fitness='measures', p0=bbp0)
             for i in range(1, len(t_blocked) - 1):
                 entry_tb = t_blocked[i]
-                index_tb = len(t[t < entry_tb])
+                index_tb = len(t[t < entry_tb]) + 1
                 t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
@@ -636,7 +636,7 @@ def plot_lc_eROday_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                         fitness='measures', p0=bbp0)
             for i in range(1, len(t_blocked) - 1):
                 entry_tb = t_blocked[i]
-                index_tb = len(t[t < entry_tb])
+                index_tb = len(t[t < entry_tb]) + 1
                 t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
@@ -1043,7 +1043,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                         fitness='measures', p0=bbp0)
             for i in range(1, len(t_blocked) - 1):
                 entry_tb = t_blocked[i]
-                index_tb = len(t[t < entry_tb])
+                index_tb = len(t[t < entry_tb]) + 1
                 t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
@@ -1103,7 +1103,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                         fitness='measures', p0=bbp0)
             for i in range(1, len(t_blocked) - 1):
                 entry_tb = t_blocked[i]
-                index_tb = len(t[t < entry_tb])
+                index_tb = len(t[t < entry_tb]) + 1
                 t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
@@ -1163,7 +1163,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                         fitness='measures', p0=bbp0)
             for i in range(1, len(t_blocked) - 1):
                 entry_tb = t_blocked[i]
-                index_tb = len(t[t < entry_tb])
+                index_tb = len(t[t < entry_tb]) + 1
                 t_blocked[i] = t[index_tb] + terr[index_tb]
             dts_bb = []
             scs_bb = []
