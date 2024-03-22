@@ -47,7 +47,7 @@ from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
     plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2
 from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple,\
-    abb, abb_simple
+    abb, abb_simple, apl_diskbb, apl_diskbb_simple
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
 cmap = cm.get_cmap('cubehelix')
@@ -3777,7 +3777,8 @@ class HiMaXBi:
             raise Exception('model must be a string.')
         else:
             if (model != 'apl' and model != 'apl_simple' and model != 'abb'
-                    and model != 'abb_simple'):
+                    and model != 'abb_simple' and model != 'apl_diskbb'
+                    and model != 'apl_diskbb_simple'):
                 try:
                     mod = import_module(f'{self._working_dir_full}/{model}')
                     fit_model = mod.custom_model
@@ -3991,6 +3992,16 @@ class HiMaXBi:
         elif model == 'abb_simple':
             tex_info = [['Teff', 'K', [0], 'lin']]
             fit_model = abb_simple
+        elif model == 'apl_diskbb':
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
+                         'log'],
+                        ['Power-law', 'index', [1], 'lin'],
+                        ['Tin', 'K', [2], 'lin']]
+            fit_model = apl_diskbb
+        elif model == 'apl_diskbb_simple':
+            tex_info = [['Power-law', 'index', [0], 'lin'],
+                        ['Tin', 'K', [1], 'lin']]
+            fit_model = apl_diskbb_simple
 
         if colors == []:
             colors = color_palette
