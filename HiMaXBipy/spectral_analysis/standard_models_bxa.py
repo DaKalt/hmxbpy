@@ -183,7 +183,7 @@ def apl_diskbb_simple(Model, AllModels, bxa, galnh, Z, n):
 def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
-    srcmod = Model('tbabs*tbvarabs*pow', modName='srcmod', sourceNum=1)
+    srcmod = Model('tbabs*tbvarabs*(pow+diskbb)', modName='srcmod', sourceNum=1)
     srcmod.TBabs.nH.values = [galnh, -1]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
