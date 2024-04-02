@@ -4542,3 +4542,16 @@ class HiMaXBi:
         # self.plot_spectra()
         self.plot_lc_bayes_broken()
 
+    def fix_group(self, groupname):
+        for path, subdirs, files in os.walk('./'):
+            for name in files:
+                full_path = os.path.join(path, name)
+                if full_path.find(' ') > 0:
+                    continue
+                out = os.system('chgrp ' + groupname + ' ' + full_path)
+            for subdir in subdirs:
+                full_path = os.path.join(path, subdir)
+                if full_path.find(' ') > 0:
+                    continue
+                out = os.system('chgrp ' + groupname + ' ' + full_path)
+            del out

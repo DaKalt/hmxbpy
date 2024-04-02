@@ -18,6 +18,7 @@ from matplotlib.pyplot import figure
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import re
 from xspec import Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,\
     Plot
 
@@ -481,14 +482,19 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
     '''Make a corner plot with fluxes instead of norms.'''
     paramnames = analyser.results['paramnames'][:ntransf]
     data = np.array(analyser.posterior.T[:ntransf])
-    i_norm = 1
     for i_name, entry in enumerate(paramnames):
         if entry.lower().find('norm') >= 0:
-            log_scale = int(np.log10(np.median(lum_chains[i_norm-1])))
-            paramnames[i_name] = 'L$_{%s}$ (10$^{%s}$ erg/s)' % \
-                (i_norm, log_scale)
-            data[i_name] = lum_chains[i_norm-1] / 10**log_scale
-            i_norm += 1
+            i_src = re.findall(r'\d+', entry)[0]
+            log_scale = int(np.log10(np.median(lum_chains[i_src-1])))
+            if entry.find('{') > 0:
+                subscript = entry[entry.find('{')+1:entry.find('}')]
+                paramnames[i_name] = 'L$_{%s}$ (10$^{%s}$ erg/s)' % \
+                    (subscript, log_scale)
+            else:
+                paramnames[i_name] = 'L$_{%s}$ (10$^{%s}$ erg/s)' % \
+                    (i_src, log_scale)
+            data[i_name] = lum_chains[i_src-1] / 10**log_scale
+            i_src += 1
     data = data.T
     fig = corner.corner(data, labels=paramnames, show_titles=True, quiet=True,
                         title_kwargs={'fontsize': 12})
