@@ -1,5 +1,2 @@
 Include:
-  - Cutout creation (with healpy or ligo.skymaps for correct projection) --> make bands a parameter
   - variability analysis
-  - return spectrum data points as array (for plotting with plt)
-  - confidence contours for fitting parameters
