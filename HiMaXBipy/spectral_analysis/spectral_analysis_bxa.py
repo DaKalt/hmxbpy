@@ -484,7 +484,7 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
     data = np.array(analyser.posterior.T[:ntransf])
     for i_name, entry in enumerate(paramnames):
         if entry.lower().find('norm') >= 0:
-            i_src = re.findall(r'\d+', entry)[0]
+            i_src = int(re.findall(r'\d+', entry)[0])
             log_scale = int(np.log10(np.median(lum_chains[i_src-1])))
             if entry.find('{') > 0:
                 subscript = entry[entry.find('{')+1:entry.find('}')]

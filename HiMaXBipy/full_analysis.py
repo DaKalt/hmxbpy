@@ -61,6 +61,18 @@ g_eRASS01 = ('/data40s/galaxy/eROSITA/LMC/eRASS1/rima_1.0-2.0_em01_020_'
              'EventList_c020_smooth10.fits')
 b_eRASS01 = ('/data40s/galaxy/eROSITA/LMC/eRASS1/rima_2.0-4.5_em01_020_'
              'EventList_c020_smooth10.fits')
+r_eRASS01_MCB = ('/data40s/galaxy/eROSITA/MC_bridge/eRASS1/rima_0.2-1.0_em01_'
+                 '020_EventList_c020_smooth10.fits')
+g_eRASS01_MCB = ('/data40s/galaxy/eROSITA/MC_bridge/eRASS1/rima_1.0-2.0_em01_'
+                 '020_EventList_c020_smooth10.fits')
+b_eRASS01_MCB = ('/data40s/galaxy/eROSITA/MC_bridge/eRASS1/rima_2.0-4.5_em01_'
+                 '020_EventList_c020_smooth10.fits')
+r_eRASS01_SMC = ('/data40s/galaxy/eROSITA/SMC/eRASS1/rima_0.2-1.0_em01_020_'
+                 'EventList_c020_smooth10.fits')
+g_eRASS01_SMC = ('/data40s/galaxy/eROSITA/SMC/eRASS1/rima_1.0-2.0_em01_020_'
+                 'EventList_c020_smooth10.fits')
+b_eRASS01_SMC = ('/data40s/galaxy/eROSITA/SMC/eRASS1/rima_2.0-4.5_em01_020_'
+                 'EventList_c020_smooth10.fits')
 
 # Checking heasoft/xspec version, since it does not have proper versioning
 try:
@@ -4439,9 +4451,16 @@ class HiMaXBi:
                    blue_lims = [2. * 10 ** -5, 20. * 10 ** -5],
                    non_linearity = 10., size_factor = 1.2,
                    r_file = r_eRASS01, g_file = g_eRASS01,
-                   b_file = b_eRASS01):
+                   b_file = b_eRASS01, galaxy = 'LMC'):
         
-
+        if galaxy == 'SMC':
+            r_file = r_eRASS01_SMC
+            g_file = g_eRASS01_SMC
+            b_file = b_eRASS01_SMC
+        elif galaxy == 'MCB':
+            r_file = r_eRASS01_MCB
+            g_file = g_eRASS01_MCB
+            b_file = b_eRASS01_MCB
         filename = (f'{self._working_dir}/logfiles/rgb/'
                     f'{fname}.log')
         logstate = setup_logfile(self._logger, filename)
@@ -4543,6 +4562,7 @@ class HiMaXBi:
         self.plot_lc_bayes_broken()
 
     def fix_group(self, groupname):
+        out = ''
         for path, subdirs, files in os.walk('./'):
             for name in files:
                 full_path = os.path.join(path, name)
@@ -4554,4 +4574,4 @@ class HiMaXBi:
                 if full_path.find(' ') > 0:
                     continue
                 out = os.system('chgrp ' + groupname + ' ' + full_path)
-            del out
+        del out
