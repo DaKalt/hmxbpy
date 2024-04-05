@@ -4563,7 +4563,7 @@ class HiMaXBi:
 
     def fix_group(self, groupname):
         out = ''
-        for path, subdirs, files in os.walk('./'):
+        for path, subdirs, files in os.walk(self._working_dir_full):
             for name in files:
                 full_path = os.path.join(path, name)
                 if full_path.find(' ') > 0:
