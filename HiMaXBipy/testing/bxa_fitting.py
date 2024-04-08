@@ -7,7 +7,7 @@ import bxa.xspec as bxa
 from bxa.xspec.solver import BXASolver, XSilence
 import logging
 
-from HiMaXBipy.spectral_analysis.standard_models_bxa import apl
+from HiMaXBipy.bxa_models.standard_models_bxa import apl
 
 src_files = []
 Z = 0.5

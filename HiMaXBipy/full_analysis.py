@@ -46,7 +46,7 @@ from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
     plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2
-from HiMaXBipy.spectral_analysis.standard_models_bxa import apl, apl_simple,\
+from HiMaXBipy.bxa_models.standard_models_bxa import apl, apl_simple,\
     abb, abb_simple, apl_diskbb, apl_diskbb_simple
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
