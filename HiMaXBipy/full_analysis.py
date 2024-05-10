@@ -767,7 +767,7 @@ class HiMaXBi:
         # getting rid of spurious LC entries for obs_periods < 1 day
         index = []
         for i in range(len(self._obs_periods)):
-            if (self._obs_periods[i][1] - self._obs_periods[i][0] < 0.1
+            if (self._obs_periods[i][1] - self._obs_periods[i][0] < 0.15
                 and self._check_period_length):
                 index.append(i)
         self._obs_periods = np.delete(self._obs_periods, index, axis=0)
