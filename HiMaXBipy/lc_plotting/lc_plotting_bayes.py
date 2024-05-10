@@ -1315,7 +1315,7 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                 continue
 
         if istart == 0:
-            tstart = time[0]
+            tstart = time[0] - delt[0]
         else:
             border_low = False
             for period in obs_periods:
