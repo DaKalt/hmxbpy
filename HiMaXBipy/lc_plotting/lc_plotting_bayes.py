@@ -1535,6 +1535,7 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                             (mjd < obs_periods[i_ax][1])]
                 mjd_d_part = mjd_d[(mjd > obs_periods[i_ax][0]) *
                                 (mjd < obs_periods[i_ax][1])]
+                print(f'ien: {i_en}, i_ax: {i_ax}')
                 xmin = min(mjd_part - mjd_d_part)
                 xmax = max(mjd_part + mjd_d_part)
 
