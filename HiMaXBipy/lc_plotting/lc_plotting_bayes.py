@@ -1350,6 +1350,7 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         bgrats.append(backrat[istart:iend+1].tolist())
         istart_old = istart
         istart = i + 1
+    print(xtime)
 
     N = 0
     for k in range(len(scs1)):
