@@ -1288,9 +1288,10 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                  or cnts1[istart:nrow].sum() < mincounts_ind
                  or cnts2[istart:nrow].sum() < mincounts_ind)
                  and not time_mjd[istart_old] < obs_periods[-1][0]):
-                istart = istart_old
-                del (xtime[-1], xtime_d[-1], dts[-1], bgrats[-1], scs1[-1],
-                     fexps1[-1], bgs1[-1], scs2[-1], fexps2[-1], bgs2[-1])
+                if istart_old > obs_periods[-1][0]:
+                    istart = istart_old
+                    del (xtime[-1], xtime_d[-1], dts[-1], bgrats[-1], scs1[-1],
+                        fexps1[-1], bgs1[-1], scs2[-1], fexps2[-1], bgs2[-1])
         elif (cnts0[istart:i].sum() >= mincounts_full
               and cnts1[istart:i].sum() >= mincounts_ind
               and cnts2[istart:i].sum() >= mincounts_ind
