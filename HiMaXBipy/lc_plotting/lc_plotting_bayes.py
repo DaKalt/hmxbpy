@@ -1336,7 +1336,6 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                     border_high = True
             if not border_high:
                 tend = (time[iend] + time[iend+1]) / 2
-        print(f'tstart = {tstart}, tend = {tend}')
         xtime.append((tend+tstart)/2)
         xtime_d.append((tend-tstart)/2)
         # data['N'] = iend-istart
@@ -1350,7 +1349,6 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         bgrats.append(backrat[istart:iend+1].tolist())
         istart_old = istart
         istart = i + 1
-    print(xtime)
 
     N = 0
     for k in range(len(scs1)):
@@ -1522,6 +1520,8 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                 frac_upper + (-frac)]
                     
 
+    print(mjd)
+    print(obs_periods)
     for i_ax, group in enumerate(axs):
         for i_en, ax in enumerate(group):
             if xflag == 1:
