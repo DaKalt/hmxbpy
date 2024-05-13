@@ -1520,8 +1520,6 @@ def plot_hr_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                 frac_upper + (-frac)]
                     
 
-    print(mjd)
-    print(obs_periods)
     for i_ax, group in enumerate(axs):
         for i_en, ax in enumerate(group):
             if xflag == 1:
