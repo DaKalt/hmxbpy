@@ -4359,10 +4359,20 @@ class HiMaXBi:
         eRASS = []
         epochs = []
         for eRASS_counter in range(len(self._ero_starttimes)):
-            start = ((self._ero_starttimes[eRASS_counter][0] - self._mjdref)
-                     * 24. * 3600.)
-            stop = ((self._ero_starttimes[eRASS_counter][1] - self._mjdref)
-                     * 24. * 3600.)
+            if eRASS_counter == 0:
+                start = (58500 - self._mjdref) * 24. * 3600.
+                stop = ((self._ero_starttimes[eRASS_counter + 1]
+                            - self._mjdref) * 3600. * 24.)
+            elif eRASS_counter == len(self._ero_starttimes) - 1:
+                start = ((self._ero_starttimes[eRASS_counter]
+                            - self._mjdref) * 3600. * 24.)
+                stop = ((self._ero_starttimes[eRASS_counter] + 200
+                            - self._mjdref) * 3600. * 24.)
+            else:
+                start = ((self._ero_starttimes[eRASS_counter]
+                            - self._mjdref) * 3600. * 24.)
+                stop = ((self._ero_starttimes[eRASS_counter + 1]
+                            - self._mjdref) * 3600. * 24.)
             replacements = [['@esass_location', self._esass],
                             ['@infiles', self._filelist],
                             ['@outfile',
