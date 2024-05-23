@@ -45,7 +45,8 @@ from HiMaXBipy.rgb.rgb_tasks import plot_rgb
 from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
-    plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2
+    plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2,\
+    write_tex_epochs
 from HiMaXBipy.bxa_models.standard_models_bxa import apl, apl_simple,\
     abb, abb_simple, apl_diskbb, apl_diskbb_simple
 
@@ -2963,6 +2964,28 @@ class HiMaXBi:
             # to fix weird b'something' format
             self._logger.debug(str(line)[2:-3] + '\n')
 
+    def _extract_spectrum_epoch(self, filelist, epoch):
+        self._logger.debug(f'Extracting spectrum for {filelist}.')
+        replacements = [['@main_name', self._working_dir],
+                        ['@result_dir', '.'],
+                        ['@sources_list', filelist],
+                        ['@right_ascension', self._RA],
+                        ['@declination', self._Dec],
+                        ['@esass_location', self._esass],
+                        ['@epoch', epoch]]
+        sh_file = self._working_dir_full + '/working/extract_spectrum_epoch.sh'
+        sh_file = self._replace_in_sh(sh_file, replacements)
+        old_environ = os.environ.copy()
+        process = subprocess.Popen(
+            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait()  # Wait for process to complete.
+        os.environ = old_environ
+
+        # iterate on the stdout line by line
+        for line in process.stdout.readlines():
+            # to fix weird b'something' format
+            self._logger.debug(str(line)[2:-3] + '\n')
+
     def plot_spectra(self, mode='all', log_prefix='spectrum',
                      log_suffix='.log', Z=-1, distance=-1,
                      skip_varabs=False, NH=-1., rebin=True,
@@ -4069,6 +4092,8 @@ class HiMaXBi:
             setup_axis(Emin, Emax, figsize)
 
         src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
+        if mode == 'merged':
+            specs_eRASS, specs_epoch = self._prepare_spec_epochs()
 
         if len(bkg_markers) == 0:
             bkg_markers = ['x'] * len(src_files)
@@ -4183,6 +4208,22 @@ class HiMaXBi:
         write_tex(results_file, tex_info, abs_F, unabs_L, analyser, quantiles,
                   E_ranges_L)
         results_file.close()
+
+        if mode == 'merged':
+            merged_file = src_files[0]
+            results_file = open(f'{self._working_dir_full}/results/spectra/'
+                                f'{model}{suffix}/results_eRASS.tex', 'w')
+            write_tex_epochs(results_file, abs_F, unabs_L, E_ranges_L, merged_file,
+                            specs_eRASS)
+            results_file.close()
+
+            if self._create_epochs:
+                results_file = open(f'{self._working_dir_full}/results/spectra/'
+                                    f'{model}{suffix}/results_epochs.tex', 'w')
+                write_tex_epochs(results_file, abs_F, unabs_L, E_ranges_L,
+                                merged_file, specs_epoch)
+                results_file.close()
+        
 
         self._logger.handlers = logstate
         os.environ = old_environ
@@ -4313,6 +4354,70 @@ class HiMaXBi:
             fit_bkg(bkg, self._logger, source_file=file)
 
         return src_files
+
+    def _prepare_spec_epochs(self):
+        eRASS = []
+        epochs = []
+        for eRASS_counter in range(len(self._ero_starttimes)):
+            start = ((self._ero_starttimes[eRASS_counter][0] - self._mjdref)
+                     * 24. * 3600.)
+            stop = ((self._ero_starttimes[eRASS_counter][1] - self._mjdref)
+                     * 24. * 3600.)
+            replacements = [['@esass_location', self._esass],
+                            ['@infiles', self._filelist],
+                            ['@outfile',
+                            f'./eRASS{eRASS_counter+1}_'
+                                'bxa.fits'],
+                            ['@start',
+                            f'{start}'],
+                            ['@stop', f'{stop}']]
+            sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
+            sh_file = self._replace_in_sh(sh_file, replacements)
+            old_environ = os.environ.copy()
+            process = subprocess.Popen(
+                [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
+            os.environ = old_environ
+            for line in process.stdout.readlines():
+                # to fix weird b'something' format
+                self._logger.debug(str(line)[2:-3] + '\n')
+            event_file = (f'./eRASS{eRASS_counter+1}_'
+                                'bxa.fits')
+            self._extract_spectrum_bxa(event_file, 'factor_file_eRASS'
+                                        f'{eRASS_counter+1}')
+            eRASS.append(f'factor_file_eRASS{eRASS_counter+1}_bxa_020_'
+                            'SourceSpec_00001.fits')
+        if self._create_epochs:
+            for epoch_counter in range(len(self._obs_periods)):
+                start = ((self._obs_periods[epoch_counter][0] - self._mjdref)
+                         * 24. * 3600.)
+                stop = ((self._obs_periods[epoch_counter][1] - self._mjdref)
+                        * 24. * 3600.)
+                replacements = [['@esass_location', self._esass],
+                                ['@infiles', self._filelist],
+                                ['@outfile',
+                                f'./{self._period_names[epoch_counter]}_'
+                                 'bxa.fits'],
+                                ['@start',
+                                f'{start}'],
+                                ['@stop', f'{stop}']]
+                sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
+                sh_file = self._replace_in_sh(sh_file, replacements)
+                old_environ = os.environ.copy()
+                process = subprocess.Popen(
+                    [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process.wait()  # Wait for process to complete.
+                os.environ = old_environ
+                for line in process.stdout.readlines():
+                    # to fix weird b'something' format
+                    self._logger.debug(str(line)[2:-3] + '\n')
+                event_file = (f'./{self._period_names[epoch_counter]}_'
+                                   'bxa.fits')
+                self._extract_spectrum_bxa(event_file, 'factor_file_epoch'
+                                           f'{epoch_counter+1}')
+                epochs.append(f'factor_file_epoch{epoch_counter+1}_bxa_020_'
+                              'SourceSpec_00001.fits')
+        return eRASS, epochs
 
     def _standard_spec_an(self, separate, skip_eRASS, table_name, mode,
                           file_list, skip_varabs, absorption, rebin,

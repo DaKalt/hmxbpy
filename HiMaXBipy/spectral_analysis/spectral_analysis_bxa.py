@@ -551,7 +551,6 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
             median = abs_F[i][irange][1]
             upper = abs_F[i][irange][2]
             line += f' & {median}$^{{+{upper-median}}}_{{-{median-lower}}}$'
-        for irange in range(len(E_ranges)):
             lower = unabs_L[i][irange][0]
             median = unabs_L[i][irange][1]
             upper = unabs_L[i][irange][2]
@@ -560,6 +559,55 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
         tex_file.write(line)
     tex_file.write('%s\\\\ \n' % ('& '*(len(tex_info) + 2*len(E_ranges))))
     tex_file.write('\\end{tabular}\n')
+
+def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
+    for specfile in epochs:
+        factors = get_factors(merged_file, specfile, E_ranges)
+        tex_file.write('%s\n' % specfile[:specfile.find('_')])
+        tex_file.write('\\begin{tabular}{%s}\n' % ('c' * (2*len(E_ranges))))
+        tex_file.write('\\hline\\hline\n')
+        line_1 = ''
+        line_2 = ''
+        for entry in E_ranges:
+            line_1 += ('\\mbox{F$_{\\rm x; %s-%s}$} '
+                       '& \\mbox{L$_{\\rm x; %s-%s}$} & '
+                       % (entry[0], entry[1], entry[0], entry[1]))
+            line_2 += ('$\\times$erg cm$^{-2}$s$^{-1}$ & '
+                       '$\\times$erg s$^{-1}$ & ')
+        line_1 = line_1[:-3] + '\\\\ \n'
+        line_2 = line_2[:-3] + '\\\\ \n'
+        tex_file.write(line_1)
+        tex_file.write(line_2)
+        tex_file.write('\\hline\n')
+        for i in range(len(abs_F)):
+            line = f'{i+1} & '
+            for irange in range(len(E_ranges)):
+                lower = abs_F[i][irange][0] * factors[irange]
+                median = abs_F[i][irange][1] * factors[irange]
+                upper = abs_F[i][irange][2] * factors[irange]
+                line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
+                lower = unabs_L[i][irange][0] * factors[irange]
+                median = unabs_L[i][irange][1] * factors[irange]
+                upper = unabs_L[i][irange][2] * factors[irange]
+                line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
+            line += '\\\\ \n'
+            tex_file.write(line)
+        tex_file.write('%s\\\\ \n' % ('& '*(2*len(E_ranges))))
+        tex_file.write('\\end{tabular}\n')
+
+def get_factors(merged_file, specfile, E_ranges):
+    factors = []
+    for bin in E_ranges:
+        spec_merged = Spectrum(merged_file)
+        spec_merged.notice('**-**')
+        spec_merged.ignore('**-%s %s-**' % (bin[0], bin[1]))
+        cr_merged = spec_merged.rate[0]
+        spec_epoch = Spectrum(specfile)
+        spec_epoch.notice('**-**')
+        spec_epoch.ignore('**-%s %s-**' % (bin[0], bin[1]))
+        cr_spec = spec_epoch.rate[0]
+        factors.append(cr_spec / cr_merged)
+    return factors
 
 def setup_axis(Emin, Emax, figsize):
     fig = plt.figure(figsize=(figsize[0], figsize[1]))
