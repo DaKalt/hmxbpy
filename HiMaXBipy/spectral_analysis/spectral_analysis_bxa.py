@@ -239,8 +239,8 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
     return output
 
 
-def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
-            src_files, statistic, suffix, resume, working_dir, Z):
+def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
+            src_files, statistic, suffix, resume, working_dir, Z, E_ranges_L):
 
     os.environ['WITHOUT_MULTINEST'] = '1'
     Xset.abund = abund
@@ -277,7 +277,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         _, nchan = map(int, src.ignoredString().split("-"))
         src.notice("**-**")
         # end of add
-        src.ignore("**-0.2 8.0-**")
+        src.ignore("**-%s %s-**" % (E_range[0], E_range[1]))
         for part in src.ignoredString().split():
             if "-" in part:
                 klo, khi = map(int, part.split("-"))
@@ -406,7 +406,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
         src = srcs[ispec]
         fluxes = []
         lums = []
-        for band in E_ranges:
+        for band in E_ranges_L:
             old_nh = []
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')[:,0]
@@ -430,7 +430,7 @@ def fit_bxa(abund, distance, E_ranges, func, galnh, log, prompting, quantiles,
                              distance)]
             lums.append(lums_band)
             luminosity_chains.append(lum(np.log10(flux), distance))
-            if band == E_ranges[0] and ispec == 0:
+            if band == E_ranges_L[0] and ispec == 0:
                 AllModels.show()
             for inH, nH in enumerate(nHs_froz):
                 nH.values = old_nh[inH]
@@ -620,7 +620,7 @@ def setup_axis(Emin, Emax, figsize):
     return fig, ax_spec, ax_res, ax_res_invis
 
 def format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders, rescale_F,
-                    rescale_chi, E_ranges, src_files, ncols, nrows,
+                    rescale_chi, E_range, src_files, ncols, nrows,
                     height_ratios, width_ratios):
     fig.canvas.draw()
     fig.set_tight_layout(True)
@@ -669,5 +669,5 @@ def format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders, rescale_F,
     ax_spec.set_ybound(lower=rescale_F[0], upper=rescale_F[1])
     ax_res.set_ybound(lower=rescale_chi[0], upper=rescale_chi[1])
 
-    ax_spec.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
-    ax_res.set_xbound(lower=E_ranges[0][0], upper=E_ranges[0][1])
+    ax_spec.set_xbound(lower=E_range[0], upper=E_range[1])
+    ax_res.set_xbound(lower=E_range[0], upper=E_range[1])

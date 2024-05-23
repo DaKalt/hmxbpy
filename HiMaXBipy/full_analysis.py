@@ -3598,14 +3598,17 @@ class HiMaXBi:
                               fit_statistic='cstat', colors=[], markers=[],
                               title='', TM_list=[0], return_array=False,
                               abund='wilm', tbins=[[]],
-                              tbin_f='epoch', E_ranges=[[0.2, 8.0]],
+                              tbin_f='epoch', E_range=[0.2, 8.0],
                               quantiles=[], folder_suffix='', resume=False,
                               prompting=False, plot_bkg=True,
                               src_markers=[], bkg_markers=[],
                               src_linestyles=[], bkg_linestyle='--',
                               set_hatch=False, fig_borders = [],
                               spec_files = [], label_style='serif',
-                              label_size=16):
+                              label_size=16, E_ranges_L = [[0.2, 8.0],
+                                                           [0.2, 10.0],
+                                                           [2.0, 10.0]]):
+        #TODO: add flux/luminosity for each epoch and eRASS using parameters from best fit for merged fit
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3725,10 +3728,13 @@ class HiMaXBi:
             -epoch: only works if tbin is empty. The spectra will be
             separated by epoch for analysis (only makes a difference for
             simultaneous fitting)
-        E_ranges : float array-like (n,2), optional
+        E_range : float array-like (2,), optional
+            Sets energy ranges to fit the model to for. It also sets the
+            energy ranges for plotting. The default is [0.2, 8.0].
+        E_ranges_L : float array-like (n,2), optional
             Sets energy ranges to be to extract fluxes and luminosities
             for. The first entry also sets the energy ranges for
-            plottingThe default is [[0.2, 8.0]] which uses
+            plottingThe default is [[0.2, 8.0]].
         quantiles : array-like (3,) or (0,) float or int, optional
             Quantiles to plot as lower boundary, expected value and
             upper boundary. If the default is used, 1 sigma percentiles
@@ -3938,10 +3944,24 @@ class HiMaXBi:
                 raise Exception(
                     'tbinf must be \'mjd\', \'mjd_short\', \'time_eRO\', '
                     '\'time_eRO_short\', \'eRASS\' or \'epoch\'.')
-        if type(E_ranges) != list and type(E_ranges) != np.ndarray:
+        if type(E_range) != list and type(E_range) != np.ndarray:
             raise Exception('E_ranges must be array-like')
         else:
-            for bin in E_ranges:
+            if len(E_range) != 2:
+                raise Exception(
+                    'Each bin in E_ranges must have 2 entries.')
+            for entry in E_range:
+                if type(entry) != int and type(entry) != float:
+                    raise Exception(
+                        'The entries of E_ranges bins must be int or '
+                        'float.')
+                if entry < 0:
+                    raise Exception('Energy bins must be >0.')
+            E_range = np.array(E_range, dtype = float)
+        if type(E_ranges_L) != list and type(E_ranges_L) != np.ndarray:
+            raise Exception('E_ranges must be array-like')
+        else:
+            for bin in E_ranges_L:
                 if type(bin) != list and type(bin) != np.ndarray:
                     raise Exception('Each bin in E_ranges must be array-like.')
                 if len(bin) != 2:
@@ -4041,8 +4061,8 @@ class HiMaXBi:
         if rebin == False:
             rebin_params = [0, 0]
 
-        Emin = E_ranges[0][0]
-        Emax = E_ranges[0][1]
+        Emin = E_range[0]
+        Emax = E_range[1]
 
         fig, ax_spec, ax_res, ax_res_invis = setup_axis(Emin, Emax, figsize)
         fig_src, ax_spec_src, ax_res_src, ax_res_invis_src = \
@@ -4062,10 +4082,10 @@ class HiMaXBi:
         working_dir = f'{self._working_dir_full}/working'
         NH = self._NH * 1e-22
         abs_F, unabs_L, bkg_factors, analyser, ntransf = \
-            fit_bxa(abund, self._distance, E_ranges,
+            fit_bxa(abund, self._distance, E_range,
                     fit_model, NH, self._logger, prompting,
                     quantiles, src_files, fit_statistic, suffix,
-                    resume, working_dir, self._Z)
+                    resume, working_dir, self._Z, E_ranges_L)
         self._analyser = analyser
         # self._lum_chain = luminosity_chains
         if tbin_f == 'eRASS' or tbin_f == 'epoch':
@@ -4105,10 +4125,10 @@ class HiMaXBi:
             max = np.max(maxs)
             rescale_F = [min, max]
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
-                        rescale_F, rescale_chi, E_ranges, src_files, ncols,
+                        rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
         format_axis_pt2(fig_src, ax_spec_src, ax_res_src, ax_res_invis_src,
-                        fig_borders, rescale_F, rescale_chi, E_ranges,
+                        fig_borders, rescale_F, rescale_chi, E_range,
                         src_files, ncols, nrows, height_ratios, width_ratios)
         
         if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
@@ -4161,7 +4181,7 @@ class HiMaXBi:
         results_file = open(f'{self._working_dir_full}/results/spectra/'
                             f'{model}{suffix}/results.tex', 'w')
         write_tex(results_file, tex_info, abs_F, unabs_L, analyser, quantiles,
-                  E_ranges)
+                  E_ranges_L)
         results_file.close()
 
         self._logger.handlers = logstate
