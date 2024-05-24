@@ -3632,7 +3632,6 @@ class HiMaXBi:
                                                            [0.2, 10.0],
                                                            [0.2, 12.0],
                                                            [2.0, 10.0]]):
-        #TODO: add flux/luminosity for each epoch and eRASS using parameters from best fit for merged fit
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3998,6 +3997,7 @@ class HiMaXBi:
                             'float.')
                     if entry < 0:
                         raise Exception('Energy bins must be >0.')
+            E_ranges_L = np.array(E_ranges_L, dtype = float)
         if ((type(quantiles) != list and type(quantiles) != np.ndarray)
                 or (np.shape(quantiles) != (3,) and
                     np.shape(quantiles) != (0,))):
@@ -4030,6 +4030,13 @@ class HiMaXBi:
         user = getpass.getuser()
         plt.rc('text', usetex=True)
         plt.rc('font', family=label_style, size=label_size) #ToDo: add everywhere relevant
+
+        E_range = E_range.tolist()
+        E_ranges_L = E_ranges_L.tolist()
+        if not E_range in E_ranges_L:
+            E_ranges_L.insert(0,E_range)
+        E_range = np.array(E_range)
+        E_ranges_L = np.array(E_ranges_L)
 
         tex_info = []
         if model == 'apl':
@@ -4141,7 +4148,7 @@ class HiMaXBi:
                 maxs.append(1.1 * np.max(data + data_err))
                 mins.append(np.min(data[data>0]) / 2.)
             for key in output['bkg_fluxes'].keys():
-                if False: #ToDo: might be necessary to add this
+                if False: #TODO: might be necessary to add this
                     continue
                 data = np.array(output['bkg_fluxes'][key][0])
                 data_err = np.array(output['bkg_fluxes'][key][1])
