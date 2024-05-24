@@ -3630,6 +3630,7 @@ class HiMaXBi:
                               spec_files = [], label_style='serif',
                               label_size=16, E_ranges_L = [[0.2, 8.0],
                                                            [0.2, 10.0],
+                                                           [0.2, 12.0],
                                                            [2.0, 10.0]]):
         #TODO: add flux/luminosity for each epoch and eRASS using parameters from best fit for merged fit
         '''Fit and plot spectrum using bxa.

@@ -563,7 +563,8 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
 def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
     for specfile in epochs:
         factors = get_factors(merged_file, specfile, E_ranges)
-        tex_file.write('%s\n' % specfile[:specfile.find('_')])
+        name = specfile.split('_')[2]
+        tex_file.write('%s\n' % name)
         tex_file.write('\\begin{tabular}{%s}\n' % ('c' * (2*len(E_ranges))))
         tex_file.write('\\hline\\hline\n')
         line_1 = ''
@@ -580,7 +581,7 @@ def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
         tex_file.write(line_2)
         tex_file.write('\\hline\n')
         for i in range(len(abs_F)):
-            line = f'{i+1} & '
+            line = ''
             for irange in range(len(E_ranges)):
                 lower = abs_F[i][irange][0] * factors[irange]
                 median = abs_F[i][irange][1] * factors[irange]
@@ -590,7 +591,7 @@ def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
                 median = unabs_L[i][irange][1] * factors[irange]
                 upper = unabs_L[i][irange][2] * factors[irange]
                 line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
-            line += '\\\\ \n'
+            line = line[:-3] + '\\\\ \n'
             tex_file.write(line)
         tex_file.write('%s\\\\ \n' % ('& '*(2*len(E_ranges))))
         tex_file.write('\\end{tabular}\n')
