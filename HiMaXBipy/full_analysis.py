@@ -1504,7 +1504,7 @@ class HiMaXBi:
                                        yscale)
 
                 if fig_borders == []:
-                    if yscale == 'log' and pymax / pymin * 2 <= ticknumber_y:
+                    if yscale == 'log' and np.log(pymax / pymin) * 2 <= ticknumber_y:
                         fig_borders = [0.97, 0.1, 0.1, 0.98]
                     else:
                         fig_borders = [0.97, 0.1, 0.05, 0.98]
@@ -2349,7 +2349,7 @@ class HiMaXBi:
                                        yscale)
 
                 if fig_borders == []:
-                    if yscale == 'log' and pymax / pymin * 2 <= ticknumber_y:
+                    if yscale == 'log' and np.log10(pymax / pymin) * 2 <= ticknumber_y:
                         fig_borders = [0.97, 0.1, 0.1, 0.98]
                     else:
                         fig_borders = [0.97, 0.1, 0.05, 0.98]
@@ -2874,7 +2874,7 @@ class HiMaXBi:
                            nrows, d, tilt, diag_color, big_ax, yscale)
 
             if fig_borders == []:
-                if yscale == 'log':# and pymax / pymin * 2 <= ticknumber_y:
+                if yscale == 'log':# and np.log10(pymax / pymin) * 2 <= ticknumber_y:
                     fig_borders = [0.97, 0.05, 0.08, 0.98]
                 else:
                     fig_borders = [0.97, 0.05, 0.08, 0.98]
