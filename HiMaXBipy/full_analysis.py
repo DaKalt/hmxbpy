@@ -4035,8 +4035,6 @@ class HiMaXBi:
         E_ranges_L = E_ranges_L.tolist()
         if not E_range in E_ranges_L:
             E_ranges_L.insert(0,E_range)
-        E_range = np.array(E_range)
-        E_ranges_L = np.array(E_ranges_L)
 
         tex_info = []
         if model == 'apl':

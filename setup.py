@@ -45,7 +45,7 @@ setup(
         'HiMaXBipy/rgb',
 
     ],
-    version='v1.0.346',
+    version='v1.0.347',
     license='MIT',
     description='A python tool to analyse eROSITA data of HMXB',
     author='David M. Kaltenbrunner',
