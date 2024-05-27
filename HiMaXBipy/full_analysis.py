@@ -4364,29 +4364,32 @@ class HiMaXBi:
     def _prepare_spec_epochs(self):
         eRASS = []
         epochs = []
-        for eRASS_counter in range(len(self._ero_starttimes)):
+        for eRASS_counter in range(len(self._ero_starttimes)+1):
             if eRASS_counter == 0:
-                start = (58500 - self._mjdref) * 24. * 3600.
-                stop = ((self._ero_starttimes[eRASS_counter + 1]
+                start = (58400 - self._mjdref) * 24. * 3600.
+                stop = ((self._ero_starttimes[eRASS_counter]
                             - self._mjdref) * 3600. * 24.)
-            elif eRASS_counter == len(self._ero_starttimes) - 1:
-                start = ((self._ero_starttimes[eRASS_counter]
+            elif eRASS_counter == len(self._ero_starttimes):
+                start = ((self._ero_starttimes[eRASS_counter - 1]
                             - self._mjdref) * 3600. * 24.)
-                stop = ((self._ero_starttimes[eRASS_counter] + 200
+                stop = ((self._ero_starttimes[eRASS_counter - 1] + 200
                             - self._mjdref) * 3600. * 24.)
             else:
-                start = ((self._ero_starttimes[eRASS_counter]
+                start = ((self._ero_starttimes[eRASS_counter - 1]
                             - self._mjdref) * 3600. * 24.)
-                stop = ((self._ero_starttimes[eRASS_counter + 1]
+                stop = ((self._ero_starttimes[eRASS_counter]
                             - self._mjdref) * 3600. * 24.)
             replacements = [['@esass_location', self._esass],
                             ['@infiles', self._filelist],
                             ['@outfile',
-                            f'./eRASS{eRASS_counter+1}_'
+                            f'./eRASS{eRASS_counter}_'
                                 'bxa.fits'],
                             ['@start',
                             f'{start}'],
                             ['@stop', f'{stop}']]
+            if (self._obs_periods[-1][-1]
+                < self._ero_starttimes[eRASS_counter-1]):
+                continue
             sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
             old_environ = os.environ.copy()
@@ -4397,11 +4400,11 @@ class HiMaXBi:
             for line in process.stdout.readlines():
                 # to fix weird b'something' format
                 self._logger.debug(str(line)[2:-3] + '\n')
-            event_file = (f'./eRASS{eRASS_counter+1}_'
+            event_file = (f'./eRASS{eRASS_counter}_'
                                 'bxa.fits')
             self._extract_spectrum_bxa(event_file, 'factor_file_eRASS'
-                                        f'{eRASS_counter+1}')
-            eRASS.append(f'factor_file_eRASS{eRASS_counter+1}_bxa_020_'
+                                        f'{eRASS_counter}')
+            eRASS.append(f'factor_file_eRASS{eRASS_counter}_bxa_020_'
                             'SourceSpec_00001.fits')
         if self._create_epochs:
             for epoch_counter in range(len(self._obs_periods)):
