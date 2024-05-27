@@ -2350,7 +2350,7 @@ class HiMaXBi:
 
                 if fig_borders == []:
                     if yscale == 'log' and np.log10(pymax / pymin) * 2 <= ticknumber_y:
-                        fig_borders = [0.97, 0.1, 0.1, 0.98]
+                        fig_borders = [0.97, 0.1, 0.08, 0.98]
                     else:
                         fig_borders = [0.97, 0.1, 0.05, 0.98]
                 fig1.set_tight_layout(True)
@@ -2874,10 +2874,13 @@ class HiMaXBi:
                            nrows, d, tilt, diag_color, big_ax, yscale)
 
             if fig_borders == []:
-                if yscale == 'log':# and np.log10(pymax / pymin) * 2 <= ticknumber_y:
+                if (yscale == 'log' and 
+                    (np.log10(pymax[0] / pymin[0]) * 2 <= ticknumber_y
+                     or np.log10(pymax[1] / pymin[1]) * 2 <= ticknumber_y
+                     or np.log10(pymax[2] / pymin[2]) * 2 <= ticknumber_y)):
                     fig_borders = [0.97, 0.05, 0.08, 0.98]
                 else:
-                    fig_borders = [0.97, 0.05, 0.08, 0.98]
+                    fig_borders = [0.97, 0.05, 0.05, 0.98]
             fig1.set_tight_layout(True)
             fig1.set_tight_layout(False)
             wspace = 8.0 / figsize[0] * 0.05
