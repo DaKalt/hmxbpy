@@ -196,7 +196,6 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
                 shadeargs = dict(**shadeargs, hatch=hatches[igroup])
                 band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
                 band.line(label=label, **lineargs)
-            print('here')
             AllModels.show()
             AllModels(groupNum=2*igroup+1, modName=f'bkgmod{igroup+1}')\
                 .constant.factor.values = frac_backup.copy()
@@ -562,7 +561,6 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
 
 def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
     for specfile in epochs:
-        print(specfile)
         factors = get_factors(merged_file, specfile, E_ranges)
         name = specfile.split('_')[2]
         tex_file.write('%s\n' % name)

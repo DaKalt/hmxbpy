@@ -289,9 +289,9 @@ class HiMaXBi:
             [[0.2, 2.0], [2.0, 8.0]]
         '''
         if bin_full == []:
-            bin_full = [0.2, 8.0]
+            bin_full = self._energy_bins_hr[0]
         if bins_ind == []:
-            bins_ind = [[0.2, 2.0], [2.0, 8.0]]
+            bins_ind = self._energy_bins_hr[1:]
         self._logger.info('Ebins set.')
         if type(bin_full) != list and type(bin_full) != np.ndarray:
             raise Exception('bins must be array-like')
@@ -330,6 +330,8 @@ class HiMaXBi:
                         '0.2 <= E_min < E_max <= 8.0.')
         if (bins_ind[0][0] < bin_full[0] or bins_ind[0][1] > bin_full[1]
             or bins_ind[1][0] < bin_full[0] or bins_ind[1][1] > bin_full[1]):
+            print(bins_ind)
+            print(bin_full)
             raise Exception(
                 'The energy bins in bins_ind must be within the energy bins '
                 'in bins_full.')
