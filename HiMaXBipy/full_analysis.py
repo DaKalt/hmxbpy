@@ -4391,7 +4391,8 @@ class HiMaXBi:
                             f'{start}'],
                             ['@stop', f'{stop}']]
             if (self._obs_periods[-1][-1]
-                < self._ero_starttimes[eRASS_counter-1]):
+                < self._ero_starttimes[eRASS_counter-1]
+                and eRASS_counter > 0):
                 continue
             sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
