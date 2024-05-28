@@ -599,10 +599,12 @@ def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
 def get_factors(merged_file, specfile, E_ranges):
     factors = []
     for bin in E_ranges:
+        AllData.clear()
         spec_merged = Spectrum(merged_file)
         spec_merged.notice('**-**')
         spec_merged.ignore('**-%s %s-**' % (bin[0], bin[1]))
         cr_merged = spec_merged.rate[0]
+        AllData.clear()
         spec_epoch = Spectrum(specfile)
         spec_epoch.notice('**-**')
         spec_epoch.ignore('**-%s %s-**' % (bin[0], bin[1]))
