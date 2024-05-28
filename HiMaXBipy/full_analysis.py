@@ -103,7 +103,7 @@ class HiMaXBi:
     _energy_bins_hr = [[0.2, 8.0], [0.2, 2.0], [2.0, 5.0]]
     _grouping = 1
     _ownership = 'x'
-    _distance = 50.
+    _distance = 50. #TODO: change to 49.59? from Pietrzynski+2019, Julia uses this
     _Z = 0.49
     _debugging = False
     _NH = 6e20
@@ -4392,9 +4392,11 @@ class HiMaXBi:
                             ['@start',
                             f'{start}'],
                             ['@stop', f'{stop}']]
+            print(f'eRASS{eRASS_counter}_bxa.fits')
             if (self._obs_periods[-1][-1]
                 < self._ero_starttimes[eRASS_counter-1]
                 and eRASS_counter > 0):
+                print(f'eRASS{eRASS_counter}_bxa.fits')
                 continue
             sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
