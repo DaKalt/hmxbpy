@@ -561,7 +561,6 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
 
 def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
     for specfile in epochs:
-        print(specfile) #TODO: for debugging
         factors = get_factors(merged_file, specfile, E_ranges)
         name = specfile.split('_')[2]
         tex_file.write('%s\n' % name)
