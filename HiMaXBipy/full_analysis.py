@@ -4220,6 +4220,8 @@ class HiMaXBi:
                   E_ranges_L)
         results_file.close()
 
+        print(specs_eRASS)
+        print(specs_epoch)
         if mode == 'merged':
             merged_file = src_files[0]
             results_file = open(f'{self._working_dir_full}/results/spectra/'
@@ -4392,11 +4394,9 @@ class HiMaXBi:
                             ['@start',
                             f'{start}'],
                             ['@stop', f'{stop}']]
-            print(f'eRASS{eRASS_counter}_bxa.fits')
             if (self._obs_periods[-1][-1]
                 < self._ero_starttimes[eRASS_counter-1]
                 and eRASS_counter > 0):
-                print(f'eRASS{eRASS_counter}_bxa.fits')
                 continue
             sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
