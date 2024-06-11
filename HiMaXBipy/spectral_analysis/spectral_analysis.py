@@ -29,7 +29,7 @@ def spec_Plotting(Plot_, AllData_, product_dir, part, rebin, rescale_params,
     Plot_.addCommand(f'la t {title}')
     Plot_.addCommand(r'cs 1.4')
     Plot_.addCommand(r'font RO')
-    Plot_.addCommand(r'la y Counts s\u-1 \dkeV\u-1')
+    Plot_.addCommand(r'la y Flux (counts s\u-1 \dkeV\u-1)')
     Plot_.addCommand(r'la pos y 2.5')
     if not separate:
         for xi in range(1, AllData_.nGroups + 1):

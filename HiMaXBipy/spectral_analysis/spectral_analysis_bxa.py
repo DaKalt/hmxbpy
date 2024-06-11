@@ -712,7 +712,7 @@ def format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders, rescale_F,
     ax_res.set_position(gs[1].get_position(fig))
     ax_res_invis.set_position(gs[1].get_position(fig))
 
-    ax_spec.set_ylabel('Counts s$^{-1}$ keV$^{-1}$')
+    ax_spec.set_ylabel('Flux (counts s$^{-1}$ keV$^{-1}$)')
     ax_res_invis.set_ylabel('$\\Delta\\chi$')
     ax_res.set_xlabel('Energy (keV)')
 
