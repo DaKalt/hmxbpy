@@ -506,22 +506,22 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
     tex_file.write('\\hline\\hline\n')
     line_1 = ''
     for i in range(len(tex_info)):
-        line_1 += tex_info[i][0]
+        line_1 += ' & ' + tex_info[i][0]
     line_2 = ''
     for i in range(len(tex_info)):
-        line_2 += tex_info[i][1]
+        line_2 += ' & ' + tex_info[i][1]
     for entry in E_ranges:
         line_1 += (' & \\mbox{F$_{\\rm x; %s-%s}$} '
                    '& \\mbox{L$_{\\rm x; %s-%s}$}' % (entry[0], entry[1],
                                                           entry[0], entry[1]))
         line_2 += (' & $\\times$erg cm$^{-2}$s$^{-1}$ & '
                    '$\\times$erg s$^{-1}$')
-    tex_file.write(f'Part & {line_1} \\\\ \n')
-    tex_file.write(f'-- & {line_2} \\\\ \n')
+    tex_file.write(f'Part{line_1} \\\\ \n')
+    tex_file.write(f'--{line_2} \\\\ \n')
     tex_file.write('\\hline\n')
     for i in range(len(abs_F)):
         tex_file.write('%s\\\\ \n' % ('& '*(len(tex_info) + 2*len(E_ranges))))
-        line = f'{i+1} & '
+        line = f'{i+1}'
         for j in range(len(tex_info)):
             if len(tex_info[j][2]) == 1:
                 if i > 0:
@@ -544,7 +544,7 @@ def write_tex(tex_file, tex_info, abs_F, unabs_L, analyser, quantiles,
                 lower = 10 ** lower
                 median = 10 ** median
                 upper = 10 ** upper 
-            line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$'
+            line += f' & {median}$^{{+{upper-median}}}_{{-{median-lower}}}$'
         for irange in range(len(E_ranges)):
             lower = abs_F[i][irange][0]
             median = abs_F[i][irange][1]
