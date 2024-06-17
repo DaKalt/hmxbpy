@@ -4396,9 +4396,10 @@ class HiMaXBi:
                 < self._ero_starttimes[eRASS_counter-1]
                 and eRASS_counter > 0):
                 continue
-            if (self._obs_periods[0][0]
-                > self._ero_starttimes[eRASS_counter]):
-                continue
+            if eRASS_counter < len(self._ero_starttimes):
+                if (self._obs_periods[0][0]
+                    > self._ero_starttimes[eRASS_counter]):
+                    continue
             sh_file = self._working_dir_full + '/working/trim_eventfile.sh'
             sh_file = self._replace_in_sh(sh_file, replacements)
             old_environ = os.environ.copy()
