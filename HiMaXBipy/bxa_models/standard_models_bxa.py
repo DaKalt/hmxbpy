@@ -278,4 +278,4 @@ def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
     nHs_modelled = [loc_nh]
-    return transformations, nHs_frozen, nHs_modelled, 'apl'
+    return transformations, nHs_frozen, nHs_modelled, 'apl_hmxb'
