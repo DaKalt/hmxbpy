@@ -48,7 +48,7 @@ from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
     plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2,\
     write_tex_epochs
 from HiMaXBipy.bxa_models.standard_models_bxa import apl, apl_simple,\
-    abb, abb_simple, apl_diskbb, apl_diskbb_simple
+    abb, abb_simple, apl_diskbb, apl_diskbb_simple, apl_hmxb
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
 cmap = cm.get_cmap('cubehelix')
@@ -3676,6 +3676,8 @@ class HiMaXBi:
             between the used spectra and tbvarabs for local absorption.
             -abb_simple: absorbed black body with linked bb temperatures
             without local absorption.
+            -apl_hmxb: apl with local absorption and powerlaw index
+            frozen to 1. Used for faint sources.
             For the correct definition of a user-defined model it might
             be helpful to run the function <HiMaXBi>.bxa_model_example()
             which creates a python file with the apl model with comments
@@ -3824,14 +3826,14 @@ class HiMaXBi:
         else:
             if (model != 'apl' and model != 'apl_simple' and model != 'abb'
                     and model != 'abb_simple' and model != 'apl_diskbb'
-                    and model != 'apl_diskbb_simple'):
+                    and model != 'apl_diskbb_simple' and model != 'apl_hmxb'):
                 try:
                     mod = import_module(f'{self._working_dir_full}/{model}')
                     fit_model = mod.custom_model
                 except NameError:
                     raise Exception('model must be \'apl\', \'apl_simple\', '
-                                    '\'abb\', \'abb_simple\' or an existing '
-                                    'python file in '
+                                    '\'abb\', \'abb_simple\', \'apl_hmxb\''
+                                    'or an existing python file in '
                                     f'{self._working_dir_full}.')
                 except AttributeError:
                     raise Exception(f'The model function inside {model} must '
@@ -4050,6 +4052,10 @@ class HiMaXBi:
         elif model == 'apl_simple':
             fit_model = apl_simple
             tex_info = [['Power-law', 'index', [0], 'lin']]
+        elif model == 'apl_hmxb':
+            fit_model = apl_hmxb
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
+                            'log']]
         elif model == 'abb':
             fit_model = abb
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
