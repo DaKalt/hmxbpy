@@ -48,7 +48,7 @@ from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
     plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2,\
     write_tex_epochs
 from HiMaXBipy.bxa_models.standard_models_bxa import apl, apl_simple,\
-    abb, abb_simple, apl_diskbb, apl_diskbb_simple, apl_hmxb
+    abb, abb_simple, apl_diskbb, apl_diskbb_simple, apl_hmxb, apl_bb
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
 cmap = cm.get_cmap('cubehelix')
@@ -3826,14 +3826,15 @@ class HiMaXBi:
         else:
             if (model != 'apl' and model != 'apl_simple' and model != 'abb'
                     and model != 'abb_simple' and model != 'apl_diskbb'
-                    and model != 'apl_diskbb_simple' and model != 'apl_hmxb'):
+                    and model != 'apl_diskbb_simple' and model != 'apl_hmxb'
+                    and model != 'apl_bb'):
                 try:
                     mod = import_module(f'{self._working_dir_full}/{model}')
                     fit_model = mod.custom_model
                 except NameError:
                     raise Exception('model must be \'apl\', \'apl_simple\', '
-                                    '\'abb\', \'abb_simple\', \'apl_hmxb\''
-                                    'or an existing python file in '
+                                    '\'abb\', \'abb_simple\', \'apl_hmxb\', '
+                                    '\'apl_bb\' or an existing python file in '
                                     f'{self._working_dir_full}.')
                 except AttributeError:
                     raise Exception(f'The model function inside {model} must '
@@ -4074,6 +4075,12 @@ class HiMaXBi:
             tex_info = [['Power-law', 'index', [0], 'lin'],
                         ['Tin', 'K', [1], 'lin']]
             fit_model = apl_diskbb_simple
+        elif model == 'apl_bb':
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
+                         'log'],
+                        ['Power-law', 'index', [1], 'lin'],
+                        ['Teff', 'K', [2], 'lin']]
+            fit_model = apl_bb
 
         if colors == []:
             colors = color_palette
