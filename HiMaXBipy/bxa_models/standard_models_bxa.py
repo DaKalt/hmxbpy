@@ -1,5 +1,5 @@
-from spectral_analysis.modded_function import modded_create_uniform_prior_for,\
-    modded_create_jeffreys_prior_for
+from HiMaXBipy.spectral_analysis.modded_function import\
+    modded_create_uniform_prior_for, modded_create_jeffreys_prior_for
 
 def apl(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
