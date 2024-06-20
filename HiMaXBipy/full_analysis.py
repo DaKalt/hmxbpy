@@ -4244,6 +4244,7 @@ class HiMaXBi:
 
         self._logger.handlers = logstate
         os.environ = old_environ
+        self._spec_fig = fig #for debugging
 
         if return_array:
             return output, abs_F, unabs_L
