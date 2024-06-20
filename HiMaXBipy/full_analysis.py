@@ -4085,7 +4085,7 @@ class HiMaXBi:
         # these stay hardcoded but need to be adjusted
         # top, bottom, left, right
         if len(fig_borders) == 0:
-            fig_borders = [0.98, 0.09, 0.14, 0.97]
+            fig_borders = [0.99, 0.06, 0.11, 0.98]
         figsize = [8, 11]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
