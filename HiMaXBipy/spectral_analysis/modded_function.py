@@ -13,6 +13,7 @@ from bxa.xspec.solver import set_parameters, XSilence
 import numpy as np
 import scipy.stats
 from xspec import Plot
+from numpy import log10
 
 
 def posterior_predictions_plot(analyser, plottype, nsamples=None, group=1):
@@ -138,3 +139,42 @@ class PredictionBand(object):
         lineargs.update(kwargs)
         mid = self.get_line(0.5)
         return self.ax.plot(self.x, mid, **lineargs)
+
+def modded_create_uniform_prior_for(model, par):
+	"""
+    From bxa, change usage of pmin/pmax to pbottom/ptop
+	Use for location variables (position)
+	The uniform prior gives equal weight in non-logarithmic scale.
+	"""
+	pval, pdelta, pmin, pbottom, ptop, pmax = par.values
+	print('  uniform prior for %s between %f and %f ' % (par.name, pbottom, ptop))
+	# TODO: should we use min/max or bottom/top?
+	low = float(pbottom)
+	spread = float(ptop - pbottom)
+	if pbottom > 0 and ptop / pbottom > 100:
+		print('   note: this parameter spans several dex. Should it be log-uniform (create_jeffreys_prior_for)?')
+	def uniform_transform(x): return x * spread + low
+	return dict(model=model, index=par._Parameter__index, name=par.name, 
+		transform=uniform_transform, aftertransform=lambda x: x)
+
+def modded_create_jeffreys_prior_for(model, par):
+	"""
+    From bxa, change usage of pmin/pmax to pbottom/ptop
+	Use for scale variables (order of magnitude)
+	The Jeffreys prior gives equal weight to each order of magnitude between the
+	minimum and maximum value. Flat in logarithmic scale
+	"""
+	pval, pdelta, pmin, pbottom, ptop, pmax = par.values
+	# TODO: should we use min/max or bottom/top?
+	#print '  ', par.values
+	print('  jeffreys prior for %s between %e and %e ' % (par.name, pbottom, ptop))
+	if pbottom == 0:
+		raise Exception('You forgot to set reasonable parameter limits on %s' % par.name)
+	low = log10(pbottom)
+	spread = log10(ptop) - log10(pbottom)
+	if spread > 10:
+		print('   note: this parameter spans *many* dex. Double-check the limits are reasonable.')
+	def log_transform(x): return x * spread + low
+	def log_after_transform(x): return 10**x
+	return dict(model=model, index=par._Parameter__index, name='log(%s)' % par.name, 
+		transform=log_transform, aftertransform=log_after_transform)

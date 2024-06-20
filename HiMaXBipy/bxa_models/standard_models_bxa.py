@@ -1,3 +1,6 @@
+from spectral_analysis.modded_function import modded_create_uniform_prior_for,\
+    modded_create_jeffreys_prior_for
+
 def apl(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
@@ -23,11 +26,11 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
     loc_nh.values = [galnh, 0.1, 1e-5, 1e-10, 10, 10]
-    p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
+    p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
     gamma.values = [1, 0.1, -2, -2, 4, 4]
-    p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
+    p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
     # uses alpha
     transformations.append(p_gamma)
@@ -35,7 +38,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-8, 1e-20, 1e2, 1e20]
-        p_norm = bxa.create_jeffreys_prior_for(model, norm)
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
@@ -55,14 +58,14 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
     gamma.values = [1, 0.1, -2, -2, 4, 4]
-    p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
+    p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$'
     transformations.append(p_gamma)
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-8, 1e-20, 1e2, 1e20]
-        p_norm = bxa.create_jeffreys_prior_for(model, norm)
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
@@ -82,13 +85,13 @@ def abb_simple(Model, AllModels, bxa, galnh, Z, n):
     # fit parameters
     kT = srcmod.bbodyrad.kT
     kT.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
-    p_kT = bxa.create_uniform_prior_for(srcmod, kT)
+    p_kT = modded_create_uniform_prior_for(srcmod, kT)
     transformations.append(p_kT)
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.bbodyrad.norm
         norm.values = [1e-4, 0.1, 1e-6, 1e-20, 1e7, 1e20]
-        p_norm = bxa.create_jeffreys_prior_for(model, norm)
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
@@ -124,17 +127,17 @@ def abb(Model, AllModels, bxa, galnh, Z, n):
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
     loc_nh.values = [galnh, 0.1, 1e-5, 1e-10, 10, 10]
-    p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
+    p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     kT = srcmod.bbodyrad.kT
     kT.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
-    p_kT = bxa.create_uniform_prior_for(srcmod, kT)
+    p_kT = modded_create_uniform_prior_for(srcmod, kT)
     transformations.append(p_kT)
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.bbodyrad.norm
         norm.values = [1e-4, 0.1, 1e-6, 1e-20, 1e7, 1e20]
-        p_norm = bxa.create_jeffreys_prior_for(model, norm)
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
@@ -153,24 +156,24 @@ def apl_diskbb_simple(Model, AllModels, bxa, galnh, Z, n):
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
     gamma.values = [1, 0.1, -2, -2, 4, 4]
-    p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
+    p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$'
     transformations.append(p_gamma)
     Tin = srcmod.diskbb.Tin
     Tin.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
-    p_Tin = bxa.create_uniform_prior_for(srcmod, Tin)
+    p_Tin = modded_create_uniform_prior_for(srcmod, Tin)
     p_Tin['name'] = '$T_{in}$'
     transformations.append(p_Tin)
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-8, 1e-20, 1e2, 1e20]
-        p_norm = bxa.create_jeffreys_prior_for(model, norm)
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_disk = model.diskbb.norm
         norm_disk.values = [1e-4, 0.1, 1e-6, 1e-20, 1e7, 1e20]
-        p_norm_disk = bxa.create_jeffreys_prior_for(model, norm_disk)
+        p_norm_disk = modded_create_jeffreys_prior_for(model, norm_disk)
         p_norm_disk['name'] = 'log(norm$_{disk,%s}$)' % (groupid+1)
         transformations.append(p_norm_disk)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
@@ -205,29 +208,29 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
     loc_nh.values = [galnh, 0.1, 1e-5, 1e-10, 10, 10]
-    p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
+    p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
     gamma.values = [1, 0.1, -2, -2, 4, 4]
-    p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
+    p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
     # uses alpha
     transformations.append(p_gamma)
     Tin = srcmod.diskbb.Tin
     Tin.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
-    p_Tin = bxa.create_uniform_prior_for(srcmod, Tin)
+    p_Tin = modded_create_uniform_prior_for(srcmod, Tin)
     p_Tin['name'] = '$T_{in}$'
     transformations.append(p_Tin)
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-8, 1e-20, 1e2, 1e20]
-        p_norm = bxa.create_jeffreys_prior_for(model, norm)
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_disk = model.diskbb.norm
         norm_disk.values = [1e-4, 0.1, 1e-6, 1e-20, 1e7, 1e20]
-        p_norm_disk = bxa.create_jeffreys_prior_for(model, norm_disk)
+        p_norm_disk = modded_create_jeffreys_prior_for(model, norm_disk)
         p_norm_disk['name'] = 'log(norm$_{disk,%s}$)' % (groupid+1)
         transformations.append(p_norm_disk)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
@@ -262,7 +265,7 @@ def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
     loc_nh.values = [galnh, 0.1, 1e-5, 1e-10, 10, 10]
-    p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
+    p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
     gamma.values = [1, -1]
@@ -270,7 +273,7 @@ def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-8, 1e-20, 1e2, 1e20]
-        p_norm = bxa.create_jeffreys_prior_for(model, norm)
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
@@ -305,28 +308,28 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
     loc_nh.values = [galnh, 0.1, 1e-5, 1e-10, 10, 10]
-    p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
+    p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
     gamma.values = [1, 0.1, -2, -2, 4, 4]
-    p_gamma = bxa.create_uniform_prior_for(srcmod, gamma)
+    p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
     # uses alpha
     transformations.append(p_gamma)
     kT = srcmod.bbodyrad.kT
     kT.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
-    p_kT = bxa.create_uniform_prior_for(srcmod, kT)
+    p_kT = modded_create_uniform_prior_for(srcmod, kT)
     transformations.append(p_kT)
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.1, 1e-8, 1e-20, 1e2, 1e20]
-        p_norm = bxa.create_jeffreys_prior_for(model, norm)
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_bb = model.bbodyrad.norm
         norm_bb.values = [1e-4, 0.1, 1e-6, 1e-20, 1e7, 1e20]
-        p_norm_bb = bxa.create_jeffreys_prior_for(model, norm_bb)
+        p_norm_bb = modded_create_jeffreys_prior_for(model, norm_bb)
         p_norm_bb['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm_bb)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
