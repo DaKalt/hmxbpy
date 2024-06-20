@@ -4046,7 +4046,7 @@ class HiMaXBi:
         tex_info = []
         if model == 'apl':
             fit_model = apl
-            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                             'log'],
                         ['Power-law', 'index', [1], 'lin']]
         elif model == 'apl_simple':
@@ -4054,18 +4054,18 @@ class HiMaXBi:
             tex_info = [['Power-law', 'index', [0], 'lin']]
         elif model == 'apl_hmxb':
             fit_model = apl_hmxb
-            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                             'log']]
         elif model == 'abb':
             fit_model = abb
-            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                          'log'],
                         ['Teff', 'K', [1], 'lin']]
         elif model == 'abb_simple':
             tex_info = [['Teff', 'K', [0], 'lin']]
             fit_model = abb_simple
         elif model == 'apl_diskbb':
-            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{20}}$', [0],
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                          'log'],
                         ['Power-law', 'index', [1], 'lin'],
                         ['Tin', 'K', [2], 'lin']]

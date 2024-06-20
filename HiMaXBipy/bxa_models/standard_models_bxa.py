@@ -22,7 +22,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.1, 1e-5, 1e-5, 10, 10]
+    loc_nh.values = [galnh, 0.1, 1e-10, 1e-10, 10, 10]
     p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
@@ -123,7 +123,7 @@ def abb(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.1, 1e-5, 1e-5, 10, 10]
+    loc_nh.values = [galnh, 0.1, 1e-10, 1e-10, 10, 10]
     p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     kT = srcmod.bbodyrad.kT
@@ -204,7 +204,7 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.1, 1e-5, 1e-5, 10, 10]
+    loc_nh.values = [galnh, 0.1, 1e-10, 1e-10, 10, 10]
     p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
@@ -261,7 +261,7 @@ def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.1, 1e-5, 1e-5, 10, 10]
+    loc_nh.values = [galnh, 0.1, 1e-10, 1e-10, 10, 10]
     p_loc_nh = bxa.create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
