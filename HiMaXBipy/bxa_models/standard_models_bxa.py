@@ -90,7 +90,7 @@ def abb_simple(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.bbodyrad.norm
-        norm.values = [1e-4, 0.1, 1e-20, 1e-6, 1e7, 1e20]
+        norm.values = [1e-4, 0.1, 1e-20, 1e-3, 1e7, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm)
@@ -136,7 +136,7 @@ def abb(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.bbodyrad.norm
-        norm.values = [1e-4, 0.1, 1e-20, 1e-6, 1e7, 1e20]
+        norm.values = [1e-4, 0.1, 1e-20, 1e-3, 1e7, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm)
@@ -328,7 +328,7 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_bb = model.bbodyrad.norm
-        norm_bb.values = [1e-4, 0.1, 1e-20, 1e-6, 1e7, 1e20]
+        norm_bb.values = [1e-4, 0.1, 1e-20, 1e-3, 1e7, 1e20]
         p_norm_bb = modded_create_jeffreys_prior_for(model, norm_bb)
         p_norm_bb['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm_bb)
