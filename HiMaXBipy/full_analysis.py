@@ -47,8 +47,7 @@ from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
     plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2,\
     write_tex_epochs
-from HiMaXBipy.bxa_models.standard_models_bxa import apl, apl_simple,\
-    abb, abb_simple, apl_diskbb, apl_diskbb_simple, apl_hmxb, apl_bb
+from HiMaXBipy.bxa_models.standard_models_bxa import *
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
 cmap = cm.get_cmap('cubehelix')
@@ -3827,7 +3826,7 @@ class HiMaXBi:
             if (model != 'apl' and model != 'apl_simple' and model != 'abb'
                     and model != 'abb_simple' and model != 'apl_diskbb'
                     and model != 'apl_diskbb_simple' and model != 'apl_hmxb'
-                    and model != 'apl_bb'):
+                    and model != 'apl_bb' and model != 'apl_bb_simple'):
                 try:
                     mod = import_module(f'{self._working_dir_full}/{model}')
                     fit_model = mod.custom_model
@@ -4081,6 +4080,10 @@ class HiMaXBi:
                         ['Power-law', 'index', [1], 'lin'],
                         ['Teff', 'K', [2], 'lin']]
             fit_model = apl_bb
+        elif model == 'apl_bb_simple':
+            tex_info = [['Power-law', 'index', [0], 'lin'],
+                        ['Teff', 'K', [1], 'lin']]
+            fit_model = apl_bb_simple
 
         if colors == []:
             colors = color_palette

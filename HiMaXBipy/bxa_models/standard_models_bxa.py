@@ -339,3 +339,40 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
     nHs_frozen = [nH]
     nHs_modelled = [loc_nh]
     return transformations, nHs_frozen, nHs_modelled, 'apl_bb'
+
+def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
+    # frozen parameters
+    transformations = []
+    srcmod = Model('tbabs*(pow+bbodyrad)', modName='srcmod', sourceNum=1)
+    srcmod.TBabs.nH.values = [galnh, -1]
+
+    # fit parameters
+    gamma = srcmod.powerlaw.PhoIndex
+    gamma.values = [1, 0.1, -2, -2, 4, 4]
+    p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
+    p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
+    # uses alpha
+    transformations.append(p_gamma)
+    kT = srcmod.bbodyrad.kT
+    kT.values = [0.1, 0.005, 0.001, 0.001, 2, 10]
+    p_kT = modded_create_uniform_prior_for(srcmod, kT)
+    transformations.append(p_kT)
+    for groupid in range(n):
+        model = AllModels(groupNum=2*groupid+1, modName='srcmod')
+        norm = model.powerlaw.norm
+        norm.values = [1e-4, 0.1, 1e-20, 1e-8, 1e2, 1e20]
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
+        p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
+        transformations.append(p_norm)
+        norm_bb = model.bbodyrad.norm
+        norm_bb.values = [1e-4, 0.1, 1e-20, 1e-3, 1e7, 1e20]
+        p_norm_bb = modded_create_jeffreys_prior_for(model, norm_bb)
+        p_norm_bb['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
+        transformations.append(p_norm_bb)
+        model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
+        model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
+        model_bkg.bbodyrad.norm.values = [0, -1]  # this needs to be tested
+    nH = srcmod.TBabs.nH
+    nHs_frozen = [nH]
+    nHs_modelled = [loc_nh]
+    return transformations, nHs_frozen, nHs_modelled, 'apl_bb'
