@@ -3843,7 +3843,6 @@ class HiMaXBi:
                 except AttributeError:
                     raise Exception(f'The model function inside {model} must '
                                     'be called \'custom_model\'.')
-                raise Exception('mode must be \'merged\' or \'simultaneous\'.')
         if type(log_prefix) != str:
             raise Exception('log_prefix must be a string.')
         if type(log_suffix) != str:
