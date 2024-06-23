@@ -3828,8 +3828,13 @@ class HiMaXBi:
                     and model != 'apl_diskbb_simple' and model != 'apl_hmxb'
                     and model != 'apl_bb' and model != 'apl_bb_simple'):
                 try:
-                    mod = import_module(f'{self._working_dir_full}/{model}')
+                    model = model[:model.find('.py')]
+                    chwd = os.getcwd()
+                    os.chdir(self._working_dir_full)
+                    mod = import_module(f'{model}')
                     fit_model = mod.custom_model
+                    tex_info = mod.tex_info
+                    os.chdir(chwd)
                 except NameError:
                     raise Exception('model must be \'apl\', \'apl_simple\', '
                                     '\'abb\', \'abb_simple\', \'apl_hmxb\', '
