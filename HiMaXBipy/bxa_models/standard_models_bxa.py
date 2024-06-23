@@ -374,5 +374,5 @@ def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
         model_bkg.bbodyrad.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
-    nHs_modelled = [loc_nh]
+    nHs_modelled = []
     return transformations, nHs_frozen, nHs_modelled, 'apl_bb'
