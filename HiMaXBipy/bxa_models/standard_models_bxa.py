@@ -217,7 +217,7 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
     # uses alpha
     transformations.append(p_gamma)
     Tin = srcmod.diskbb.Tin
-    Tin.values = [0.1, 0.005, 0.001, 0.001, 0.3, 10]
+    Tin.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
     p_Tin = modded_create_uniform_prior_for(srcmod, Tin)
     p_Tin['name'] = '$T_{in}$'
     transformations.append(p_Tin)
@@ -317,7 +317,7 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
     # uses alpha
     transformations.append(p_gamma)
     kT = srcmod.bbodyrad.kT
-    kT.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
+    kT.values = [0.1, 0.005, 0.001, 0.001, 0.3, 10]
     p_kT = modded_create_uniform_prior_for(srcmod, kT)
     transformations.append(p_kT)
     for groupid in range(n):
@@ -354,7 +354,7 @@ def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
     # uses alpha
     transformations.append(p_gamma)
     kT = srcmod.bbodyrad.kT
-    kT.values = [0.1, 0.005, 0.001, 0.001, 2, 10]
+    kT.values = [0.1, 0.005, 0.001, 0.001, 0.3, 10]
     p_kT = modded_create_uniform_prior_for(srcmod, kT)
     transformations.append(p_kT)
     for groupid in range(n):
