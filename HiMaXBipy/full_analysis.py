@@ -3828,7 +3828,8 @@ class HiMaXBi:
                     and model != 'apl_diskbb_simple' and model != 'apl_hmxb'
                     and model != 'apl_bb' and model != 'apl_bb_simple'):
                 try:
-                    model = model[:model.find('.py')]
+                    if model.find('.py') > -1:
+                        model = model[:model.find('.py')]
                     chwd = os.getcwd()
                     os.chdir(self._working_dir_full)
                     mod = import_module(f'{model}')
@@ -4059,7 +4060,7 @@ class HiMaXBi:
         elif model == 'apl_hmxb':
             fit_model = apl_hmxb
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
-                            'log']]
+                         'log']]
         elif model == 'abb':
             fit_model = abb
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
