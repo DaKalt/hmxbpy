@@ -375,4 +375,4 @@ def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
     nHs_modelled = []
-    return transformations, nHs_frozen, nHs_modelled, 'apl_bb'
+    return transformations, nHs_frozen, nHs_modelled, 'apl_bb_simple'
