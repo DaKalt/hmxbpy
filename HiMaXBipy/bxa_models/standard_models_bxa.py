@@ -178,6 +178,7 @@ def apl_diskbb_simple(Model, AllModels, bxa, galnh, Z, n):
         transformations.append(p_norm_disk)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
+        model_bkg.diskbb.norm.values = [0, -1]
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
     nHs_modelled = []
@@ -235,6 +236,7 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
         transformations.append(p_norm_disk)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
+        model_bkg.diskbb.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
     nHs_modelled = [loc_nh]
