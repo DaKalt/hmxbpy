@@ -29,7 +29,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
-    gamma.values = [1, 0.1, -2, -2, 4, 4]
+    gamma.values = [1, 0.01, -2, -2, 4, 4]
     p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
     # uses alpha
@@ -57,7 +57,7 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
-    gamma.values = [1, 0.1, -2, -2, 4, 4]
+    gamma.values = [1, 0.01, -2, -2, 4, 4]
     p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$'
     transformations.append(p_gamma)
@@ -155,7 +155,7 @@ def apl_diskbb_simple(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
-    gamma.values = [1, 0.1, -2, -2, 4, 4]
+    gamma.values = [1, 0.01, -2, -2, 4, 4]
     p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$'
     transformations.append(p_gamma)
@@ -211,7 +211,7 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
-    gamma.values = [1, 0.1, -2, -2, 4, 4]
+    gamma.values = [1, 0.01, -2, -2, 4, 4]
     p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
     # uses alpha
@@ -311,7 +311,7 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
-    gamma.values = [1, 0.1, -2, -2, 4, 4]
+    gamma.values = [1, 0.01, -2, -2, 4, 4]
     p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
     # uses alpha
@@ -348,7 +348,7 @@ def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
-    gamma.values = [1, 0.1, -2, -2, 4, 4]
+    gamma.values = [1, 0.01, -2, -2, 4, 4]
     p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
     p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
     # uses alpha
