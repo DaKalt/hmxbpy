@@ -46,7 +46,7 @@ from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
     plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2,\
-    write_tex_epochs
+    write_tex_epochs, fit_bxa_SNR
 from HiMaXBipy.bxa_models.standard_models_bxa import *
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
@@ -3827,7 +3827,8 @@ class HiMaXBi:
                     and model != 'abb_simple' and model != 'apl_diskbb'
                     and model != 'apl_diskbb_simple' and model != 'apl_hmxb'
                     and model != 'apl_bb' and model != 'apl_bb_simple'
-                    and model != 'adiskbb' and model != 'adiskbb_simple'):
+                    and model != 'adiskbb' and model != 'adiskbb_simple'
+                    and model != 'apl_pl_bb_simple'):
                 try:
                     if model.find('.py') > -1:
                         model = model[:model.find('.py')]
@@ -4098,6 +4099,11 @@ class HiMaXBi:
         elif model == 'adiskbb_simple':
             tex_info = [['Tin', 'K', [0], 'lin']]
             fit_model = adiskbb_simple
+        elif model == 'apl_pl_bb_simple':
+            tex_info = [['Power-law', 'index', [0], 'lin'],
+                        ['Power-law', 'index hard', [1], 'lin']
+                        ['Teff', 'K', [2], 'lin']]
+            fit_model = apl_pl_bb_simple
 
         if colors == []:
             colors = color_palette
@@ -4272,6 +4278,216 @@ class HiMaXBi:
 
         if return_array:
             return output, abs_F, unabs_L
+
+    def _plot_spectra_bayesian_SNR(self, mode='merged',  log_prefix='spectrum',
+                                   log_suffix='.log', Z=-1, distance=-1,
+                                   model='apl', NH=-1., rebin=True,
+                                   rebin_params=[5, 20], rescale=False,
+                                   rescale_F=[], rescale_chi=[-5., 5.],
+                                   fit_statistic='cstat', colors=[], markers=[],
+                                   title='', TM_list=[0], return_array=False,
+                                   abund='wilm', tbins=[[]],
+                                   tbin_f='epoch', E_range=[0.2, 8.0],
+                                   quantiles=[], folder_suffix='', resume=False,
+                                   prompting=False, plot_bkg=True,
+                                   src_markers=[], bkg_markers=[],
+                                   src_linestyles=[], bkg_linestyle='--',
+                                   set_hatch=False, fig_borders = [],
+                                   spec_files = [], label_style='serif',
+                                   label_size=16, E_ranges_L = [[0.2, 8.0],
+                                                                [0.2, 10.0],
+                                                                [0.2, 12.0],
+                                                                [2.0, 10.0]]):
+            '''Model spectrum specifically for CXOU J053600.0-673507
+            '''
+            fit_model = None
+            self._logger.info('Running plot_spectra.')
+
+            user = getpass.getuser()
+            plt.rc('text', usetex=True)
+            plt.rc('font', family=label_style, size=label_size) #ToDo: add everywhere relevant
+
+            E_range = E_range.tolist()
+            E_ranges_L = E_ranges_L.tolist()
+            if not E_range in E_ranges_L:
+                E_ranges_L.insert(0,E_range)
+
+            tex_info = []
+
+            if colors == []:
+                colors = color_palette
+
+            old_environ = os.environ.copy()  # maybe make the below an option
+
+            # these stay hardcoded but need to be adjusted
+            # top, bottom, left, right
+            if len(fig_borders) == 0:
+                fig_borders = [0.99, 0.06, 0.11, 0.98]
+            figsize = [8, 11]
+            logname = 'bxa_fit.log'
+            if not self._LC_extracted and not self._debugging:
+                self._extract_lc()
+            if self._debugging:
+                self._LC_extracted = True
+                self._find_obs_periods(self._min_dist)
+                self._eRASS_vs_epoch()
+
+            logstate = setup_logfile(self._logger, logname)
+
+            suffix = f'_{tbin_f}{folder_suffix}'
+            if rebin == False:
+                rebin_params = [0, 0]
+
+            Emin = E_range[0]
+            Emax = E_range[1]
+
+            fig, ax_spec, ax_res, ax_res_invis = setup_axis(Emin, Emax, figsize)
+            fig_src, ax_spec_src, ax_res_src, ax_res_invis_src = \
+                setup_axis(Emin, Emax, figsize)
+
+            #TODO
+            src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
+            if mode == 'merged':
+                specs_eRASS, specs_epoch = self._prepare_spec_epochs()
+
+            if len(bkg_markers) == 0:
+                bkg_markers = ['x'] * len(src_files)
+            if len(src_linestyles) == 0:
+                src_linestyles = ['-'] * len(src_files)
+            if set_hatch:
+                hatches = hatch_palette
+            else:
+                hatches = [''] * len(src_files)
+
+            working_dir = f'{self._working_dir_full}/working'
+            NH = self._NH * 1e-22
+            abs_F, unabs_L, bkg_factors, analyser, ntransf = \
+                fit_bxa_SNR(abund, self._distance, E_range,
+                            fit_model, NH, self._logger, prompting,
+                            quantiles, src_files, fit_statistic, suffix,
+                            resume, working_dir, self._Z, E_ranges_L)
+            self._analyser = analyser
+            ####
+            # self._lum_chain = luminosity_chains
+            if tbin_f == 'eRASS' or tbin_f == 'epoch':
+                epoch_type = tbin_f
+            else:
+                epoch_type = 'part'
+            #TODO
+            output = plot_bxa_SNR(rebin_params, src_files, ax_spec, ax_res,
+                                  colors, src_markers, bkg_markers, epoch_type,
+                                  bkg_factors, analyser, src_linestyles,
+                                  bkg_linestyle, hatches, ntransf)
+            self._output = output
+            _ = plot_bxa_SNR(rebin_params, src_files, ax_spec_src, ax_res_src,
+                             colors, src_markers, bkg_markers, epoch_type,
+                             bkg_factors, analyser, src_linestyles,
+                             bkg_linestyle, hatches, ntransf, plot_src=True)
+
+            ncols = 1
+            nrows = 2
+            width_ratios = [1]
+            height_ratios = [5, 3]
+            if rescale_F == []:
+                mins = []
+                maxs = []
+                for key in output['src_fluxes'].keys():
+                    data = np.array(output['src_fluxes'][key][0])
+                    data_err = np.array(output['src_fluxes'][key][1])
+                    maxs.append(1.1 * np.max(data + data_err))
+                    mins.append(np.min(data[data>0]) / 2.)
+                for key in output['bkg_fluxes'].keys():
+                    if False: #TODO: might be necessary to add this
+                        continue
+                    data = np.array(output['bkg_fluxes'][key][0])
+                    data_err = np.array(output['bkg_fluxes'][key][1])
+                    maxs.append(1.1 * np.max(data + data_err))
+                    mins.append(np.min(data[data>0]) / 2.)
+                min = np.min(mins)
+                max = np.max(maxs)
+                rescale_F = [min, max]
+            format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
+                            rescale_F, rescale_chi, E_range, src_files, ncols,
+                            nrows, height_ratios, width_ratios)
+            format_axis_pt2(fig_src, ax_spec_src, ax_res_src, ax_res_invis_src,
+                            fig_borders, rescale_F, rescale_chi, E_range,
+                            src_files, ncols, nrows, height_ratios, width_ratios)
+            
+            if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
+                                f'{model}{suffix}'):
+                os.makedirs(f'{self._working_dir_full}/results/spectra/{model}'
+                            f'{suffix}')
+            if not os.path.exists(f'{self._working_dir_full}/results/spectra/'
+                                f'{model}{suffix}/diagnostic'):
+                os.makedirs(f'{self._working_dir_full}/results/spectra/{model}'
+                            f'{suffix}/diagnostic')
+            fig.savefig(f'{self._working_dir_full}/results/spectra/{model}{suffix}'
+                        '/spectrum.pdf')
+            fig_src.savefig(f'{self._working_dir_full}/results/spectra/{model}'
+                            f'{suffix}/spectrum_src.pdf')
+            if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
+                            f'{suffix}/corner_full.pdf'):
+                os.remove(f'{self._working_dir_full}/results/spectra/{model}'
+                        f'{suffix}/corner_full.pdf')
+            if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
+                            f'{suffix}/corner_lums.pdf'):
+                os.remove(f'{self._working_dir_full}/results/spectra/{model}'
+                        f'{suffix}/corner_lums.pdf')
+            if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
+                            f'{suffix}/diagnostic/trace.pdf'):
+                os.remove(f'{self._working_dir_full}/results/spectra/{model}'
+                        f'{suffix}/diagnostic/trace.pdf')
+            if os.path.exists(f'{self._working_dir_full}/results/spectra/{model}'
+                            f'{suffix}/diagnostic/run.pdf'):
+                os.remove(f'{self._working_dir_full}/results/spectra/{model}'
+                        f'{suffix}/diagnostic/run.pdf')
+            shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
+                        'plots/corner.pdf', f'{self._working_dir_full}/results/'
+                        f'spectra/{model}{suffix}/corner_full.pdf')
+            shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
+                        'plots/run.pdf', f'{self._working_dir_full}/results/'
+                        f'spectra/{model}{suffix}/diagnostic/run.pdf')
+            shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
+                        'plots/trace.pdf', f'{self._working_dir_full}/results/'
+                        f'spectra/{model}{suffix}/diagnostic/trace.pdf')
+            shutil.copy(f'{self._working_dir_full}/working/corner_lums.pdf',
+                        f'{self._working_dir_full}/results/'
+                        f'spectra/{model}{suffix}/corner_lums.pdf')
+                    
+            fig_corner = plot_corner(analyser, ntransf, self._logger)
+            fig_corner.savefig(f'{self._working_dir_full}/results/spectra/'
+                            f'{model}{suffix}/corner.pdf')
+            # corner plot can be modified by working handing fig_corner to
+            # functions from the corner package
+            
+            results_file = open(f'{self._working_dir_full}/results/spectra/'
+                                f'{model}{suffix}/results.tex', 'w')
+            write_tex(results_file, tex_info, abs_F, unabs_L, analyser, quantiles,
+                    E_ranges_L)
+            results_file.close()
+
+            if mode == 'merged':
+                merged_file = src_files[0]
+                results_file = open(f'{self._working_dir_full}/results/spectra/'
+                                    f'{model}{suffix}/results_eRASS.tex', 'w')
+                write_tex_epochs(results_file, abs_F, unabs_L, E_ranges_L, merged_file,
+                                specs_eRASS)
+                results_file.close()
+
+                if self._create_epochs:
+                    results_file = open(f'{self._working_dir_full}/results/spectra/'
+                                        f'{model}{suffix}/results_epochs.tex', 'w')
+                    write_tex_epochs(results_file, abs_F, unabs_L, E_ranges_L,
+                                    merged_file, specs_epoch)
+                    results_file.close()
+            
+
+            self._logger.handlers = logstate
+            os.environ = old_environ
+            self._spec_fig = fig #for debugging
+
+            if return_array:
+                return output, abs_F, unabs_L
 
     def _prep_spec_srclist(self, tbin_f, tbins, mode):
         event_files = []
