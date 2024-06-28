@@ -378,3 +378,75 @@ def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
     nHs_frozen = [nH]
     nHs_modelled = []
     return transformations, nHs_frozen, nHs_modelled, 'apl_bb_simple'
+
+def adiskbb_simple(Model, AllModels, bxa, galnh, Z, n):
+    # frozen parameters
+    transformations = []
+    srcmod = Model('tbabs*(diskbb)', modName='srcmod', sourceNum=1)
+    srcmod.TBabs.nH.values = [galnh, -1]
+
+    # fit parameters
+    Tin = srcmod.diskbb.Tin
+    Tin.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
+    p_Tin = modded_create_uniform_prior_for(srcmod, Tin)
+    p_Tin['name'] = '$T_{in}$'
+    transformations.append(p_Tin)
+    for groupid in range(n):
+        model = AllModels(groupNum=2*groupid+1, modName='srcmod')
+        norm_disk = model.diskbb.norm
+        norm_disk.values = [1e-4, 0.01, 1e-20, 1e-6, 1e7, 1e20]
+        p_norm_disk = modded_create_jeffreys_prior_for(model, norm_disk)
+        p_norm_disk['name'] = 'log(norm$_{disk,%s}$)' % (groupid+1)
+        transformations.append(p_norm_disk)
+        model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
+        model_bkg.diskbb.norm.values = [0, -1]  # this needs to be tested
+    nH = srcmod.TBabs.nH
+    nHs_frozen = [nH]
+    nHs_modelled = []
+    return transformations, nHs_frozen, nHs_modelled, 'adiskbb_simple'
+
+def adiskbb(Model, AllModels, bxa, galnh, Z, n):
+    # frozen parameters
+    transformations = []
+    srcmod = Model('tbabs*tbvarabs*(diskbb)', modName='srcmod', sourceNum=1)
+    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBvarabs.C.values = Z
+    srcmod.TBvarabs.N.values = Z
+    srcmod.TBvarabs.O.values = Z
+    srcmod.TBvarabs.Ne.values = Z
+    srcmod.TBvarabs.Na.values = Z
+    srcmod.TBvarabs.Mg.values = Z
+    srcmod.TBvarabs.Al.values = Z
+    srcmod.TBvarabs.Si.values = Z
+    srcmod.TBvarabs.S.values = Z
+    srcmod.TBvarabs.Cl.values = Z
+    srcmod.TBvarabs.Ar.values = Z
+    srcmod.TBvarabs.Ca.values = Z
+    srcmod.TBvarabs.Cr.values = Z
+    srcmod.TBvarabs.Fe.values = Z
+    srcmod.TBvarabs.Co.values = Z
+    srcmod.TBvarabs.Ni.values = Z
+
+    # fit parameters
+    loc_nh = srcmod.TBvarabs.nH
+    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
+    transformations.append(p_loc_nh)
+    Tin = srcmod.diskbb.Tin
+    Tin.values = [0.1, 0.005, 0.001, 0.001, 10, 10]
+    p_Tin = modded_create_uniform_prior_for(srcmod, Tin)
+    p_Tin['name'] = '$T_{in}$'
+    transformations.append(p_Tin)
+    for groupid in range(n):
+        model = AllModels(groupNum=2*groupid+1, modName='srcmod')
+        norm_disk = model.diskbb.norm
+        norm_disk.values = [1e-4, 0.01, 1e-20, 1e-6, 1e7, 1e20]
+        p_norm_disk = modded_create_jeffreys_prior_for(model, norm_disk)
+        p_norm_disk['name'] = 'log(norm$_{disk,%s}$)' % (groupid+1)
+        transformations.append(p_norm_disk)
+        model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
+        model_bkg.diskbb.norm.values = [0, -1]  # this needs to be tested
+    nH = srcmod.TBabs.nH
+    nHs_frozen = [nH]
+    nHs_modelled = [loc_nh]
+    return transformations, nHs_frozen, nHs_modelled, 'adiskbb'
