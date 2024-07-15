@@ -643,7 +643,7 @@ def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
 
     return absorbed_F, unabsorbed_L, bkg_factors, analyser, ntransf
 
-def fit_bxa_SNR(abund, distance, E_range, func, galnh, log, prompting,
+def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
                 quantiles, src_files, statistic, suffix, resume, working_dir,
                 Z, E_ranges_L):
 

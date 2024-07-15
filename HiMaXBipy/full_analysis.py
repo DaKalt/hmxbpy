@@ -4320,7 +4320,6 @@ class HiMaXBi:
                                                                 [2.0, 10.0]]):
             '''Model spectrum specifically for CXOU J053600.0-673507
             '''
-            fit_model = apl_vapec_SNR
             tex_info = []
             self._logger.info('Running plot_spectra.')
 
@@ -4384,7 +4383,7 @@ class HiMaXBi:
             NH = self._NH * 1e-22
             abs_F, unabs_L, bkg_factors, analyser, ntransf = \
                 fit_bxa_SNR(abund, self._distance, E_range,
-                            fit_model, NH, self._logger, prompting,
+                            NH, self._logger, prompting,
                             quantiles, src_files, fit_statistic, suffix,
                             resume, working_dir, self._Z, E_ranges_L)
             self._analyser = analyser
