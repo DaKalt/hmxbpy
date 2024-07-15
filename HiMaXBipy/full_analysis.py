@@ -4328,7 +4328,7 @@ class HiMaXBi:
             plt.rc('font', family=label_style, size=label_size) #ToDo: add everywhere relevant
 
             E_range = np.array(E_range).tolist()
-            E_ranges_L = E_ranges_L.tolist()
+            E_ranges_L = np.array(E_ranges_L).tolist()
             if not E_range in E_ranges_L:
                 E_ranges_L.insert(0,E_range)
 
