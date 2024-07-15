@@ -24,7 +24,8 @@ from xspec import Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,\
 
 from HiMaXBipy.io.package_data import num2text
 from HiMaXBipy.spectral_analysis.modded_function import PredictionBand,\
-    posterior_predictions_plot
+    posterior_predictions_plot, modded_create_uniform_prior_for, \
+    modded_create_jeffreys_prior_for
 
 
 def lum(flux, distance):
@@ -237,6 +238,202 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
 
     return output
 
+def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
+                 src_markers, bkg_markers, epoch_type, bkg_factors, analyser,
+                 src_linestyles, bkg_linestyle, hatches, ntransf,
+                 plot_src=False, ):
+    energies = {}
+    fluxes = {}
+    backgrounds = {}
+    bkg_energies = {}
+    models = {}
+    bkg_models = {}
+    residuals = {}
+    Plot.device = '/null'
+    Plot.setRebin(rebinning[0], rebinning[1])
+    n_srcfiles = len(src_files)
+    for igroup in range(n_srcfiles):
+        if n_srcfiles > 1:
+            label = f'{epoch_type} {igroup+1}'
+            color_srcbkg = colors[igroup]
+            color_bkg = colors[igroup]
+        else:
+            label = f'{epoch_type}'
+            color_srcbkg = colors[0]
+            color_bkg = colors[2]
+        isource = 2*igroup + 1
+        Plot.xAxis = 'keV'
+        Plot('data')
+        EkeV = Plot.x(isource).copy()
+        EkeV_err = Plot.xErr(isource).copy()
+        data = Plot.y(isource).copy()
+        data_err = Plot.yErr(isource).copy()
+        ax_spec.errorbar(EkeV, data, xerr=EkeV_err, yerr=data_err,
+                         color=color_srcbkg, marker=src_markers[igroup],
+                         label=label, linestyle='', zorder=5)
+        bkg = (bkg_factors[igroup] *
+               np.array(Plot.y(isource+1).copy())).tolist()
+        bkg_err = (bkg_factors[igroup] *
+                   np.array(Plot.yErr(isource+1).copy())).tolist()
+        EkeV_bkg = Plot.x(isource+1).copy()
+        EkeV_bkg_err = Plot.xErr(isource+1).copy()
+        ax_spec.errorbar(EkeV_bkg, bkg, xerr=EkeV_bkg_err, yerr=bkg_err,
+                         color=color_bkg, marker=bkg_markers[igroup],
+                         linestyle='', zorder=4)
+
+        model = Plot.model(isource).copy()
+        Esteps = []
+        for ii, entry in enumerate(EkeV):
+            Esteps.append(entry-EkeV_err[ii])
+        Esteps.append(EkeV[-1]+EkeV_err[-1])
+        # ax_spec.stairs(model, Esteps, color='black',
+        #                linestyle=model_linestyle)
+        model_bkg = (bkg_factors[igroup] *
+                     np.array(Plot.model(isource+1).copy())).tolist()
+        Esteps_bkg = []
+        for ii, entry in enumerate(EkeV_bkg):
+            Esteps_bkg.append(entry-EkeV_bkg_err[ii])
+        Esteps_bkg.append(EkeV_bkg[-1]+EkeV_bkg_err[-1])
+        # ax_spec.stairs(model_bkg, Esteps_bkg, color='red',
+        #                linestyle=model_linestyle)
+
+        Plot('delchi')
+        resid = Plot.y(isource).copy()
+        resid_err = Plot.yErr(isource).copy()
+        ax_res.errorbar(EkeV, resid, xerr=EkeV_err, yerr=resid_err,
+                        color=colors[igroup], linestyle='',
+                        marker=src_markers[igroup])
+
+        energies[label] = [EkeV, EkeV_err]
+        fluxes[label] = [data, data_err]
+        backgrounds[label] = [bkg, bkg_err]
+        bkg_energies[label] = [EkeV_bkg, EkeV_bkg_err]
+        models[label] = [model]
+        residuals[label] = [resid, resid_err]
+        bkg_models[label] = [model_bkg]
+
+    output = {}
+    output['EkeV'] = energies
+    output['src_fluxes'] = fluxes
+    output['bkg_fluxes'] = backgrounds
+    output['EkeV_bkg'] = bkg_energies
+    output['model_predictions'] = models
+    output['residuals'] = residuals
+    output['model_bkg'] = bkg_models
+
+    for igroup in range(n_srcfiles):
+        if n_srcfiles > 1:
+            color_srcbkg = colors[igroup]
+            color_src = colors[igroup]
+            color_bkg = colors[igroup]
+        else:
+            color_srcbkg = colors[0]
+            color_src = colors[1]
+            color_bkg = colors[2]
+        #src+bkg
+        models = []
+        bands = []
+        Plot.add = False
+        Plot.background = False
+        for content in posterior_predictions_plot(analyser, plottype='data',
+                                                  nsamples=100,
+                                                  group=2*igroup+1):
+            xmid = content[:, 0]
+            ndata_columns = 6 if Plot.background else 4
+            ncomponents = content.shape[1]-ndata_columns
+            model_contributions = []
+            for component in range(ncomponents):
+                y = content[:, ndata_columns+component]
+                if component >= len(bands):
+                    bands.append(PredictionBand(xmid, ax_spec))
+                bands[component].add(y)
+                model_contributions.append(y)
+            models.append(model_contributions)
+
+        for band, label in zip(bands, 'model prediction'):
+            if label == 'ignore':
+                continue
+            lineargs = dict(drawstyle='steps', color=color_srcbkg, zorder=3,
+                            linewidth=0.8, linestyle=src_linestyles[igroup])
+            shadeargs = dict(color=lineargs['color'], zorder=2)
+            band.shade(alpha=0.5, **shadeargs)
+            shadeargs = dict(**shadeargs, hatch=hatches[igroup])
+            band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
+            band.line(label=label, **lineargs)
+
+        #src
+        if plot_src:
+            models = []
+            bands = []
+            Plot.add = False
+            Plot.background = False
+            #TODO
+            AllModels(groupNum=2*igroup+1, modName=f'pcabkg')\
+                .constant.factor.values = [0, -1, 0, 0, 10, 10]
+            for i_line in range(len(analyser.posterior)):
+                analyser.posterior[i_line][ntransf+igroup] = -10
+            for content in posterior_predictions_plot(analyser,
+                                                      plottype='data',
+                                                      nsamples=100,
+                                                      group=2*igroup+1):
+                xmid = content[:, 0]
+                ndata_columns = 6 if Plot.background else 4
+                ncomponents = content.shape[1]-ndata_columns
+                model_contributions = []
+                for component in range(ncomponents):
+                    y = content[:, ndata_columns+component]
+                    if component >= len(bands):
+                        bands.append(PredictionBand(xmid, ax_spec))
+                    bands[component].add(y)
+                    model_contributions.append(y)
+                models.append(model_contributions)
+
+            for band, label in zip(bands, 'model prediction'):
+                if label == 'ignore':
+                    continue
+                lineargs = dict(drawstyle='steps', color=color_src,
+                                zorder=3, linewidth=0.8,
+                                linestyle=src_linestyles[igroup])
+                shadeargs = dict(color=lineargs['color'], zorder=2)
+                band.shade(alpha=0.5, **shadeargs)
+                shadeargs = dict(**shadeargs, hatch=hatches[igroup])
+                band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
+                band.line(label=label, **lineargs)
+            analyser.set_best_fit()
+            AllModels.show()
+
+        #bkg
+        models = []
+        bands = []
+        Plot.add = False
+        Plot.background = False
+        for content in posterior_predictions_plot(analyser, plottype='data',
+                                                  nsamples=100,
+                                                  group=2*igroup+2):
+            xmid = content[:, 0]
+            ndata_columns = 6 if Plot.background else 4
+            ncomponents = content.shape[1]-ndata_columns
+            model_contributions = []
+            for component in range(ncomponents):
+                y = bkg_factors[0] * content[:, ndata_columns+component]
+                if component >= len(bands):
+                    bands.append(PredictionBand(xmid, ax_spec))
+                bands[component].add(y)
+                model_contributions.append(y)
+            models.append(model_contributions)
+
+        for band, label in zip(bands, 'model prediction'):
+            if label == 'ignore':
+                continue
+            lineargs = dict(drawstyle='steps', color=color_bkg, zorder=1,
+                            linestyle=bkg_linestyle, linewidth=0.8)
+            shadeargs = dict(color=lineargs['color'], zorder=0)
+            band.shade(alpha=0.5, **shadeargs)
+            shadeargs = dict(**shadeargs, hatch=hatches[igroup])
+            band.shade(q=0.9973/2., alpha=0.2, **shadeargs)
+            band.line(label=label, **lineargs)
+
+    return output
 
 def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
             src_files, statistic, suffix, resume, working_dir, Z, E_ranges_L):
@@ -459,20 +656,55 @@ def fit_bxa_SNR(abund, distance, E_range, func, galnh, log, prompting,
     AllData.clear()
     AllModels.clear()
 
-    backinfo = json.load(
-        open(os.environ.get('EROBACK', "erosita_merged_1024.json")))
-    jlo, jhi = backinfo['ilo'], backinfo['ihi']
-    ilo, ihi = jlo, jhi
+    # backinfo = json.load(
+    #     open(os.environ.get('EROBACK', "erosita_merged_1024.json")))
+    # jlo, jhi = backinfo['ilo'], backinfo['ihi']
+    # ilo, ihi = jlo, jhi
     clo = 1
-    nchan = 1024
+    # nchan = 1024
 
-    # pca_models = [] #TODO: maybe for future release allow to let the user define pcamodel to use for bkg
+    # pca_models = []
     n_srcfiles = len(src_files)
 
     srcs = []
     bkgs = []
     bkg_files = []
     bkg_factors = []
+
+    pback='constant*(gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+expfac(bkn2pow+powerlaw+powerlaw)+gaussian+powerlaw+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian)'
+    regarea_pback = 1.146112167
+    BckgPars=[1.,
+              9.57473, 1.0e-4, 2.53469e-3,
+              8.84841, 1.0e-4, 3.14135e-18,
+              8.19841, 1.0e-4, 3.20949e-3,
+              8.63142, 1.0e-4, 2.48450e-2,
+              8.06050, 1.0e-4, 1.12475e-2,
+              7.48981, 1.0e-4, 1.70916e-2,
+              6.94953, 1.0e-4,6.42513e-3,
+              7.05159, 1.0e-4, 5.51438e-3,
+              6.47538, 1.0e-4, 4.94039e-3,
+              5.90087, 1.0e-4, 5.95559e-3,
+              5.42735, 1.0e-4, 1.22255e-3,
+              4.52006, 1.0e-4, 2.50391e-3,
+              3.66161, 1.0e-4, 6.17044e-3,
+              1.48524, 1.0e-4, 4.70856e-2,
+              -4.44448e-4, -0.781726, 5.0e-2,
+              -0.335214, 3.40471, -0.164351, 7.53647, 0.330863, 0.257724,
+              1.12452, 3.34021e-2,
+              9.13483, 4.01511e-8,
+              9.19190, 0.756855, 0.277366,
+              0.363172, 0.722560,
+              1.95451, 0.101408, 1.67251e-2,
+              0.285206, 5.0e-2, 4.04831e-2,
+              0.430387, 5.61942e-5, 2.01269e-3,
+              0.40001, 1.0e-4, 9.26433e-4,
+              0.522908, 4.36515e-4, 2.05339e-3,
+              1.63125, 2.21990e-5, -1.8671e-3,
+              1.7, 1.0e-4, -5.52216e-3,
+              6.40551, 3.53696e-2, 5.06155e-2]
+
+    regareas_src = []
+    regareas_bkg = []
 
     for ispec, specfile in enumerate(src_files):
         if ispec == 0:
@@ -497,24 +729,27 @@ def fit_bxa_SNR(abund, distance, E_range, func, galnh, log, prompting,
                     klo, khi = k, nchan
 
             if klo < 10:
-                ilo = max(ilo, khi)
+                ilo = khi
             else:
-                ihi = min(ihi, klo)
+                ihi = klo
 
         src.ignore("1-%d" % ilo)
         src.ignore("%d-%d" % (ihi, nchan))
 
-        bkgfile = src.background.fileName
+        bkgfile = specfile.replace('_bxa_', '_bxa_bkg_')
 
         src_header = fits.open(src.fileName)['SPECTRUM'].header
         bkg_header = fits.open(bkgfile)['SPECTRUM'].header
         bkg_factor = src_header['BACKSCAL'] / bkg_header['BACKSCAL']
+        regareas_src.append(src_header['REGAREA'])
+        regareas_bkg.append(bkg_header['REGAREA'])
 
         arf, rmf = src.multiresponse[0].arf, src.multiresponse[0].rmf
         src.background = None
 
         # copy response to source 2
-        for ii in range(1, n_srcfiles+1):
+        # for ii in range(1, n_srcfiles+1): # i think here i only need one additional response since I have the same pcabkg spectrum just with different norms
+        for ii in range(1, 2):
             src.multiresponse[ii] = rmf
             src.multiresponse[ii].arf = arf
 
@@ -531,7 +766,8 @@ def fit_bxa_SNR(abund, distance, E_range, func, galnh, log, prompting,
         bkg.ignore("%d-**" % (ihi))
 
         arf, rmf = bkg.multiresponse[0].arf, bkg.multiresponse[0].rmf
-        for ii in range(1, n_srcfiles+1):
+        # for ii in range(1, n_srcfiles+1): #same as above for src
+        for ii in range(1, 2):
             bkg.multiresponse[ii] = rmf
             bkg.multiresponse[ii].arf = arf
 
@@ -545,7 +781,8 @@ def fit_bxa_SNR(abund, distance, E_range, func, galnh, log, prompting,
         src = srcs[ispec]
         bkg = bkgs[ispec]
         bkgfile = bkg_files[ispec]
-        for ii in range(2, n_srcfiles+2):
+        # for ii in range(2, n_srcfiles+2):
+        for ii in range(2, 3):
             src.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo,
                          scaleType="lin", chanOffset=clo, chanWidth=1.,
                          sourceNum=ii)
@@ -555,38 +792,188 @@ def fit_bxa_SNR(abund, distance, E_range, func, galnh, log, prompting,
         # delete the first response
         # bkg.multiresponse[0] = None
 
-    transf_src, nHs_froz, nHs_mod, model_name = func(Model, AllModels, bxa,
-                                                     galnh, Z, n_srcfiles)
-    for ispec in range(n_srcfiles):
-        bkgfile = bkg_files[ispec]
-        Model('const*atable{%s_model.fits}' % (bkgfile),
-              modName=f'bkgmod{ispec+1}', sourceNum=ispec+2)
-
+    # transf_src, nHs_froz, nHs_mod, model_name = func(Model, AllModels, bxa,
+    #                                                  galnh, Z, n_srcfiles)
+    model_name = 'apl_vapec'
+    transf_src = []
     bkg_norms = []
+    srcmod = Model('tbabs*tbvarabs*(pow+vapec)', modName='srcmod', sourceNum=1)
+    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBvarabs.C.values = Z
+    srcmod.TBvarabs.N.values = Z
+    srcmod.TBvarabs.O.values = Z
+    srcmod.TBvarabs.Ne.values = Z
+    srcmod.TBvarabs.Na.values = Z
+    srcmod.TBvarabs.Mg.values = Z
+    srcmod.TBvarabs.Al.values = Z
+    srcmod.TBvarabs.Si.values = Z
+    srcmod.TBvarabs.S.values = Z
+    srcmod.TBvarabs.Cl.values = Z
+    srcmod.TBvarabs.Ar.values = Z
+    srcmod.TBvarabs.Ca.values = Z
+    srcmod.TBvarabs.Cr.values = Z
+    srcmod.TBvarabs.Fe.values = Z
+    srcmod.TBvarabs.Co.values = Z
+    srcmod.TBvarabs.Ni.values = Z
+    srcmod.vapec.C.values = [Z, -1]
+    srcmod.vapec.N.values = [Z, -1]
+    srcmod.vapec.Al.values = [Z, -1]
+    srcmod.vapec.Si.values = [Z, -1]
+    srcmod.vapec.S.values = [Z, -1]
+    srcmod.vapec.Ar.values = [Z, -1]
+    srcmod.vapec.Ca.values = [Z, -1]
+    srcmod.vapec.Ni.values = [Z, -1]
+
+    # fit parameters
+    loc_nh = srcmod.TBvarabs.nH
+    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
+    transf_src.append(p_loc_nh)
+    gamma = srcmod.powerlaw.PhoIndex
+    gamma.values = [1, 0.01, -2, -2, 4, 4]
+    p_gamma = modded_create_uniform_prior_for(srcmod, gamma)
+    p_gamma['name'] = '$\\alpha$' #was Gamma before but apparently xspec
+    # uses alpha
+    transf_src.append(p_gamma)
+    kT = srcmod.vapec.kT
+    kT.values = [6.5, 0.01, 0.0808, 0.0808, 68.447, 68.477] #standard xspec values
+    p_kT = modded_create_uniform_prior_for(srcmod, kT)
+    transf_src.append(p_kT)
+    O = srcmod.vapec.O
+    O.values = [1.0, 0.01, 0, 0, 1000, 1000]
+    p_O = modded_create_uniform_prior_for(srcmod, O)
+    transf_src.append(p_O)
+    Ne = srcmod.vapec.Ne
+    Ne.values = [1.0, 0.01, 0, 0, 1000, 1000]
+    p_Ne = modded_create_uniform_prior_for(srcmod, Ne)
+    transf_src.append(p_Ne)
+    Mg = srcmod.vapec.Mg
+    Mg.values = [1.0, 0.01, 0, 0, 1000, 1000]
+    p_Mg = modded_create_uniform_prior_for(srcmod, Mg)
+    transf_src.append(p_Mg)
+    Fe = srcmod.vapec.Fe
+    Fe.values = [1.0, 0.01, 0, 0, 1000, 1000]
+    p_Fe = modded_create_uniform_prior_for(srcmod, Fe)
+    transf_src.append(p_Fe)
+    for groupid in range(n):
+        model = AllModels(groupNum=2*groupid+1, modName='srcmod')
+        norm = model.powerlaw.norm
+        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        p_norm = modded_create_jeffreys_prior_for(model, norm)
+        p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
+        transf_src.append(p_norm)
+        norm_vapec = model.vapec.norm
+        norm_vapec.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        p_norm_vapec = modded_create_jeffreys_prior_for(model, norm_vapec)
+        p_norm_vapec['name'] = 'log(norm$_{v,%s}$)' % (groupid+1)
+        transf_src.append(p_norm_vapec)
+        model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
+        model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
+        norm_vapec_bkg = model_bkg.vapec.norm
+        norm_vapec_bkg.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        p_norm_vapec_bkg = modded_create_jeffreys_prior_for(model_bkg,
+                                                            norm_vapec_bkg)
+        p_norm_vapec_bkg['name'] = 'log(norm$_{v_bkg,%s}$)' % (groupid+1)
+        bkg_norms.append(p_norm_vapec_bkg)
+    nH = srcmod.TBabs.nH
+    nHs_froz = [nH]
+    nHs_mod = [loc_nh]
+
+    pcamod = Model(pback, modName=f'pcabkg', sourceNum=2)
+    pcamod.gaussian.LineE.values = [BckgPars[1], -1]
+    pcamod.gaussian.Sigma.values = [BckgPars[2], -1]
+    pcamod.gaussian.norm.values = [BckgPars[3], -1]
+    pcamod.gaussian2.LineE.values = [BckgPars[4], -1]
+    pcamod.gaussian2.Sigma.values = [BckgPars[5], -1]
+    pcamod.gaussian2.norm.values = [BckgPars[6], -1]
+    pcamod.gaussian3.LineE.values = [BckgPars[7], -1]
+    pcamod.gaussian3.Sigma.values = [BckgPars[8], -1]
+    pcamod.gaussian3.norm.values = [BckgPars[9], -1]
+    pcamod.gaussian4.LineE.values = [BckgPars[10], -1]
+    pcamod.gaussian4.Sigma.values = [BckgPars[11], -1]
+    pcamod.gaussian4.norm.values = [BckgPars[12], -1]
+    pcamod.gaussian5.LineE.values = [BckgPars[13], -1]
+    pcamod.gaussian5.Sigma.values = [BckgPars[14], -1]
+    pcamod.gaussian5.norm.values = [BckgPars[15], -1]
+    pcamod.gaussian6.LineE.values = [BckgPars[16], -1]
+    pcamod.gaussian6.Sigma.values = [BckgPars[17], -1]
+    pcamod.gaussian6.norm.values = [BckgPars[18], -1]
+    pcamod.gaussian7.LineE.values = [BckgPars[19], -1]
+    pcamod.gaussian7.Sigma.values = [BckgPars[20], -1]
+    pcamod.gaussian7.norm.values = [BckgPars[21], -1]
+    pcamod.gaussian8.LineE.values = [BckgPars[22], -1]
+    pcamod.gaussian8.Sigma.values = [BckgPars[23], -1]
+    pcamod.gaussian8.norm.values = [BckgPars[24], -1]
+    pcamod.gaussian9.LineE.values = [BckgPars[25], -1]
+    pcamod.gaussian9.Sigma.values = [BckgPars[26], -1]
+    pcamod.gaussian9.norm.values = [BckgPars[27], -1]
+    pcamod.gaussian10.LineE.values = [BckgPars[28], -1]
+    pcamod.gaussian10.Sigma.values = [BckgPars[29], -1]
+    pcamod.gaussian10.norm.values = [BckgPars[30], -1]
+    pcamod.gaussian11.LineE.values = [BckgPars[31], -1]
+    pcamod.gaussian11.Sigma.values = [BckgPars[32], -1]
+    pcamod.gaussian11.norm.values = [BckgPars[33], -1]
+    pcamod.gaussian12.LineE.values = [BckgPars[34], -1]
+    pcamod.gaussian12.Sigma.values = [BckgPars[35], -1]
+    pcamod.gaussian12.norm.values = [BckgPars[36], -1]
+    pcamod.gaussian13.LineE.values = [BckgPars[37], -1]
+    pcamod.gaussian13.Sigma.values = [BckgPars[38], -1]
+    pcamod.gaussian13.norm.values = [BckgPars[39], -1]
+    pcamod.gaussian14.LineE.values = [BckgPars[40], -1]
+    pcamod.gaussian14.Sigma.values = [BckgPars[41], -1]
+    pcamod.gaussian14.norm.values = [BckgPars[42], -1]
+    pcamod.expfac.Ampl.values = [BckgPars[43], -1]
+    pcamod.expfac.Factor.values = [BckgPars[44], -1]
+    pcamod.expfac.StartE.values = [BckgPars[45], -1]
+    pcamod.bkn2pow.PhoIndx1.values = [BckgPars[46], -1]
+    pcamod.bkn2pow.BreakE1.values = [BckgPars[47], -1]
+    pcamod.bkn2pow.PhoIndx2.values = [BckgPars[48], -1]
+    pcamod.bkn2pow.BreakE2.values = [BckgPars[49], -1]
+    pcamod.bkn2pow.PhoIndx3.values = [BckgPars[50], -1]
+    pcamod.bkn2pow.norm.values = [BckgPars[51], -1]
+    pcamod.powerlaw.PhoIndex.values = [BckgPars[52], -1]
+    pcamod.powerlaw.norm.values = [BckgPars[53], -1]
+    pcamod.powerlaw18.PhoIndex.values = [BckgPars[54], -1]
+    pcamod.powerlaw18.norm.values = [BckgPars[55], -1]
+    pcamod.gaussian19.LineE.values = [BckgPars[56], -1]
+    pcamod.gaussian19.Sigma.values = [BckgPars[57], -1]
+    pcamod.gaussian19.norm.values = [BckgPars[58], -1]
+    pcamod.powerlaw20.PhoIndex.values = [BckgPars[59], -1]
+    pcamod.powerlaw20.norm.values = [BckgPars[60], -1]
+    pcamod.gaussian21.LineE.values = [BckgPars[61], -1]
+    pcamod.gaussian21.Sigma.values = [BckgPars[62], -1]
+    pcamod.gaussian21.norm.values = [BckgPars[63], -1]
+    pcamod.gaussian22.LineE.values = [BckgPars[64], -1]
+    pcamod.gaussian22.Sigma.values = [BckgPars[65], -1]
+    pcamod.gaussian22.norm.values = [BckgPars[66], -1]
+    pcamod.gaussian23.LineE.values = [BckgPars[67], -1]
+    pcamod.gaussian23.Sigma.values = [BckgPars[68], -1]
+    pcamod.gaussian23.norm.values = [BckgPars[69], -1]
+    pcamod.gaussian24.LineE.values = [BckgPars[70], -1]
+    pcamod.gaussian24.Sigma.values = [BckgPars[71], -1]
+    pcamod.gaussian24.norm.values = [BckgPars[72], -1]
+    pcamod.gaussian25.LineE.values = [BckgPars[73], -1]
+    pcamod.gaussian25.Sigma.values = [BckgPars[74], -1]
+    pcamod.gaussian25.norm.values = [BckgPars[75], -1]
+    pcamod.gaussian26.LineE.values = [BckgPars[76], -1]
+    pcamod.gaussian26.Sigma.values = [BckgPars[77], -1]
+    pcamod.gaussian26.norm.values = [BckgPars[78], -1]
+    pcamod.gaussian27.LineE.values = [BckgPars[79], -1]
+    pcamod.gaussian27.Sigma.values = [BckgPars[80], -1]
+    pcamod.gaussian27.norm.values = [BckgPars[81], -1]
+    pcamod.gaussian28.LineE.values = [BckgPars[82], -1]
+    pcamod.gaussian28.Sigma.values = [BckgPars[83], -1]
+    pcamod.gaussian28.norm.values = [BckgPars[84], -1]
+
+
     for groupid in range(n_srcfiles):
-        for bkgid in range(1, n_srcfiles+1):
-            fac_src = AllModels(groupNum=2*groupid+1,
-                                modName=f'bkgmod{bkgid}').constant.factor
-            fac_bkg = AllModels(groupNum=2*groupid+2,
-                                modName=f'bkgmod{bkgid}').constant.factor
-            AllModels(groupNum=2*groupid+1,
-                      modName=f'bkgmod{bkgid}').pcabkg.norm.values = [1, -1]
-            AllModels(groupNum=2*groupid+2,
-                      modName=f'bkgmod{bkgid}').pcabkg.norm.values = \
-                [1./bkg_factors[groupid], -1]
-            # has to be set, see https://heasarc.gsfc.nasa.gov/docs/asca/abc_backscal.html
-            if groupid+1 == bkgid:
-                fac_src.values = [1, 0.1, 0.1, 0.1, 10, 10]
-                fac_bkg.link = fac_src #this is correct, more
-                # information when fitting both at the same time
-                model = AllModels(groupNum=2*groupid+1,
-                                  modName=f'bkgmod{bkgid}')
-                norm = bxa.create_jeffreys_prior_for(model, fac_src)
-                norm['name'] = f'log(bkg mod f{bkgid})'
-                bkg_norms.append(norm)
-            else:
-                fac_src.values = [0, -1]
-                fac_bkg.values = [0, -1]
+        bkgid = 2
+        fac_src = AllModels(groupNum=2*groupid+1,
+                            modName=f'pcabkg').constant.factor
+        fac_src.values = [regareas_src[groupid]/regarea_pback, -1]
+        fac_bkg = AllModels(groupNum=2*groupid+2,
+                            modName=f'pcabkg').constant.factor
+        fac_bkg.values = [regareas_bkg[groupid]/regarea_pback, -1]
 
     with XSilence():
         Fit.nIterations = 1000

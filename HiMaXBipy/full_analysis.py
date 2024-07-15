@@ -46,7 +46,7 @@ from HiMaXBipy.spectral_analysis.fit_bkg import fit_bkg
 from HiMaXBipy.spectral_analysis.spectral_analysis import spec_model
 from HiMaXBipy.spectral_analysis.spectral_analysis_bxa import fit_bxa,\
     plot_bxa, plot_corner, write_tex, setup_axis, format_axis_pt2,\
-    write_tex_epochs, fit_bxa_SNR
+    write_tex_epochs, fit_bxa_SNR, plot_bxa_SNR
 from HiMaXBipy.bxa_models.standard_models_bxa import *
 
 #color_palette = list(mcolors.TABLEAU_COLORS.values())
@@ -110,6 +110,10 @@ class HiMaXBi:
     _create_epochs = False
     _min_dist = 60 * 60 * 24 * 30
     _check_period_length = True
+    _RA = 0.0
+    _Dec = 0.0
+    _RA_bkg = 0.0
+    _Dec_bkg = 0.0
 
     def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
@@ -2946,7 +2950,7 @@ class HiMaXBi:
             self._logger.debug(str(line)[2:-3] + '\n')
         self._logger.handlers = logstate
 
-    def _extract_spectrum_bxa(self, filelist, epoch):
+    def _extract_spectrum_bxa(self, filelist, epoch, snr=False):
         self._logger.debug(f'Extracting spectrum for {filelist}.')
         replacements = [['@main_name', self._working_dir],
                         ['@result_dir', '.'],
@@ -2967,6 +2971,22 @@ class HiMaXBi:
         for line in process.stdout.readlines():
             # to fix weird b'something' format
             self._logger.debug(str(line)[2:-3] + '\n')
+
+        if snr:
+            replacements = [['@main_name', self._working_dir],
+                            ['@result_dir', '.'],
+                            ['@sources_list', filelist],
+                            ['@right_ascension', self._RA_bkg],
+                            ['@declination', self._Dec_bkg],
+                            ['@esass_location', self._esass],
+                            ['@epoch', epoch]]
+            sh_file = self._working_dir_full + '/working/extract_spec_snr.sh'
+            sh_file = self._replace_in_sh(sh_file, replacements)
+            old_environ = os.environ.copy()
+            process = subprocess.Popen(
+                [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
+            os.environ = old_environ
 
     def _extract_spectrum_epoch(self, filelist, epoch):
         self._logger.debug(f'Extracting spectrum for {filelist}.')
@@ -4101,7 +4121,7 @@ class HiMaXBi:
             fit_model = adiskbb_simple
         elif model == 'apl_pl_bb_simple':
             tex_info = [['Power-law', 'index', [0], 'lin'],
-                        ['Power-law', 'index hard', [1], 'lin']
+                        ['Power-law', 'index hard', [1], 'lin'],
                         ['Teff', 'K', [2], 'lin']]
             fit_model = apl_pl_bb_simple
 
@@ -4300,7 +4320,8 @@ class HiMaXBi:
                                                                 [2.0, 10.0]]):
             '''Model spectrum specifically for CXOU J053600.0-673507
             '''
-            fit_model = None
+            fit_model = apl_vapec_SNR
+            tex_info = []
             self._logger.info('Running plot_spectra.')
 
             user = getpass.getuser()
@@ -4345,8 +4366,8 @@ class HiMaXBi:
             fig_src, ax_spec_src, ax_res_src, ax_res_invis_src = \
                 setup_axis(Emin, Emax, figsize)
 
-            #TODO
-            src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
+            #TODO: I think nothing needs to be done, only unnecessarily creates bkg fit
+            src_files = self._prep_spec_srclist(tbin_f, tbins, mode, snr=True)
             if mode == 'merged':
                 specs_eRASS, specs_epoch = self._prepare_spec_epochs()
 
@@ -4489,7 +4510,7 @@ class HiMaXBi:
             if return_array:
                 return output, abs_F, unabs_L
 
-    def _prep_spec_srclist(self, tbin_f, tbins, mode):
+    def _prep_spec_srclist(self, tbin_f, tbins, mode, snr=False):
         event_files = []
         if tbin_f == 'epoch':
             for epoch_counter in range(len(self._period_names)):
@@ -4600,16 +4621,19 @@ class HiMaXBi:
             for file in event_files:
                 infiles += f'{file} '
             infiles = infiles.strip()
-            self._extract_spectrum_bxa(infiles, 'merged')
+            self._extract_spectrum_bxa(infiles, 'merged', snr=snr)
             src_files.append('merged_bxa_020_SourceSpec_00001.fits')
         elif mode == 'simultaneous':
             for iepoch, file in enumerate(event_files):
-                self._extract_spectrum_bxa(file, f'simu{iepoch}')
+                self._extract_spectrum_bxa(file, f'simu{iepoch}', snr=snr)
                 src_files.append(f'simu{iepoch}_bxa_020_SourceSpec_00001.fits')
         # TODO: write separate TM
         for file in src_files:
-            bkg = file.replace('SourceSpec', 'BackgrSpec')
-            fit_bkg(bkg, self._logger, source_file=file)
+            if not snr:
+                bkg = file.replace('SourceSpec', 'BackgrSpec')
+                fit_bkg(bkg, self._logger, source_file=file)
+            else:
+                bkg = file.replace('_bxa_', '_bxa_bkg_')
 
         return src_files
 
