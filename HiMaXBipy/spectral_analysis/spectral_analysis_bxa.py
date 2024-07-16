@@ -924,7 +924,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     pcamod.gaussian_15.Sigma.values = [BckgPars[41], -1]
     pcamod.gaussian_15.norm.values = [BckgPars[42], -1]
     pcamod.expfac.Ampl.values = [BckgPars[43], -1, -2, -2, 2, 2]
-    pcamod.expfac.Factor.values = [BckgPars[44], -1]
+    pcamod.expfac.Factor.values = [BckgPars[44], -1, -4, -4, 4, 4]
     pcamod.expfac.StartE.values = [BckgPars[45], -1]
     pcamod.bkn2pow.PhoIndx1.values = [BckgPars[46], -1]
     pcamod.bkn2pow.BreakE1.values = [BckgPars[47], -1]
