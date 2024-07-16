@@ -764,6 +764,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         bkg = AllData(2*ispec+2)
         bkg.ignore("1-%d" % ilo)
         bkg.ignore("%d-**" % (ihi))
+        bkg.background = None
 
         arf, rmf = bkg.multiresponse[0].arf, bkg.multiresponse[0].rmf
         # for ii in range(1, n_srcfiles+1): #same as above for src
@@ -855,7 +856,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     Fe.values = [1.0, 0.01, 0, 0, 1000, 1000]
     p_Fe = modded_create_uniform_prior_for(srcmod, Fe)
     transf_src.append(p_Fe)
-    for groupid in range(n):
+    for groupid in range(n_srcfiles):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
         norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
