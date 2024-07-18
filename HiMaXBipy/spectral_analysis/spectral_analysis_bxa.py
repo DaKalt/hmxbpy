@@ -952,13 +952,12 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
 
 
     for groupid in range(n_srcfiles):
-        bkgid = 2
         fac_src = AllModels(groupNum=2*groupid+1,
                             modName=f'pcabkg').constant.factor
-        fac_src.values = [regareas_src[groupid]/regarea_pback, -1]
+        fac_src.values = [backscales_src[groupid]/backscale_pback, -1]
         fac_bkg = AllModels(groupNum=2*groupid+2,
                             modName=f'pcabkg').constant.factor
-        fac_bkg.values = [regareas_bkg[groupid]/regarea_pback, -1]
+        fac_bkg.values = [backscales_bkg[groupid]/backscale_pback, -1]
 
     with XSilence():
         Fit.nIterations = 1000
