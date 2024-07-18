@@ -751,7 +751,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         # for ii in range(1, n_srcfiles+1): # i think here i only need one additional response since I have the same pcabkg spectrum just with different norms
         for ii in range(1, 2):
             src.multiresponse[ii] = rmf
-            src.multiresponse[ii].arf = arf
+            src.multiresponse[ii].arf = None
 
         # make unit response for background model:
 #        src.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo, scaleType="lin",
@@ -770,28 +770,12 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         # for ii in range(1, n_srcfiles+1): #same as above for src
         for ii in range(1, 2):
             bkg.multiresponse[ii] = rmf
-            bkg.multiresponse[ii].arf = arf
+            bkg.multiresponse[ii].arf = None
 
         srcs.append(src)
         bkgs.append(bkg)
         bkg_files.append(bkgfile)
         bkg_factors.append(bkg_factor)
-
-    for ispec in range(n_srcfiles):
-        # make two responses, because starting with number 2 does not work.
-        src = srcs[ispec]
-        bkg = bkgs[ispec]
-        bkgfile = bkg_files[ispec]
-        # for ii in range(2, n_srcfiles+2):
-        for ii in range(2, 3):
-            src.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo,
-                         scaleType="lin", chanOffset=clo, chanWidth=1.,
-                         sourceNum=ii)
-            bkg.dummyrsp(lowE=ilo, highE=ihi, nBins=ihi - ilo,
-                         scaleType="lin", chanOffset=clo, chanWidth=1.,
-                         sourceNum=ii)  # channels need to be set like that to work with the pca model, can't rescale to energies
-        # delete the first response
-        # bkg.multiresponse[0] = None
 
     # transf_src, nHs_froz, nHs_mod, model_name = func(Model, AllModels, bxa,
     #                                                  galnh, Z, n_srcfiles)
@@ -958,10 +942,10 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     pcamod.gaussian_26.norm.values = [BckgPars[75], -1]
     pcamod.gaussian_27.LineE.values = [BckgPars[76], -1]
     pcamod.gaussian_27.Sigma.values = [BckgPars[77], -1]
-    pcamod.gaussian_27.norm.values = [BckgPars[78], -1]
+    pcamod.gaussian_27.norm.values = [BckgPars[78], -1, -0.1, -0.1, 0, 0]
     pcamod.gaussian_28.LineE.values = [BckgPars[79], -1]
     pcamod.gaussian_28.Sigma.values = [BckgPars[80], -1]
-    pcamod.gaussian_28.norm.values = [BckgPars[81], -1]
+    pcamod.gaussian_28.norm.values = [BckgPars[81], -1, -0.1, -0.1, 0, 0]
     pcamod.gaussian_29.LineE.values = [BckgPars[82], -1]
     pcamod.gaussian_29.Sigma.values = [BckgPars[83], -1]
     pcamod.gaussian_29.norm.values = [BckgPars[84], -1]
