@@ -672,7 +672,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     bkg_factors = []
 
     pback='constant*(gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+expfac(bkn2pow+powerlaw+powerlaw)+gaussian+powerlaw+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian+gaussian)'
-    regarea_pback = 1.146112167
+    backscale_pback = 0.8595841253
     BckgPars=[1.,
               9.57473, 1.0e-4, 2.53469e-3,
               8.84841, 1.0e-4, 3.14135e-18,
@@ -703,8 +703,8 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
               1.7, 1.0e-4, -5.52216e-3,
               6.40551, 3.53696e-2, 5.06155e-2]
 
-    regareas_src = []
-    regareas_bkg = []
+    backscales_src = []
+    backscales_bkg = []
 
     for ispec, specfile in enumerate(src_files):
         if ispec == 0:
@@ -741,8 +741,8 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         src_header = fits.open(src.fileName)['SPECTRUM'].header
         bkg_header = fits.open(bkgfile)['SPECTRUM'].header
         bkg_factor = src_header['BACKSCAL'] / bkg_header['BACKSCAL']
-        regareas_src.append(src_header['REGAREA'])
-        regareas_bkg.append(bkg_header['REGAREA'])
+        backscales_src.append(src_header['BACKSCAL'])
+        backscales_bkg.append(bkg_header['BACKSCAL'])
 
         arf, rmf = src.multiresponse[0].arf, src.multiresponse[0].rmf
         src.background = None
