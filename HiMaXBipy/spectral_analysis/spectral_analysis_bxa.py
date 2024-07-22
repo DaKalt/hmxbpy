@@ -825,20 +825,20 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     p_kT = modded_create_uniform_prior_for(srcmod, kT)
     transf_src.append(p_kT)
     O = srcmod.vapec.O
-    O.values = [1.0, 0.01, 0, 0, 1000, 1000]
-    p_O = modded_create_uniform_prior_for(srcmod, O)
+    O.values = [1.0, 0.01, 0, 0.01, 100, 1000]
+    p_O = modded_create_jeffreys_prior_for(srcmod, O)
     transf_src.append(p_O)
     Ne = srcmod.vapec.Ne
-    Ne.values = [1.0, 0.01, 0, 0, 1000, 1000]
-    p_Ne = modded_create_uniform_prior_for(srcmod, Ne)
+    Ne.values = [1.0, 0.01, 0, 0.01, 100, 1000]
+    p_Ne = modded_create_jeffreys_prior_for(srcmod, Ne)
     transf_src.append(p_Ne)
     Mg = srcmod.vapec.Mg
-    Mg.values = [1.0, 0.01, 0, 0, 1000, 1000]
-    p_Mg = modded_create_uniform_prior_for(srcmod, Mg)
+    Mg.values = [1.0, 0.01, 0, 0.01, 100, 1000]
+    p_Mg = modded_create_jeffreys_prior_for(srcmod, Mg)
     transf_src.append(p_Mg)
     Fe = srcmod.vapec.Fe
-    Fe.values = [1.0, 0.01, 0, 0, 1000, 1000]
-    p_Fe = modded_create_uniform_prior_for(srcmod, Fe)
+    Fe.values = [1.0, 0.01, 0, 0.01, 100, 1000]
+    p_Fe = modded_create_jeffreys_prior_for(srcmod, Fe)
     transf_src.append(p_Fe)
     for groupid in range(n_srcfiles):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
