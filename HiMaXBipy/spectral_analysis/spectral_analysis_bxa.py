@@ -1076,6 +1076,7 @@ def plot_corner_flux(analyser, lum_chains, ntransf) -> Figure:
             data[i_name] = lum_chains[i_src-1] / 10**log_scale
             i_src += 1
     data = data.T
+    print(data) #TODO debugging
     fig = corner.corner(data, labels=paramnames, show_titles=True, quiet=True,
                         title_kwargs={'fontsize': 12})
     return fig
