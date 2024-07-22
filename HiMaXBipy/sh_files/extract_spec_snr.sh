@@ -18,7 +18,7 @@ cd $product_dir
 
 # spectra on chip detectors
 srctool eventfiles="${sources}" \
-        prefix="${product_dir}/${epoch}_bxa_bkg_" srccoord="fk5;$ra,$dec" srcreg="${main_dir}/bkg.reg" backreg="${main_dir}/src.reg" exttype="BETA" \
-        todo="SPEC ARF RMF EVENTS" insts="1 2 3 4 6" tstep=0.05 xgrid="0.5 1.0" gtitype="GTI" psftype="2D_PSF" clobber=yes writeinsts="0" \
+        prefix="${product_dir}/${epoch}_bxa_bkg_" srccoord="fk5;$ra,$dec" srcreg="${main_dir}/bkg.reg" backreg="${main_dir}/src.reg" exttype="TOPHAT" \
+        todo="SPEC ARF RMF EVENTS" insts="1 2 3 4 6" tstep=0.05 xgrid="0.5 1.0" gtitype="GTI" psftype="2D_PSF" clobber=yes writeinsts="0" extpars="100."\
 
 cd $old_wd

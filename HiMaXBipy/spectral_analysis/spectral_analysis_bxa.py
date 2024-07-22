@@ -25,7 +25,7 @@ from xspec import Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,\
 from HiMaXBipy.io.package_data import num2text
 from HiMaXBipy.spectral_analysis.modded_function import PredictionBand,\
     posterior_predictions_plot, modded_create_uniform_prior_for, \
-    modded_create_jeffreys_prior_for
+    modded_create_jeffreys_prior_for, modded_create_gaussian_prior_for
 
 
 def lum(flux, distance):
@@ -802,6 +802,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     srcmod.TBvarabs.Ni.values = Z
     srcmod.vapec.C.values = [Z, -1]
     srcmod.vapec.N.values = [Z, -1]
+    srcmod.vapec.Mg.values = [Z, -1]
     srcmod.vapec.Al.values = [Z, -1]
     srcmod.vapec.Si.values = [Z, -1]
     srcmod.vapec.S.values = [Z, -1]
@@ -822,23 +823,23 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     transf_src.append(p_gamma)
     kT = srcmod.vapec.kT
     kT.values = [6.5, 0.01, 0.0808, 0.0808, 68.447, 68.477] #standard xspec values
-    p_kT = modded_create_uniform_prior_for(srcmod, kT)
+    p_kT = modded_create_gaussian_prior_for(srcmod, kT, 0.39, 0.02)
     transf_src.append(p_kT)
     O = srcmod.vapec.O
     O.values = [1.0, 0.01, 0, 0.01, 100, 1000]
-    p_O = modded_create_jeffreys_prior_for(srcmod, O)
+    p_O = modded_create_gaussian_prior_for(srcmod, O, 0.36, 0.1)
     transf_src.append(p_O)
     Ne = srcmod.vapec.Ne
     Ne.values = [1.0, 0.01, 0, 0.01, 100, 1000]
-    p_Ne = modded_create_jeffreys_prior_for(srcmod, Ne)
+    p_Ne = modded_create_gaussian_prior_for(srcmod, Ne, 0.82, 0.1)
     transf_src.append(p_Ne)
-    Mg = srcmod.vapec.Mg
-    Mg.values = [1.0, 0.01, 0, 0.01, 100, 1000]
-    p_Mg = modded_create_jeffreys_prior_for(srcmod, Mg)
-    transf_src.append(p_Mg)
+    # Mg = srcmod.vapec.Mg
+    # Mg.values = [1.0, 0.01, 0, 0.01, 100, 1000]
+    # p_Mg = modded_create_jeffreys_prior_for(srcmod, Mg)
+    # transf_src.append(p_Mg)
     Fe = srcmod.vapec.Fe
     Fe.values = [1.0, 0.01, 0, 0.01, 100, 1000]
-    p_Fe = modded_create_jeffreys_prior_for(srcmod, Fe)
+    p_Fe = modded_create_gaussian_prior_for(srcmod, Fe, 0.09, 0.02)
     transf_src.append(p_Fe)
     for groupid in range(n_srcfiles):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')

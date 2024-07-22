@@ -178,3 +178,17 @@ def modded_create_jeffreys_prior_for(model, par):
 	def log_after_transform(x): return 10**x
 	return dict(model=model, index=par._Parameter__index, name='log(%s)' % par.name, 
 		transform=log_transform, aftertransform=log_after_transform)
+
+def modded_create_gaussian_prior_for(model, par, mean, std):
+	"""
+	Use for informed variables.
+	The Gaussian prior weights by a Gaussian in the parameter.
+	"""
+	import scipy.stats
+	pval, pdelta, pmin, pbottom, ptop, pmax = par.values
+	rv = scipy.stats.norm(mean, std)
+	def gauss_transform(x): 
+		return max(pbottom, min(ptop, rv.ppf(x)))
+	print('  gaussian prior for %s of %f +- %f' % (par.name, mean, std))
+	return dict(model=model, index=par._Parameter__index, name=par.name, 
+		transform=gauss_transform, aftertransform=lambda x: x)
