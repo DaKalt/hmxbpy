@@ -4326,6 +4326,12 @@ class HiMaXBi:
             quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
         if NH != -1.:
             self.set_NH(NH=NH)
+        if len(src_markers) == 0:
+            src_markers = pnt_palette
+        if Z != -1:
+            self.set_metallicity(Z=Z)
+        if distance != -1:
+            self.set_distance(distance)
 
         user = getpass.getuser()
         plt.rc('text', usetex=True)
@@ -4335,8 +4341,6 @@ class HiMaXBi:
         E_ranges_L = np.array(E_ranges_L).tolist()
         if not E_range in E_ranges_L:
             E_ranges_L.insert(0,E_range)
-
-        tex_info = []
 
         if colors == []:
             colors = color_palette
@@ -4399,14 +4403,14 @@ class HiMaXBi:
             epoch_type = 'part'
         #TODO
         output = plot_bxa_SNR(rebin_params, src_files, ax_spec, ax_res,
-                                colors, src_markers, bkg_markers, epoch_type,
-                                bkg_factors, analyser, src_linestyles,
-                                bkg_linestyle, hatches, ntransf)
+                              colors, src_markers, bkg_markers, epoch_type,
+                              bkg_factors, analyser, src_linestyles,
+                              bkg_linestyle, hatches, ntransf)
         self._output = output
         _ = plot_bxa_SNR(rebin_params, src_files, ax_spec_src, ax_res_src,
-                            colors, src_markers, bkg_markers, epoch_type,
-                            bkg_factors, analyser, src_linestyles,
-                            bkg_linestyle, hatches, ntransf, plot_src=True)
+                         colors, src_markers, bkg_markers, epoch_type,
+                         bkg_factors, analyser, src_linestyles,
+                         bkg_linestyle, hatches, ntransf, plot_src=True)
 
         ncols = 1
         nrows = 2
