@@ -374,6 +374,7 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
                 .vapec.norm.values = [0, -1, 0, 0, 10, 10]
             for i_line in range(len(analyser.posterior)):
                 analyser.posterior[i_line][ntransf+igroup] = -10
+            AllModels.show()
             for content in posterior_predictions_plot(analyser,
                                                       plottype='data',
                                                       nsamples=100,
@@ -438,6 +439,7 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
             shadeargs = dict(**shadeargs, hatch=hatches[igroup])
             band.shade(q=0.9973/2., alpha=0.2, **shadeargs)
             band.line(label=label, **lineargs)
+        analyser.set_best_fit()
 
     return output
 
