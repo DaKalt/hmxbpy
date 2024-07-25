@@ -368,6 +368,8 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
             Plot.add = False
             Plot.background = False
             old_posterior = analyser.posterior.copy()
+            old_bkg = AllModels(groupNum=2*igroup+1, modName=f'pcabkg')\
+                .constant.factor.values.copy()
             AllModels(groupNum=2*igroup+1, modName=f'pcabkg')\
                 .constant.factor.values = [0, -1, 0, 0, 10, 10]
             AllModels(groupNum=2*igroup+1, modName=f'srcmod')\
@@ -407,6 +409,8 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
             analyser.set_best_fit()
             AllModels.show()
             analyser.posterior = old_posterior.copy()
+            AllModels(groupNum=2*igroup+1, modName=f'pcabkg')\
+                .constant.factor.values = old_bkg.copy()
 
         #bkg
         models = []
