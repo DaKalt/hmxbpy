@@ -4301,7 +4301,7 @@ class HiMaXBi:
 
     def _plot_spectra_bayesian_SNR(self, mode='merged',  log_prefix='spectrum',
                                    log_suffix='.log', Z=-1, distance=-1,
-                                   model='apl', NH=-1., rebin=True,
+                                   model='apl_vapec', NH=-1., rebin=True,
                                    rebin_params=[5, 20], rescale=False,
                                    rescale_F=[], rescale_chi=[-5., 5.],
                                    fit_statistic='cstat', colors=[], markers=[],
