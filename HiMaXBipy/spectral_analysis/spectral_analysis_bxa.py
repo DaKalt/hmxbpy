@@ -417,14 +417,14 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
         bands = []
         Plot.add = False
         Plot.background = False
-        old_posterior = analyser.posterior.copy()
-        AllModels(groupNum=2*igroup+1, modName=f'srcmod')\
-            .powerlaw.norm.values = [0, -1, 0, 0, 10, 10]
-        for i_line in range(len(analyser.posterior)):
-            analyser.posterior[i_line][-3] = -10
+        # old_posterior = analyser.posterior.copy()
+        # AllModels(groupNum=2*igroup+1, modName=f'srcmod')\
+        #     .powerlaw.norm.values = [0, -1, 0, 0, 10, 10]
+        # for i_line in range(len(analyser.posterior)):
+        #     analyser.posterior[i_line][-3] = -10
         for content in posterior_predictions_plot(analyser, plottype='data',
                                                   nsamples=100,
-                                                  group=2*igroup+1): #TODO: before with 2*igroup+2
+                                                  group=2*igroup+2): #TODO: before with 2*igroup+2
             xmid = content[:, 0]
             ndata_columns = 6 if Plot.background else 4
             ncomponents = content.shape[1]-ndata_columns
@@ -448,7 +448,7 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
             band.shade(q=0.9973/2., alpha=0.2, **shadeargs)
             band.line(label=label, **lineargs)
         analyser.set_best_fit()
-        analyser.posterior = old_posterior.copy()
+        # analyser.posterior = old_posterior.copy()
 
     return output
 
