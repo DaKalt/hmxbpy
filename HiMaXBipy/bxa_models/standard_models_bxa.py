@@ -465,7 +465,7 @@ def apl_pl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
     # uses alpha
     transformations.append(p_gamma)
     gamma_hard = srcmod.powerlaw_3.PhoIndex
-    gamma_hard.values = [1, 0.01, -2, -2, 1, 1]
+    gamma_hard.values = [1, 0.01, -3, -3, 1, 1]
     p_gamma_hard = modded_create_uniform_prior_for(srcmod, gamma_hard)
     p_gamma_hard['name'] = '$\\alpha$ hard' #was Gamma before but apparently xspec
     # uses alpha
