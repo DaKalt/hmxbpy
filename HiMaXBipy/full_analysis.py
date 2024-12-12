@@ -4276,6 +4276,12 @@ class HiMaXBi:
                   E_ranges_L)
         results_file.close()
 
+        with open(f'{self._working_dir_full}/results/spectra/{model}'
+                 f'{suffix}/statistics', 'w') as f:
+            f.write(f"Bayes Factor log(Z) = {analyser.results['logz']}\n")
+            f.write('Likelihood log(L) = '
+                    f"{analyser.results['maximum_likelihood']['logl']}\n")
+
         if mode == 'merged':
             merged_file = src_files[0]
             results_file = open(f'{self._working_dir_full}/results/spectra/'
@@ -4491,8 +4497,14 @@ class HiMaXBi:
         results_file = open(f'{self._working_dir_full}/results/spectra/'
                             f'{model}{suffix}/results.tex', 'w')
         write_tex(results_file, tex_info, abs_F, unabs_L, analyser, quantiles,
-                E_ranges_L)
+                  E_ranges_L)
         results_file.close()
+
+        with open(f'{self._working_dir_full}/results/spectra/{model}'
+                 f'{suffix}/statistics', 'w') as f:
+            f.write(f"Bayes Factor log(Z) = {analyser.results['logz']}\n")
+            f.write('Likelihood log(L) = '
+                    f"{analyser.results['maximum_likelihood']['logl']}\n")
 
         if mode == 'merged':
             merged_file = src_files[0]

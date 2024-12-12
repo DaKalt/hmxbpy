@@ -1182,13 +1182,13 @@ def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
         for i in range(len(abs_F)):
             line = ''
             for irange in range(len(E_ranges)):
-                lower = abs_F[i][irange][0] * factors[irange]
-                median = abs_F[i][irange][1] * factors[irange]
-                upper = abs_F[i][irange][2] * factors[irange]
+                lower = abs_F[i][irange][1] * (factors[irange][0] - factors[irange][1])
+                median = abs_F[i][irange][1] * factors[irange][0]
+                upper = abs_F[i][irange][1] * (factors[irange][0] + factors[irange][1])
                 line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
-                lower = unabs_L[i][irange][0] * factors[irange]
-                median = unabs_L[i][irange][1] * factors[irange]
-                upper = unabs_L[i][irange][2] * factors[irange]
+                lower = unabs_L[i][irange][1] * (factors[irange][0] - factors[irange][1])
+                median = unabs_L[i][irange][1] * factors[irange][0]
+                upper = unabs_L[i][irange][1] * (factors[irange][0] + factors[irange][1])
                 line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
             line = line[:-3] + '\\\\ \n'
             tex_file.write(line)
@@ -1208,7 +1208,8 @@ def get_factors(merged_file, specfile, E_ranges):
         spec_epoch.notice('**-**')
         spec_epoch.ignore('**-%s %s-**' % (bin[0], bin[1]))
         cr_spec = spec_epoch.rate[0]
-        factors.append(cr_spec / cr_merged)
+        cr_spec_err = spec_epoch.rate[1]
+        factors.append([cr_spec / cr_merged, cr_spec_err / cr_merged])
     return factors
 
 def setup_axis(Emin, Emax, figsize):
