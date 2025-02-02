@@ -4484,10 +4484,11 @@ class HiMaXBi:
         shutil.copy(f'{self._working_dir_full}/working/{model}{suffix}/'
                     'plots/trace.pdf', f'{self._working_dir_full}/results/'
                     f'spectra/{model}{suffix}/diagnostic/trace.pdf')
-        shutil.copy(f'{self._working_dir_full}/working/corner_lums.pdf',
-                    f'{self._working_dir_full}/results/'
-                    f'spectra/{model}{suffix}/corner_lums.pdf')
-                
+        # shutil.copy(f'{self._working_dir_full}/working/corner_lums.pdf',
+        #             f'{self._working_dir_full}/results/'
+        #             f'spectra/{model}{suffix}/corner_lums.pdf')
+        # TODO: add corner_lums, currently not working
+
         fig_corner = plot_corner(analyser, ntransf, self._logger)
         fig_corner.savefig(f'{self._working_dir_full}/results/spectra/'
                         f'{model}{suffix}/corner.pdf')
