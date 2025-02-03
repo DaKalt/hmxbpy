@@ -753,7 +753,8 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         src.ignore("1-%d" % ilo)
         src.ignore("%d-%d" % (ihi, nchan))
 
-        bkgfile = specfile.replace('_bxa_', '_bxa_bkg_')
+        # bkgfile = specfile.replace('_bxa_', '_bxa_bkg_') #TODO: for some reason this does not work
+        bkgfile = src.background.fileName
 
         src_header = fits.open(src.fileName)['SPECTRUM'].header
         bkg_header = fits.open(bkgfile)['SPECTRUM'].header
