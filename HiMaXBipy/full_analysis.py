@@ -4087,42 +4087,42 @@ class HiMaXBi:
             fit_model = abb
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                          'log'],
-                        ['Teff', 'K', [1], 'lin']]
+                        ['Teff', 'keV', [1], 'lin']]
         elif model == 'abb_simple':
-            tex_info = [['Teff', 'K', [0], 'lin']]
+            tex_info = [['Teff', 'keV', [0], 'lin']]
             fit_model = abb_simple
         elif model == 'apl_diskbb':
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                          'log'],
                         ['Power-law', 'index', [1], 'lin'],
-                        ['Tin', 'K', [2], 'lin']]
+                        ['Tin', 'keV', [2], 'lin']]
             fit_model = apl_diskbb
         elif model == 'apl_diskbb_simple':
             tex_info = [['Power-law', 'index', [0], 'lin'],
-                        ['Tin', 'K', [1], 'lin']]
+                        ['Tin', 'keV', [1], 'lin']]
             fit_model = apl_diskbb_simple
         elif model == 'apl_bb':
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                          'log'],
                         ['Power-law', 'index', [1], 'lin'],
-                        ['Teff', 'K', [2], 'lin']]
+                        ['Teff', 'keV', [2], 'lin']]
             fit_model = apl_bb
         elif model == 'apl_bb_simple':
             tex_info = [['Power-law', 'index', [0], 'lin'],
-                        ['Teff', 'K', [1], 'lin']]
+                        ['Teff', 'keV', [1], 'lin']]
             fit_model = apl_bb_simple
         elif model == 'adiskbb':
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                          'log'],
-                        ['Tin', 'K', [1], 'lin']]
+                        ['Tin', 'keV', [1], 'lin']]
             fit_model = adiskbb
         elif model == 'adiskbb_simple':
-            tex_info = [['Tin', 'K', [0], 'lin']]
+            tex_info = [['Tin', 'keV', [0], 'lin']]
             fit_model = adiskbb_simple
         elif model == 'apl_pl_bb_simple':
             tex_info = [['Power-law', 'index', [0], 'lin'],
                         ['Power-law', 'index hard', [1], 'lin'],
-                        ['Teff', 'K', [2], 'lin']]
+                        ['Teff', 'keV', [2], 'lin']]
             fit_model = apl_pl_bb_simple
 
         if colors == []:
@@ -4326,7 +4326,15 @@ class HiMaXBi:
                                                                 [2.0, 10.0]]):
         '''Model spectrum specifically for CXOU J053600.0-673507
         '''
-        tex_info = []
+        tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
+                     'log'],
+                    ['Power-law', 'index', [1], 'lin'],
+                    ['Teff', 'keV', [2], 'lin'],
+                    ['O', 'abundance', [3], 'lin'],
+                    ['Ne', 'abundance', [4], 'lin'],
+                    ['Fe', 'abundance', [5], 'lin'],
+                    ['norm vapec', 'src', [7], 'log'],
+                    ['norm vapec', 'bkg', [8], 'log']]
         self._logger.info('Running plot_spectra.')
         if np.shape(quantiles) == (0,):
             quantiles = scipy.stats.norm().cdf([-1, 0, 1]) * 100
