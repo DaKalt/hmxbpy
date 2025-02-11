@@ -4388,7 +4388,8 @@ class HiMaXBi:
             setup_axis(Emin, Emax, figsize)
 
         #TODO: I think nothing needs to be done, only unnecessarily creates bkg fit
-        src_files = self._prep_spec_srclist(tbin_f, tbins, mode, snr=True)
+        src_files = self._prep_spec_srclist(tbin_f, tbins, mode, snr=False)
+        # currently not using the SNR extraction
         if mode == 'merged':
             specs_eRASS, specs_epoch = self._prepare_spec_epochs()
 
