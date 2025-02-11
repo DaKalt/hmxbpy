@@ -807,7 +807,7 @@ def plot_lc_mincounts_broken_new(hdulist, axs, log, mjdref, xflag,
 
         if short_time:
             if i_ax == 0 and time_rel == 0:
-                time_rel = int(np.round(xmin))
+                time_rel = int(xmin)
             xtime = xtime - time_rel
             mjd = mjd - time_rel
             xmin = xmin - time_rel
@@ -1080,7 +1080,7 @@ def plot_lc_UL_broken_new(hdulist, axs, log, mjdref, xflag, mincounts,
 
         if short_time:
             if i_ax == 0 and time_rel == 0:
-                time_rel = int(np.round(xmin))
+                time_rel = int(xmin)
             xtime = xtime - time_rel
             mjd = mjd - time_rel
             xmin = xmin - time_rel
@@ -1580,7 +1580,7 @@ def plot_lc_UL_hr(hdulist_1, hdulist_2, axs, log, mjdref, xflag, mincounts,
 
         if short_time:
             if i_ax == 0 and time_rel == 0:
-                time_rel = int(np.round(xmin))
+                time_rel = int(xmin)
             xtime_1 = xtime_1 - time_rel
             mjd_1 = mjd_1 - time_rel
             xmin = xmin - time_rel

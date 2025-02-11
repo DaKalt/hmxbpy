@@ -2156,10 +2156,10 @@ class HiMaXBi:
 
         if short_time:
             if time_axis == 'mjd':
-                time_rel = self._obs_periods[0][0]
+                time_rel = int(self._obs_periods[0][0])
             elif time_axis == 's':
-                time_rel = ((self._obs_periods[0][0] - self._mjdref)
-                            / (24. * 3600))
+                time_rel = int((self._obs_periods[0][0] - self._mjdref)
+                               / (24. * 3600))
             else:
                 time_rel = 0
                 self._logger.error('time_rel not yet defined for this '
@@ -2686,10 +2686,10 @@ class HiMaXBi:
 
         if short_time:
             if time_axis == 'mjd':
-                time_rel = self._obs_periods[0][0]
+                time_rel = int(self._obs_periods[0][0])
             elif time_axis == 's':
-                time_rel = ((self._obs_periods[0][0] - self._mjdref)
-                            / (24. * 3600))
+                time_rel = int(((self._obs_periods[0][0] - self._mjdref)
+                                / (24. * 3600)))
             else:
                 time_rel = 0
                 self._logger.error('time_rel not yet defined for this '
