@@ -5,7 +5,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*tbvarabs*pow', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
     srcmod.TBvarabs.O.values = Z
@@ -53,7 +53,7 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*pow', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
 
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
@@ -80,7 +80,7 @@ def abb_simple(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*bbodyrad', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
 
     # fit parameters
     kT = srcmod.bbodyrad.kT
@@ -106,7 +106,7 @@ def abb(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*tbvarabs*bbodyrad', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
     srcmod.TBvarabs.O.values = Z
@@ -151,7 +151,7 @@ def apl_diskbb_simple(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*(pow+diskbb)', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
 
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
@@ -188,7 +188,7 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*tbvarabs*(pow+diskbb)', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
     srcmod.TBvarabs.O.values = Z
@@ -246,7 +246,7 @@ def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*tbvarabs*pow', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
     srcmod.TBvarabs.O.values = Z
@@ -289,7 +289,7 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*tbvarabs*(pow+bbodyrad)', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
     srcmod.TBvarabs.O.values = Z
@@ -346,7 +346,7 @@ def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*(pow+bbodyrad)', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
 
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex
@@ -383,7 +383,7 @@ def adiskbb_simple(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*(diskbb)', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
 
     # fit parameters
     Tin = srcmod.diskbb.Tin
@@ -409,7 +409,7 @@ def adiskbb(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*tbvarabs*(diskbb)', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
     srcmod.TBvarabs.O.values = Z
@@ -455,7 +455,7 @@ def apl_pl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*(pow+pow+bbodyrad)', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
 
     # fit parameters
     gamma = srcmod.powerlaw.PhoIndex

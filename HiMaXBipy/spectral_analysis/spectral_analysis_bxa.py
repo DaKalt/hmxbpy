@@ -632,9 +632,9 @@ def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
             fluxes.append(fluxes_band)
             for nH in nHs_froz:
                 old_nh.append(nH.values)
-                nH.values = 1e-5
+                nH.values = 0
             for nH in nHs_mod:
-                nH.values = 1e-5
+                nH.values = 0
             AllModels.show()
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')[:,0]
@@ -804,7 +804,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     transf_src = []
     bkg_norms = []
     srcmod = Model('tbabs*tbvarabs*(pow+vapec)', modName='srcmod', sourceNum=1)
-    srcmod.TBabs.nH.values = [galnh, -1]
+    srcmod.TBabs.nH.values = [galnh, -1, 0, 1e-5, 1e2, 1e2]
     srcmod.TBvarabs.C.values = Z
     srcmod.TBvarabs.N.values = Z
     srcmod.TBvarabs.O.values = Z
@@ -833,7 +833,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    loc_nh.values = [galnh, 0.01, 0, 1e-5, 1e2, 1e2]
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transf_src.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
@@ -1026,9 +1026,9 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
             fluxes.append(fluxes_band)
             for nH in nHs_froz:
                 old_nh.append(nH.values)
-                nH.values = 1e-5
+                nH.values = 0
             for nH in nHs_mod:
-                nH.values = 1e-5
+                nH.values = 0
             AllModels.show()
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')[:,0]
