@@ -4409,7 +4409,7 @@ class HiMaXBi:
             fit_bxa_SNR(abund, self._distance, E_range,
                         NH, self._logger, prompting,
                         quantiles, src_files, fit_statistic, suffix,
-                        resume, working_dir, self._Z, E_ranges_L)
+                        resume, working_dir, self._Z, E_ranges_L, self)
         self._analyser = analyser
         ####
         # self._lum_chain = luminosity_chains

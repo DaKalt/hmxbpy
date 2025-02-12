@@ -662,7 +662,7 @@ def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
 
 def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
                 quantiles, src_files, statistic, suffix, resume, working_dir,
-                Z, E_ranges_L):
+                Z, E_ranges_L, obj):
 
     os.environ['WITHOUT_MULTINEST'] = '1'
     Xset.abund = abund
@@ -993,6 +993,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     analyser = BXASolver(transformations=transformations,
                          outputfiles_basename=outfiles)
     results = analyser.run(resume=resume)
+    obj.analyser = analyser
 
     AllData.show()
     AllModels.show()
