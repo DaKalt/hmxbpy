@@ -1009,6 +1009,8 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
             old_nh = []
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')[:,0]
+            obj._flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
+                                              f' {band[1]}')
             fluxes_band = [np.percentile(flux, quantiles[0]),
                            np.percentile(flux, quantiles[1]),
                            np.percentile(flux, quantiles[2])]
