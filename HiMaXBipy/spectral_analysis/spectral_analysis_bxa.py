@@ -867,11 +867,11 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transf_src.append(p_norm)
         norm_vapec = model.vapec.norm
-        norm_vapec.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm_vapec.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm_vapec = modded_create_jeffreys_prior_for(model, norm_vapec)
         p_norm_vapec['name'] = 'log(norm$_{v,%s}$)' % (groupid+1)
         transf_src.append(p_norm_vapec)
-        model_bkg = AllModels(groupNum=2*groupid+2, modName='bkgmod')
+        model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
         norm_vapec_bkg = model_bkg.vapec.norm
         norm_vapec_bkg.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
@@ -1006,6 +1006,9 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         fluxes = []
         lums = []
         for band in E_ranges_L:
+            norm_vapec = AllModels(groupNum=2*ispec+1,
+                                   modName='srcmod').vapec.norm
+            norm_vapec.values = 0
             old_nh = []
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')[:,0]
