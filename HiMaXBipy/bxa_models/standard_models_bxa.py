@@ -25,7 +25,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    loc_nh.values = [galnh, 0.01, 0, 1e-5, 1e2, 1e2]
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
@@ -37,7 +37,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
@@ -64,7 +64,7 @@ def apl_simple(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
@@ -90,7 +90,7 @@ def abb_simple(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.bbodyrad.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-3, 1e7, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-3, 1e7, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm)
@@ -126,7 +126,7 @@ def abb(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    loc_nh.values = [galnh, 0.01, 0, 1e-5, 1e2, 1e2]
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     kT = srcmod.bbodyrad.kT
@@ -136,7 +136,7 @@ def abb(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.bbodyrad.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-3, 1e7, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-3, 1e7, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm)
@@ -167,12 +167,12 @@ def apl_diskbb_simple(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_disk = model.diskbb.norm
-        norm_disk.values = [1e-4, 0.01, 1e-20, 1e-6, 1e7, 1e20]
+        norm_disk.values = [1e-4, 0.01, 0, 1e-6, 1e7, 1e20]
         p_norm_disk = modded_create_jeffreys_prior_for(model, norm_disk)
         p_norm_disk['name'] = 'log(norm$_{disk,%s}$)' % (groupid+1)
         transformations.append(p_norm_disk)
@@ -208,7 +208,7 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    loc_nh.values = [galnh, 0.01, 0, 1e-5, 1e2, 1e2]
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
@@ -225,12 +225,12 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_disk = model.diskbb.norm
-        norm_disk.values = [1e-4, 0.01, 1e-20, 1e-6, 1e7, 1e20]
+        norm_disk.values = [1e-4, 0.01, 0, 1e-6, 1e7, 1e20]
         p_norm_disk = modded_create_jeffreys_prior_for(model, norm_disk)
         p_norm_disk['name'] = 'log(norm$_{disk,%s}$)' % (groupid+1)
         transformations.append(p_norm_disk)
@@ -266,7 +266,7 @@ def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    loc_nh.values = [galnh, 0.01, 0, 1e-5, 1e2, 1e2]
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
@@ -274,7 +274,7 @@ def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
@@ -309,7 +309,7 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    loc_nh.values = [galnh, 0.01, 0, 1e-5, 1e2, 1e2]
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     gamma = srcmod.powerlaw.PhoIndex
@@ -325,12 +325,12 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_bb = model.bbodyrad.norm
-        norm_bb.values = [1e-4, 0.01, 1e-20, 1e-3, 1e7, 1e20]
+        norm_bb.values = [1e-4, 0.01, 0, 1e-3, 1e7, 1e20]
         p_norm_bb = modded_create_jeffreys_prior_for(model, norm_bb)
         p_norm_bb['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm_bb)
@@ -362,12 +362,12 @@ def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_bb = model.bbodyrad.norm
-        norm_bb.values = [1e-4, 0.01, 1e-20, 1e-3, 1e7, 1e20]
+        norm_bb.values = [1e-4, 0.01, 0, 1e-3, 1e7, 1e20]
         p_norm_bb = modded_create_jeffreys_prior_for(model, norm_bb)
         p_norm_bb['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm_bb)
@@ -394,7 +394,7 @@ def adiskbb_simple(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm_disk = model.diskbb.norm
-        norm_disk.values = [1e-4, 0.01, 1e-20, 1e-6, 1e7, 1e20]
+        norm_disk.values = [1e-4, 0.01, 0, 1e-6, 1e7, 1e20]
         p_norm_disk = modded_create_jeffreys_prior_for(model, norm_disk)
         p_norm_disk['name'] = 'log(norm$_{disk,%s}$)' % (groupid+1)
         transformations.append(p_norm_disk)
@@ -429,7 +429,7 @@ def adiskbb(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     loc_nh = srcmod.TBvarabs.nH
-    loc_nh.values = [galnh, 0.01, 1e-10, 1e-5, 1e2, 1e2]
+    loc_nh.values = [galnh, 0.01, 0, 1e-5, 1e2, 1e2]
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     Tin = srcmod.diskbb.Tin
@@ -440,7 +440,7 @@ def adiskbb(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm_disk = model.diskbb.norm
-        norm_disk.values = [1e-4, 0.01, 1e-20, 1e-6, 1e7, 1e20]
+        norm_disk.values = [1e-4, 0.01, 0, 1e-6, 1e7, 1e20]
         p_norm_disk = modded_create_jeffreys_prior_for(model, norm_disk)
         p_norm_disk['name'] = 'log(norm$_{disk,%s}$)' % (groupid+1)
         transformations.append(p_norm_disk)
@@ -477,17 +477,17 @@ def apl_pl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
     for groupid in range(n):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transformations.append(p_norm)
         norm_hard = model.powerlaw_3.norm
-        norm_hard.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm_hard.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm_hard = modded_create_jeffreys_prior_for(model, norm_hard)
         p_norm_hard['name'] = 'log(norm$_{PL hard,%s}$)' % (groupid+1)
         transformations.append(p_norm_hard)
         norm_bb = model.bbodyrad.norm
-        norm_bb.values = [1e-4, 0.01, 1e-20, 1e-3, 1e7, 1e20]
+        norm_bb.values = [1e-4, 0.01, 0, 1e-3, 1e7, 1e20]
         p_norm_bb = modded_create_jeffreys_prior_for(model, norm_bb)
         p_norm_bb['name'] = 'log(norm$_{BB,%s}$)' % (groupid+1)
         transformations.append(p_norm_bb)

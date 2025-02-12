@@ -581,12 +581,12 @@ def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
                 [1./bkg_factors[groupid], -1]
             # has to be set, see https://heasarc.gsfc.nasa.gov/docs/asca/abc_backscal.html
             if groupid+1 == bkgid:
-                fac_src.values = [1, 0.1, 0.1, 0.1, 10, 10]
+                fac_src.values = [1, 0.1, 0, 0.1, 10, 10]
                 fac_bkg.link = fac_src #this is correct, more
                 # information when fitting both at the same time
                 model = AllModels(groupNum=2*groupid+1,
                                   modName=f'bkgmod{bkgid}')
-                norm = bxa.create_jeffreys_prior_for(model, fac_src)
+                norm = modded_create_jeffreys_prior_for(model, fac_src)
                 norm['name'] = f'log(bkg mod f{bkgid})'
                 bkg_norms.append(norm)
             else:
@@ -621,6 +621,9 @@ def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
         lums = []
         for band in E_ranges_L:
             old_nh = []
+            fac_src = AllModels(groupNum=2*ispec+1,
+                                modName=f'bkgmod{ispec+1}').constant.factor
+            fac_src.values = 0
             flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
                                               f' {band[1]}')[:,0]
             fluxes_band = [np.percentile(flux, quantiles[0]),
@@ -1006,6 +1009,9 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         fluxes = []
         lums = []
         for band in E_ranges_L:
+            fac_src = AllModels(groupNum=2*groupid+1,
+                                modName=f'pcabkg').constant.factor
+            fac_src.values = 0
             norm_vapec = AllModels(groupNum=2*ispec+1,
                                    modName='srcmod').vapec.norm
             norm_vapec.values = 0
@@ -1038,6 +1044,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
                 AllModels.show()
             for inH, nH in enumerate(nHs_froz):
                 nH.values = old_nh[inH]
+            fac_src.values = [backscales_src[groupid]/backscale_pback, -1]
             analyser.set_best_fit()
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
