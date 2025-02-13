@@ -393,12 +393,6 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
             Plot.add = False
             Plot.background = False
             old_posterior = analyser.posterior.copy()
-            old_bkg = AllModels(groupNum=2*igroup+1, modName=f'pcabkg')\
-                .constant.factor.values.copy()
-            AllModels(groupNum=2*igroup+1, modName=f'pcabkg')\
-                .constant.factor.values = [0, -1, 0, 0, 10, 10]
-            AllModels(groupNum=2*igroup+1, modName=f'srcmod')\
-                .vapec.norm.values = [0, -1, 0, 0, 10, 10]
             for i_line in range(len(analyser.posterior)):
                 analyser.posterior[i_line][-1] = -99
             for i_line in range(len(analyser.posterior)):
@@ -434,8 +428,6 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
             analyser.posterior = old_posterior.copy()
             analyser.set_best_fit()
             AllModels.show()
-            AllModels(groupNum=2*igroup+1, modName=f'pcabkg')\
-                .constant.factor.values = old_bkg.copy()
 
         #bkg
         models = []
@@ -894,7 +886,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     for groupid in range(n_srcfiles):
         model = AllModels(groupNum=2*groupid+1, modName='srcmod')
         norm = model.powerlaw.norm
-        norm.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm = modded_create_jeffreys_prior_for(model, norm)
         p_norm['name'] = 'log(norm$_{PL,%s}$)' % (groupid+1)
         transf_src.append(p_norm)
@@ -907,7 +899,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
         norm_vapec_bkg = model_bkg.vapec.norm
-        norm_vapec_bkg.values = [1e-4, 0.01, 1e-20, 1e-8, 1e2, 1e20]
+        norm_vapec_bkg.values = [1e-4, 0.01, 0, 1e-8, 1e2, 1e20]
         p_norm_vapec_bkg = modded_create_jeffreys_prior_for(model_bkg,
                                                             norm_vapec_bkg)
         p_norm_vapec_bkg['name'] = 'log(norm$_{v_bkg,%s}$)' % (groupid+1)
@@ -1006,10 +998,10 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     for groupid in range(n_srcfiles):
         fac_src = AllModels(groupNum=2*groupid+1,
                             modName=f'pcabkg').constant.factor
-        fac_src.values = [backscales_src[groupid]/backscale_pback, -1]
+        fac_src.values = [backscales_src[groupid]/backscale_pback, -1, 0, 0, 1e2, 1e20]
         fac_bkg = AllModels(groupNum=2*groupid+2,
                             modName=f'pcabkg').constant.factor
-        fac_bkg.values = [backscales_bkg[groupid]/backscale_pback, -1]
+        fac_bkg.values = [backscales_bkg[groupid]/backscale_pback, -1, 0, 0, 1e2, 1e20]
 
     with XSilence():
         Fit.nIterations = 1000
