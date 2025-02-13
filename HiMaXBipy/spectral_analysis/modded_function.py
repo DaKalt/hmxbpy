@@ -12,8 +12,9 @@ The original package name is noted in each function.
 from bxa.xspec.solver import set_parameters, XSilence
 import numpy as np
 import scipy.stats
-from xspec import Plot
+from xspec import Plot, AllModels
 from numpy import log10
+from tqdm import tqdm  # if this fails --> pip install tqdm
 
 
 def posterior_predictions_plot(analyser, plottype, nsamples=None, group=1):
@@ -181,6 +182,7 @@ def modded_create_jeffreys_prior_for(model, par):
 
 def modded_create_gaussian_prior_for(model, par, mean, std):
 	"""
+    From bxa, change usage of pmin/pmax to pbottom/ptop
 	Use for informed variables.
 	The Gaussian prior weights by a Gaussian in the parameter.
 	"""
@@ -192,3 +194,41 @@ def modded_create_gaussian_prior_for(model, par, mean, std):
 	print('  gaussian prior for %s of %f +- %f' % (par.name, mean, std))
 	return dict(model=model, index=par._Parameter__index, name=par.name, 
 		transform=gauss_transform, aftertransform=lambda x: x)
+
+def modded_create_flux_chain(analyser, spectrum, erange='2.0, 10.0',
+                             nsamples=None, isource = 0):
+    """
+    From bxa, addition of isource
+    For each posterior sample, computes the flux in the given energy
+    range.
+
+    The so-created chain can be combined with redshift information to
+    propagate
+    the uncertainty. This is especially important if redshift is a
+    variable parameter in the fit (with some prior).
+
+    Returns erg/cm^2 energy flux (first column) and photon flux (second
+    column)
+    for each posterior sample.
+    
+    :param spectrum: spectrum to use for spectrum.flux
+    :param erange: argument to AllModels.calcFlux, energy range
+    :param nsamples: number of samples to consider (the default, None,
+    means all)
+    """
+    # prefix = analyzer.outputfiles_basename
+    # modelnames = set([t['model'].name for t in transformations])
+
+    with XSilence():
+        # plot models
+        flux = []
+        for k, row in enumerate(tqdm(analyser.posterior[:nsamples],
+                                     disable=None)):
+            set_parameters(values=row,
+                           transformations=analyser.transformations)
+            AllModels.calcFlux(erange)
+            f = spectrum.flux
+            # compute flux in current energies
+            flux.append([f[6*isource+0], f[6*isource+3]])
+
+        return np.array(flux)

@@ -45,7 +45,7 @@ def apl(Model, AllModels, bxa, galnh, Z, n):
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
-    nHs_modelled = [loc_nh]
+    nHs_modelled = [0]
     return transformations, nHs_frozen, nHs_modelled, 'apl'
 
 
@@ -144,7 +144,7 @@ def abb(Model, AllModels, bxa, galnh, Z, n):
         model_bkg.bbodyrad.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
-    nHs_modelled = [loc_nh]
+    nHs_modelled = [0]
     return transformations, nHs_frozen, nHs_modelled, 'abb'
 
 def apl_diskbb_simple(Model, AllModels, bxa, galnh, Z, n):
@@ -239,7 +239,7 @@ def apl_diskbb(Model, AllModels, bxa, galnh, Z, n):
         model_bkg.diskbb.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
-    nHs_modelled = [loc_nh]
+    nHs_modelled = [0]
     return transformations, nHs_frozen, nHs_modelled, 'apl_diskbb'
 
 def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
@@ -282,7 +282,7 @@ def apl_hmxb(Model, AllModels, bxa, galnh, Z, n):
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
-    nHs_modelled = [loc_nh]
+    nHs_modelled = [0]
     return transformations, nHs_frozen, nHs_modelled, 'apl_hmxb'
 
 def apl_bb(Model, AllModels, bxa, galnh, Z, n):
@@ -339,7 +339,7 @@ def apl_bb(Model, AllModels, bxa, galnh, Z, n):
         model_bkg.bbodyrad.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
-    nHs_modelled = [loc_nh]
+    nHs_modelled = [0]
     return transformations, nHs_frozen, nHs_modelled, 'apl_bb'
 
 def apl_bb_simple(Model, AllModels, bxa, galnh, Z, n):
@@ -448,7 +448,7 @@ def adiskbb(Model, AllModels, bxa, galnh, Z, n):
         model_bkg.diskbb.norm.values = [0, -1]  # this needs to be tested
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
-    nHs_modelled = [loc_nh]
+    nHs_modelled = [0]
     return transformations, nHs_frozen, nHs_modelled, 'adiskbb'
 
 def apl_pl_bb_simple(Model, AllModels, bxa, galnh, Z, n):

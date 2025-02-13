@@ -25,8 +25,32 @@ from xspec import Xset, Fit, PlotManager, AllData, AllModels, Spectrum, Model,\
 from HiMaXBipy.io.package_data import num2text
 from HiMaXBipy.spectral_analysis.modded_function import PredictionBand,\
     posterior_predictions_plot, modded_create_uniform_prior_for, \
-    modded_create_jeffreys_prior_for, modded_create_gaussian_prior_for
+    modded_create_jeffreys_prior_for, modded_create_gaussian_prior_for, \
+    modded_create_flux_chain
 
+def check_source(ispectrum, isource, Erange):
+    Xset.openLog('temp')
+    AllModels.calcFlux(f'{Erange[0]} {Erange[1]}')
+    Xset.closeLog()
+    loglines = {}
+    with open('temp', 'r') as f:
+        for line in f.readlines():
+            line_short = line.replace('\n', '').strip()
+            if line_short.startswith('Spectrum Number: '):
+                curr_spec = line_short[17:]
+                loglines[curr_spec] = []
+            elif line_short.startswith('Source: '):
+                loglines[curr_spec].append(line_short[8:])
+    os.remove('temp')
+    if not f'{ispectrum}' in loglines:
+        print(f'Spectrum {ispectrum} not loaded')
+        return np.nan
+    else:
+        if not f'{isource}' in loglines[f'{ispectrum}']:
+            print(f'Source {isource} not loaded')
+            return np.nan
+        return np.where(np.array(loglines[f'{ispectrum}'])
+                        == f'{isource}')[0][0]
 
 def lum(flux, distance):
     return 4. * np.pi * (distance * 1000 * 3.0857 * 10 ** 18) ** 2 * 10 ** flux
@@ -169,7 +193,7 @@ def plot_bxa(rebinning, src_files, ax_spec, ax_res, colors,
             AllModels(groupNum=2*igroup+1, modName=f'bkgmod{igroup+1}')\
                 .constant.factor.values = [0, -1, 0, 0, 10, 10]
             for i_line in range(len(analyser.posterior)):
-                analyser.posterior[i_line][ntransf+igroup] = -10
+                analyser.posterior[i_line][ntransf+igroup] = -99
             for content in posterior_predictions_plot(analyser,
                                                       plottype='data',
                                                       nsamples=100,
@@ -375,9 +399,9 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
             AllModels(groupNum=2*igroup+1, modName=f'srcmod')\
                 .vapec.norm.values = [0, -1, 0, 0, 10, 10]
             for i_line in range(len(analyser.posterior)):
-                analyser.posterior[i_line][-1] = -10
+                analyser.posterior[i_line][-1] = -99
             for i_line in range(len(analyser.posterior)):
-                analyser.posterior[i_line][-2] = -10
+                analyser.posterior[i_line][-2] = -99
             AllModels.show()
             for content in posterior_predictions_plot(analyser,
                                                       plottype='data',
@@ -406,9 +430,9 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
                 shadeargs = dict(**shadeargs, hatch=hatches[igroup])
                 band.shade(q=0.9973/2, alpha=0.2, **shadeargs)
                 band.line(label=label, **lineargs)
+            analyser.posterior = old_posterior.copy()
             analyser.set_best_fit()
             AllModels.show()
-            analyser.posterior = old_posterior.copy()
             AllModels(groupNum=2*igroup+1, modName=f'pcabkg')\
                 .constant.factor.values = old_bkg.copy()
 
@@ -421,7 +445,7 @@ def plot_bxa_SNR(rebinning, src_files, ax_spec, ax_res, colors,
         # AllModels(groupNum=2*igroup+1, modName=f'srcmod')\
         #     .powerlaw.norm.values = [0, -1, 0, 0, 10, 10]
         # for i_line in range(len(analyser.posterior)):
-        #     analyser.posterior[i_line][-3] = -10
+        #     analyser.posterior[i_line][-3] = -99
         for content in posterior_predictions_plot(analyser, plottype='data',
                                                   nsamples=100,
                                                   group=2*igroup+2): #TODO: before with 2*igroup+2
@@ -621,11 +645,11 @@ def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
         lums = []
         for band in E_ranges_L:
             old_nh = []
-            fac_src = AllModels(groupNum=2*ispec+1,
-                                modName=f'bkgmod{ispec+1}').constant.factor
-            fac_src.values = 0
-            flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
-                                              f' {band[1]}')[:,0]
+            old_posterior = analyser.posterior.copy()
+            i_src = check_source(ispec+1, 1, band)
+            flux = modded_create_flux_chain(analyser, src, erange=f'{band[0]}'
+                                            f' {band[1]}',
+                                            isource=int(i_src))[:,0]
             fluxes_band = [np.percentile(flux, quantiles[0]),
                            np.percentile(flux, quantiles[1]),
                            np.percentile(flux, quantiles[2])]
@@ -633,11 +657,13 @@ def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
             for nH in nHs_froz:
                 old_nh.append(nH.values)
                 nH.values = 0
-            for nH in nHs_mod:
-                nH.values = 0
+            for i_post in nHs_mod:
+                for i_line in range(len(analyser.posterior)):
+                    analyser.posterior[i_line][i_post] = -99
             AllModels.show()
-            flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
-                                              f' {band[1]}')[:,0]
+            flux = modded_create_flux_chain(analyser, src, erange=f'{band[0]}'
+                                            f' {band[1]}',
+                                            isource=int(i_src))[:,0]
             lums_band = [lum(np.log10(np.percentile(flux, quantiles[0])),
                              distance),
                          lum(np.log10(np.percentile(flux, quantiles[1])),
@@ -650,6 +676,7 @@ def fit_bxa(abund, distance, E_range, func, galnh, log, prompting, quantiles,
                 AllModels.show()
             for inH, nH in enumerate(nHs_froz):
                 nH.values = old_nh[inH]
+            analyser.posterior = old_posterior.copy()
             analyser.set_best_fit()
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
@@ -832,6 +859,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
     srcmod.vapec.Ni.values = [Z, -1]
 
     # fit parameters
+    i_vnorms = []
     loc_nh = srcmod.TBvarabs.nH
     loc_nh.values = [galnh, 0.01, 0, 1e-5, 1e2, 1e2]
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
@@ -874,6 +902,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         p_norm_vapec = modded_create_jeffreys_prior_for(model, norm_vapec)
         p_norm_vapec['name'] = 'log(norm$_{v,%s}$)' % (groupid+1)
         transf_src.append(p_norm_vapec)
+        i_vnorms.append(6+groupid*2+1)
         model_bkg = AllModels(groupNum=2*groupid+2, modName='srcmod')
         model_bkg.powerlaw.norm.values = [0, -1]  # this needs to be tested
         norm_vapec_bkg = model_bkg.vapec.norm
@@ -884,7 +913,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         bkg_norms.append(p_norm_vapec_bkg)
     nH = srcmod.TBabs.nH
     nHs_froz = [nH]
-    nHs_mod = [loc_nh]
+    nHs_mod = [0]
 
     pcamod = Model(pback, modName=f'pcabkg', sourceNum=2)
     pcamod.gaussian.LineE.values = [BckgPars[1], -1]
@@ -1009,17 +1038,12 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
         fluxes = []
         lums = []
         for band in E_ranges_L:
-            fac_src = AllModels(groupNum=2*groupid+1,
-                                modName=f'pcabkg').constant.factor
-            fac_src.values = 0
-            norm_vapec = AllModels(groupNum=2*ispec+1,
-                                   modName='srcmod').vapec.norm
-            norm_vapec.values = 0
             old_nh = []
-            flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
-                                              f' {band[1]}')[:,0]
-            obj._flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
-                                              f' {band[1]}')
+            old_posterior = analyser.posterior.copy()
+            i_src = check_source(ispec+1, 1, band)
+            flux = modded_create_flux_chain(analyser, src, erange=f'{band[0]}'
+                                            f' {band[1]}',
+                                            isource=int(i_src))[:,0]
             fluxes_band = [np.percentile(flux, quantiles[0]),
                            np.percentile(flux, quantiles[1]),
                            np.percentile(flux, quantiles[2])]
@@ -1027,11 +1051,16 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
             for nH in nHs_froz:
                 old_nh.append(nH.values)
                 nH.values = 0
-            for nH in nHs_mod:
-                nH.values = 0
+            for i_post in nHs_mod:
+                for i_line in range(len(analyser.posterior)):
+                    analyser.posterior[i_line][i_post] = -99
+            for i_post in i_vnorms:
+                for i_line in range(len(analyser.posterior)):
+                    analyser.posterior[i_line][i_post] = -99
             AllModels.show()
-            flux = analyser.create_flux_chain(src, erange=f'{band[0]}'
-                                              f' {band[1]}')[:,0]
+            flux = modded_create_flux_chain(analyser, src, erange=f'{band[0]}'
+                                            f' {band[1]}',
+                                            isource=int(i_src))[:,0]
             lums_band = [lum(np.log10(np.percentile(flux, quantiles[0])),
                              distance),
                          lum(np.log10(np.percentile(flux, quantiles[1])),
@@ -1045,6 +1074,7 @@ def fit_bxa_SNR(abund, distance, E_range, galnh, log, prompting,
             for inH, nH in enumerate(nHs_froz):
                 nH.values = old_nh[inH]
             fac_src.values = [backscales_src[groupid]/backscale_pback, -1]
+            analyser.posterior = old_posterior.copy()
             analyser.set_best_fit()
         absorbed_F.append(fluxes)
         unabsorbed_L.append(lums)
