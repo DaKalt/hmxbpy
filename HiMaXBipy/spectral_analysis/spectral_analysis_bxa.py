@@ -36,11 +36,12 @@ def check_source(ispectrum, isource, Erange):
     with open('temp', 'r') as f:
         for line in f.readlines():
             line_short = line.replace('\n', '').strip()
+            print(line_short)
             if line_short.startswith('Spectrum Number: '):
                 curr_spec = line_short[17:]
                 loglines[curr_spec] = []
-            elif line_short.startswith('Source: '):
-                loglines[curr_spec].append(line_short[8:])
+            elif line_short.startswith('Source '):
+                loglines[curr_spec].append(line_short[7:])
     os.remove('temp')
     if not f'{ispectrum}' in loglines:
         print(f'Spectrum {ispectrum} not loaded')
