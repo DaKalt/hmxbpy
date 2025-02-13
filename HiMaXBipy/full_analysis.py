@@ -4283,20 +4283,20 @@ class HiMaXBi:
             f.write('Likelihood log(L) = '
                     f"{analyser.results['maximum_likelihood']['logl']}\n")
 
-        if mode == 'merged':
-            merged_file = src_files[0]
-            results_file = open(f'{self._working_dir_full}/results/spectra/'
-                                f'{model}{suffix}/results_eRASS.tex', 'w')
-            write_tex_epochs(results_file, abs_F, unabs_L, E_ranges_L, merged_file,
-                            specs_eRASS)
-            results_file.close()
+        # if mode == 'merged': #TODO: re-uncomment after debugging
+        #     merged_file = src_files[0]
+        #     results_file = open(f'{self._working_dir_full}/results/spectra/'
+        #                         f'{model}{suffix}/results_eRASS.tex', 'w')
+        #     write_tex_epochs(results_file, abs_F, unabs_L, E_ranges_L, merged_file,
+        #                      specs_eRASS)
+        #     results_file.close()
 
-            if self._create_epochs:
-                results_file = open(f'{self._working_dir_full}/results/spectra/'
-                                    f'{model}{suffix}/results_epochs.tex', 'w')
-                write_tex_epochs(results_file, abs_F, unabs_L, E_ranges_L,
-                                merged_file, specs_epoch)
-                results_file.close()
+        #     if self._create_epochs:
+        #         results_file = open(f'{self._working_dir_full}/results/spectra/'
+        #                             f'{model}{suffix}/results_epochs.tex', 'w')
+        #         write_tex_epochs(results_file, abs_F, unabs_L, E_ranges_L,
+        #                          merged_file, specs_epoch)
+        #         results_file.close()
         
 
         self._logger.handlers = logstate
