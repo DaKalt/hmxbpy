@@ -1249,7 +1249,7 @@ def get_factors(merged_file, specfile, E_ranges):
         factors.append([cr_spec / cr_merged, cr_spec_err / cr_merged])
     return factors
 
-def setup_axis(Emin, Emax, figsize):
+def setup_axis(Emin, Emax, figsize, grid = False):
     fig = plt.figure(figsize=(figsize[0], figsize[1]))
     ax_spec = fig.add_subplot(111)
     ax_res = fig.add_subplot(111)
@@ -1276,10 +1276,11 @@ def setup_axis(Emin, Emax, figsize):
     for ax in [ax_spec, ax_res]:
         ax.set_xscale('log')
 
-        ax.grid(which='major', axis='both', zorder=-1,
-                color='#111111', linewidth=0.4)
-        ax.grid(which='minor', axis='both', zorder=-1,
-                color='#222222', linewidth=0.25, linestyle=':')
+        if grid:
+            ax.grid(which='major', axis='both', zorder=-1,
+                    color='#111111', linewidth=0.4)
+            ax.grid(which='minor', axis='both', zorder=-1,
+                    color='#222222', linewidth=0.25, linestyle=':')
 
         ax.tick_params(axis='x', which='major', direction='in',
                         top='on', pad=9, length=5, width=1.5)  # , labelsize=10)
@@ -1315,7 +1316,7 @@ def format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders, rescale_F,
     fig.set_tight_layout(False)
     if len(src_files) > 1:
         ax_spec.legend(bbox_to_anchor=(-0.044, 1.02), loc='upper right',
-                        handletextpad=0.1, fontsize=12)
+                        handletextpad=0.1, fontsize=14)
     # hspace = 8.0 / figsize[1] * 0.05
     hspace = 0
     fig.subplots_adjust(

@@ -807,7 +807,7 @@ class HiMaXBi:
     def plot_lc_full(self, fracexp='0.15', mincounts='10', mode='mincounts_ul',
                      show_eRASS=True, logname='lc_full_autosave.log',
                      time_axis='mjd', print_name=False, print_datetime=False,
-                     label_style='serif', label_size=16, figsize=[16, 7],
+                     label_style='serif', label_size=20, figsize=[8, 3.5],
                      colors=[], fileid='', toplab='', separate_TM=False,
                      vlines=[], ticknumber_y=5, ticknumber_x=8, E_bins=[],
                      lc_binning=-1, yscale='linear'):
@@ -1126,7 +1126,7 @@ class HiMaXBi:
                        mode='mincounts_ul', show_eRASS=True,
                        logname='lc_full_broken_autosave.log',
                        time_axis='mjd', print_name=False, print_datetime=False,
-                       label_style='serif', label_size=16, figsize=[16, 7],
+                       label_style='serif', label_size=20, figsize=[8, 3.5],
                        colors=[], fileid='', toplab='', separate_TM=False,
                        vlines=[], ticknumber_y=5, ticknumber_x=3, E_bins=[],
                        lc_binning=-1, d=12, tilt=45, diag_color="k",
@@ -1513,6 +1513,7 @@ class HiMaXBi:
                         fig_borders = [0.97, 0.1, 0.1, 0.98]
                     else:
                         fig_borders = [0.97, 0.1, 0.05, 0.98]
+                fig1.canvas.draw()
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
                 wspace = 8.0 / figsize[0] * 0.05
@@ -1554,7 +1555,7 @@ class HiMaXBi:
                       mode='mincounts_ul', show_eRASS=True,
                       logname='lc_parts_autosave.log', time_axis='mjd',
                       print_name=False, print_datetime=False,
-                      label_style='serif', label_size=16, figsize=[8, 5.5],
+                      label_style='serif', label_size=20, figsize=[8, 3.5],
                       colors=[], fileid='', toplab='', separate_TM=False,
                       vlines=[], ticknumber_y=5, ticknumber_x=8, eRASSi=[],
                       E_bins=[], lc_binning=-1):
@@ -1892,7 +1893,7 @@ class HiMaXBi:
                              alpha_bg=0.3, quantiles=[],
                              time_axis='mjd', print_name=False,
                              print_datetime=False, label_style='serif',
-                             label_size=16, figsize=[16, 7],
+                             label_size=20, figsize=[8, 3.5],
                              colors=[], fileid='', toplab='',
                              separate_TM=False, vlines=[], ticknumber_y=5,
                              ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
@@ -2358,6 +2359,7 @@ class HiMaXBi:
                         fig_borders = [0.97, 0.1, 0.08, 0.98]
                     else:
                         fig_borders = [0.97, 0.1, 0.05, 0.98]
+                fig1.canvas.draw()
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
                 wspace = 8.0 / figsize[0] * 0.05
@@ -2398,7 +2400,7 @@ class HiMaXBi:
                              alpha_bg=0.3, quantiles=[],
                              time_axis='mjd', print_name=False,
                              print_datetime=False, label_style='serif',
-                             label_size=16, figsize=[16, 16],
+                             label_size=20, figsize=[8, 8],
                              colors=[], fileid='', toplab='',
                              separate_TM=False, vlines=[], ticknumber_y=5,
                              ticknumber_x=3, E_bin_full = [], E_bins=[],
@@ -2886,6 +2888,7 @@ class HiMaXBi:
                     fig_borders = [0.97, 0.05, 0.08, 0.98]
                 else:
                     fig_borders = [0.97, 0.05, 0.05, 0.98]
+            fig1.canvas.draw()
             fig1.set_tight_layout(True)
             fig1.set_tight_layout(False)
             wspace = 8.0 / figsize[0] * 0.05
@@ -3653,10 +3656,11 @@ class HiMaXBi:
                               src_linestyles=[], bkg_linestyle='--',
                               set_hatch=False, fig_borders = [],
                               spec_files = [], label_style='serif',
-                              label_size=16, E_ranges_L = [[0.2, 8.0],
+                              label_size=20, E_ranges_L = [[0.2, 8.0],
                                                            [0.2, 10.0],
                                                            [0.2, 12.0],
-                                                           [2.0, 10.0]]):
+                                                           [2.0, 10.0]],
+                              grid = False):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3832,6 +3836,8 @@ class HiMaXBi:
             matplotlib.pyplot.rc. The default is 'serif'.
         label_size : float or int, optional
             Sets fontsize. The default is 12.
+        grid : bool, optional
+            If True grid is shown in plots. The default is False.
         '''
         fit_model = None
         self._logger.info('Running plot_spectra.')
@@ -4137,7 +4143,7 @@ class HiMaXBi:
         # top, bottom, left, right
         if len(fig_borders) == 0:
             fig_borders = [0.99, 0.06, 0.11, 0.98]
-        figsize = [8, 11]
+        figsize = [8, 7.5]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
             self._extract_lc()
@@ -4155,9 +4161,10 @@ class HiMaXBi:
         Emin = E_range[0]
         Emax = E_range[1]
 
-        fig, ax_spec, ax_res, ax_res_invis = setup_axis(Emin, Emax, figsize)
+        fig, ax_spec, ax_res, ax_res_invis = setup_axis(Emin, Emax, figsize,
+                                                        grid)
         fig_src, ax_spec_src, ax_res_src, ax_res_invis_src = \
-            setup_axis(Emin, Emax, figsize)
+            setup_axis(Emin, Emax, figsize, grid)
 
         src_files = self._prep_spec_srclist(tbin_f, tbins, mode)
         if mode == 'merged':
@@ -4198,7 +4205,7 @@ class HiMaXBi:
         ncols = 1
         nrows = 2
         width_ratios = [1]
-        height_ratios = [5, 3]
+        height_ratios = [5, 2]
         if rescale_F == []:
             mins = []
             maxs = []
@@ -4321,10 +4328,11 @@ class HiMaXBi:
                                    src_linestyles=[], bkg_linestyle='--',
                                    set_hatch=False, fig_borders = [],
                                    spec_files = [], label_style='serif',
-                                   label_size=16, E_ranges_L = [[0.2, 8.0],
+                                   label_size=20, E_ranges_L = [[0.2, 8.0],
                                                                 [0.2, 10.0],
                                                                 [0.2, 12.0],
-                                                                [2.0, 10.0]]):
+                                                                [2.0, 10.0]],
+                                   grid = False):
         '''Model spectrum specifically for CXOU J053600.0-673507
         '''
         tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
@@ -4366,7 +4374,7 @@ class HiMaXBi:
         # top, bottom, left, right
         if len(fig_borders) == 0:
             fig_borders = [0.99, 0.06, 0.11, 0.98]
-        figsize = [8, 11]
+        figsize = [8, 7.5]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
             self._extract_lc()
@@ -4384,9 +4392,10 @@ class HiMaXBi:
         Emin = E_range[0]
         Emax = E_range[1]
 
-        fig, ax_spec, ax_res, ax_res_invis = setup_axis(Emin, Emax, figsize)
+        fig, ax_spec, ax_res, ax_res_invis = setup_axis(Emin, Emax, figsize,
+                                                        grid)
         fig_src, ax_spec_src, ax_res_src, ax_res_invis_src = \
-            setup_axis(Emin, Emax, figsize)
+            setup_axis(Emin, Emax, figsize, grid)
 
         #TODO: I think nothing needs to be done, only unnecessarily creates bkg fit
         src_files = self._prep_spec_srclist(tbin_f, tbins, mode, snr=True)
@@ -4431,7 +4440,7 @@ class HiMaXBi:
         ncols = 1
         nrows = 2
         width_ratios = [1]
-        height_ratios = [5, 3]
+        height_ratios = [5, 2]
         if rescale_F == []:
             mins = []
             maxs = []
@@ -4897,7 +4906,7 @@ class HiMaXBi:
 
     def create_RGB(self, fname='RGB', time=[], red = [0.2, 1.0],
                    green = [1.0, 2.0], blue = [2.0, 4.5], smoothing = 10,
-                   figsize = 6, label_style = 'serif', label_size = 16,
+                   figsize = 8, label_style = 'serif', label_size=20,
                    src_color = 'white', bkg_color = 'cyan',
                    src_region = 'src.reg', bkg_region = 'bkg.reg',
                    fig_borders = [0.968, 0.140, 0.170, 0.970],
