@@ -114,6 +114,8 @@ class HiMaXBi:
     _Dec = 0.0
     _RA_bkg = 0.0
     _Dec_bkg = 0.0
+    _src_name = ''
+    _src_name_orig = ''
 
     def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
@@ -132,6 +134,7 @@ class HiMaXBi:
 
         '''
         if type(src_name) == str:
+            self._src_name_orig = src_name
             if src_name.find('-') != -1 or src_name.find(" ") != -1:
                 warnings.warn(
                     'There can be problems when using "-" or " " as part of '
@@ -1510,9 +1513,9 @@ class HiMaXBi:
 
                 if fig_borders == []:
                     if yscale == 'log' and np.log(pymax / pymin) * 2 <= ticknumber_y:
-                        fig_borders = [0.97, 0.1, 0.1, 0.98]
+                        fig_borders = [0.97, 0.15, 0.15, 0.98]
                     else:
-                        fig_borders = [0.97, 0.1, 0.05, 0.98]
+                        fig_borders = [0.97, 0.15, 0.10, 0.98]
                 fig1.canvas.draw()
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
@@ -1899,7 +1902,8 @@ class HiMaXBi:
                              ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
                              tilt=45, diag_color="k", short_time=True,
                              fig_borders=[],
-                             bbp0=0.05, bbmode='both', yscale='log'):
+                             bbp0=0.05, bbmode='both', yscale='log',
+                             print_source = True, print_mav = True):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
 
@@ -2003,6 +2007,12 @@ class HiMaXBi:
         yscale : str, optional
             Scale for yaxis of LC, either 'linear' or 'log'. The default
             is 'linear'.
+        print_source : bool, optional
+            Print name of source in the upper right corner of the plot.
+            The default is True.
+        print_mav : bool, optional
+            Print maximum amplitude variability in the upper right corner
+            of the plot. The default is True.
         '''
         self._logger.info(f'Running plot_lc_HR in mode {mode}.')
         if type(logfile) != str:
@@ -2354,11 +2364,20 @@ class HiMaXBi:
                                        nrows, d, tilt, diag_color, big_ax,
                                        yscale)
 
+                if print_source or print_mav:
+                    text = ''
+                    if print_source:
+                        text += f'{self._src_name_orig}'
+                        if print_mav:
+                            text += '\n'
+                    if print_mav:
+                        text += f'MAV = {self._mav:.2f}'
+
                 if fig_borders == []:
                     if yscale == 'log' and np.log10(pymax / pymin) * 2 <= ticknumber_y:
-                        fig_borders = [0.97, 0.1, 0.08, 0.98]
+                        fig_borders = [0.97, 0.2, 0.16, 0.98]
                     else:
-                        fig_borders = [0.97, 0.1, 0.05, 0.98]
+                        fig_borders = [0.97, 0.2, 0.10, 0.98]
                 fig1.canvas.draw()
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
@@ -2885,9 +2904,9 @@ class HiMaXBi:
                     (np.log10(pymax[0] / pymin[0]) * 2 <= ticknumber_y
                      or np.log10(pymax[1] / pymin[1]) * 2 <= ticknumber_y
                      or np.log10(pymax[2] / pymin[2]) * 2 <= ticknumber_y)):
-                    fig_borders = [0.97, 0.05, 0.08, 0.98]
+                    fig_borders = [0.97, 0.10, 0.16, 0.98]
                 else:
-                    fig_borders = [0.97, 0.05, 0.05, 0.98]
+                    fig_borders = [0.97, 0.10, 0.10, 0.98]
             fig1.canvas.draw()
             fig1.set_tight_layout(True)
             fig1.set_tight_layout(False)
@@ -4142,7 +4161,7 @@ class HiMaXBi:
         # these stay hardcoded but need to be adjusted
         # top, bottom, left, right
         if len(fig_borders) == 0:
-            fig_borders = [0.99, 0.06, 0.11, 0.98]
+            fig_borders = [0.99, 0.10, 0.12, 0.98]
         figsize = [8, 7.5]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
@@ -4373,7 +4392,7 @@ class HiMaXBi:
         # these stay hardcoded but need to be adjusted
         # top, bottom, left, right
         if len(fig_borders) == 0:
-            fig_borders = [0.99, 0.06, 0.11, 0.98]
+            fig_borders = [0.99, 0.10, 0.12, 0.98]
         figsize = [8, 7.5]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:

@@ -1295,6 +1295,8 @@ def setup_axis(Emin, Emax, figsize, grid = False):
         ax.set_xticklabels(xminorlabels, minor=True)
 
     ax_res.set_yticks([0], minor=False)
+    ax_res.grid(which='major', axis='both', zorder=-1,
+                color='#111111', linewidth=0.4)
     ax_res.set_yticks([-4, -2, 2, 4], minor=True)
     ax_res.set_yticklabels(['-4', '-2', '2', '4'], minor=True)
     ax_res.set_xticklabels(xlabels, minor=False)
