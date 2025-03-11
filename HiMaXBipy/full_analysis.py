@@ -116,6 +116,9 @@ class HiMaXBi:
     _Dec_bkg = 0.0
     _src_name = ''
     _src_name_orig = ''
+    _mav = 0
+    _mav_sig = 0
+    _var = 0
 
     def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
@@ -1899,7 +1902,7 @@ class HiMaXBi:
                              label_size=20, figsize=[8, 3.5],
                              colors=[], fileid='', toplab='',
                              separate_TM=False, vlines=[], ticknumber_y=5,
-                             ticknumber_x=3, E_bins=[], lc_binning=-1, d=12,
+                             ticknumber_x=2, E_bins=[], lc_binning=-1, d=12,
                              tilt=45, diag_color="k", short_time=True,
                              fig_borders=[],
                              bbp0=0.05, bbmode='both', yscale='log',
@@ -1977,7 +1980,7 @@ class HiMaXBi:
             The default is 5.
         ticknumber_x : int, optional
             Sets the approximate number of tickmarks along the x axis in
-            each section. The default is 3.
+            each section. The default is 2.
         E_bins : array-like (n,2), optional
             Sets energy bins that should be analysed. For each bin E_min
             and E_max must be given in keV. The default is [[0.2, 8.0]]
@@ -2261,7 +2264,7 @@ class HiMaXBi:
                         short_time=short_time, stan_model=stan_model,
                         quantiles=quantiles, time_rel=time_rel,
                         fexp_cut=float(fracexp), alpha_bg=alpha_bg,
-                        yscale=yscale)
+                        yscale=yscale, obj = self)
                 elif mode == 'mincounts_scan':
                     pxmin1, pxmax1, pymin1, pymax1, time_rel = plot_lc_eROday_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
@@ -2277,7 +2280,7 @@ class HiMaXBi:
                         short_time=short_time, stan_model=stan_model,
                         quantiles=quantiles, time_rel=time_rel,
                         fexp_cut=float(fracexp), alpha_bg=alpha_bg,
-                        yscale=yscale)
+                        yscale=yscale, obj = self)
                     pymin = min([pymin1, pymin2])
                     pymax = max([pymax1, pymax2])
                     pxmin = np.min([pxmin1, pxmin2], axis=0)
@@ -2290,7 +2293,8 @@ class HiMaXBi:
                         short_time=short_time, stan_model=stan_model,
                         quantiles=quantiles, time_rel=time_rel,
                         fexp_cut=float(fracexp), alpha_bg=alpha_bg,
-                        bblocks=True, bbmode=bbmode, bbp0=bbp0, yscale=yscale)
+                        bblocks=True, bbmode=bbmode, bbp0=bbp0, yscale=yscale,
+                        obj = self)
                 elif mode == 'scan_bb':
                     pxmin, pxmax, pymin, pymax, time_rel = plot_lc_eROday_broken_bayes(
                         hdulist=hdulist, axs=axs, log=self._logger,
@@ -2375,9 +2379,9 @@ class HiMaXBi:
 
                 if fig_borders == []:
                     if yscale == 'log' and np.log10(pymax / pymin) * 2 <= ticknumber_y:
-                        fig_borders = [0.97, 0.2, 0.16, 0.98]
+                        fig_borders = [0.95, 0.21, 0.18, 0.98]
                     else:
-                        fig_borders = [0.97, 0.2, 0.10, 0.98]
+                        fig_borders = [0.95, 0.21, 0.12, 0.98]
                 fig1.canvas.draw()
                 fig1.set_tight_layout(True)
                 fig1.set_tight_layout(False)
@@ -2422,7 +2426,7 @@ class HiMaXBi:
                              label_size=20, figsize=[8, 8],
                              colors=[], fileid='', toplab='',
                              separate_TM=False, vlines=[], ticknumber_y=5,
-                             ticknumber_x=3, E_bin_full = [], E_bins=[],
+                             ticknumber_x=2, E_bin_full = [], E_bins=[],
                              lc_binning=-1, d=12, tilt=45, diag_color="k",
                              short_time=True, fig_borders=[], bbp0=0.05,
                              bbmode='both', yscale='log'):
@@ -2503,7 +2507,7 @@ class HiMaXBi:
             The default is 5.
         ticknumber_x : int, optional
             Sets the approximate number of tickmarks along the x axis in
-            each section. The default is 3.
+            each section. The default is 2.
         E_bin_full : array-like (2,), optional
             Sets full energy bin. E_min and E_max must be given in keV.
             The default is [0.2, 8.0].
@@ -2904,9 +2908,9 @@ class HiMaXBi:
                     (np.log10(pymax[0] / pymin[0]) * 2 <= ticknumber_y
                      or np.log10(pymax[1] / pymin[1]) * 2 <= ticknumber_y
                      or np.log10(pymax[2] / pymin[2]) * 2 <= ticknumber_y)):
-                    fig_borders = [0.97, 0.10, 0.16, 0.98]
+                    fig_borders = [0.97, 0.10, 0.18, 0.98]
                 else:
-                    fig_borders = [0.97, 0.10, 0.10, 0.98]
+                    fig_borders = [0.97, 0.10, 0.12, 0.98]
             fig1.canvas.draw()
             fig1.set_tight_layout(True)
             fig1.set_tight_layout(False)
@@ -4161,7 +4165,7 @@ class HiMaXBi:
         # these stay hardcoded but need to be adjusted
         # top, bottom, left, right
         if len(fig_borders) == 0:
-            fig_borders = [0.99, 0.10, 0.12, 0.98]
+            fig_borders = [0.98, 0.10, 0.12, 0.98]
         figsize = [8, 7.5]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
@@ -4392,7 +4396,7 @@ class HiMaXBi:
         # these stay hardcoded but need to be adjusted
         # top, bottom, left, right
         if len(fig_borders) == 0:
-            fig_borders = [0.99, 0.10, 0.12, 0.98]
+            fig_borders = [0.98, 0.10, 0.12, 0.98]
         figsize = [8, 7.5]
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:

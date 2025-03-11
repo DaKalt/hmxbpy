@@ -1183,6 +1183,7 @@ def format_axis_broken_new(fig, axs, pxmins, pxmaxs, pymin, pymax,
                         yticks.append(5 * 10 ** power)
                         yticklabes.append('$\\mathdefault{5\\times10^{%i}}$'
                                           % (power))
+                ax.set_yticks([], minor = True)
                 ax.set_yticks(yticks, labels=yticklabes)
 
             # longest_y = ''
@@ -1317,6 +1318,7 @@ def format_axis_hr(fig, axs, pxmins, pxmaxs, pymin, pymax,
                             yticks.append(5 * 10 ** power)
                             yticklabes.append('$\\mathdefault{5\\times10^{%i}}'
                                               '$' % (power))
+                    ax.set_yticks([], minor = True)
                     ax.set_yticks(yticks, labels=yticklabes)
 
                 # longest_y = ''

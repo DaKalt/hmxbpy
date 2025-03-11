@@ -701,7 +701,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
                                    short_time, stan_model, quantiles,
                                    time_rel=0, fexp_cut=0.15,
                                    alpha_bg=0.3, bblocks=False, bbp0=0.003,
-                                   bbmode='both', yscale='linear'):
+                                   bbmode='both', yscale='linear',
+                                   obj = None):
     '''
     Lightcurve rebinned to eROdays with countrates optained with
     Bayesian fit assuming Poissionian distribution for counts and log;
@@ -915,6 +916,11 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     log.info(f'AMPL_SIG mincounts {mincounts}: {ampl_sig}\n')
     log.info(f'AMPL_MAX conservative mincounts {mincounts}: {ampl_max2}\n')
     log.info(f'AMPL_SIG2 mincounts {mincounts}: {ampl_sig2}\n')
+
+    if not obj is None:
+        obj._mav = ampl_max
+        obj._mav_sig = ampl_sig
+        obj._var = variability
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
