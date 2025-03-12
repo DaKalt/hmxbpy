@@ -1906,7 +1906,8 @@ class HiMaXBi:
                              tilt=45, diag_color="k", short_time=True,
                              fig_borders=[],
                              bbp0=0.05, bbmode='both', yscale='log',
-                             print_source = True, print_mav = True):
+                             print_source = True, print_mav = True,
+                             legend_size = 14):
         '''Function to create full lightcurve with bayesian estimates
         for source and background countrates with time gaps cut out.
 
@@ -2016,6 +2017,9 @@ class HiMaXBi:
         print_mav : bool, optional
             Print maximum amplitude variability in the upper right corner
             of the plot. The default is True.
+        legend_size : float or int, optional
+            Sets fontsize of legend-like parts of the plot. The default
+            is 14.
         '''
         self._logger.info(f'Running plot_lc_HR in mode {mode}.')
         if type(logfile) != str:
@@ -2376,6 +2380,8 @@ class HiMaXBi:
                             text += '\n'
                     if print_mav:
                         text += f'MAV = {self._mav:.2f}'
+                    plt.text(.99, .99, text, ha='right', va='top',
+                             transform=axs[-1].transAxes, fontsize=legend_size)
 
                 if fig_borders == []:
                     if yscale == 'log' and np.log10(pymax / pymin) * 2 <= ticknumber_y:
