@@ -2383,8 +2383,8 @@ class HiMaXBi:
                         v, vu, vl, pot = round_err(var, var_err_upper,
                                                    var_err_lower)
                         text += (f'$var$ = {v:.{pot}f}'
-                                 f'$^\u007b+{vu:.{pot}f}\u007d$'
-                                 f'$_\u007b-{vl:.{pot}f}\u007d$')
+                                 f'$^{{+{vu:.{pot}f}}}$'
+                                 f'$_{{-{vl:.{pot}f}}}$')
                         if print_source:
                             text += '\n'
                     if print_source:
