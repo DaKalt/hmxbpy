@@ -2383,14 +2383,15 @@ class HiMaXBi:
                         v, vu, vl, pot = round_err(var, var_err_upper,
                                                    var_err_lower)
                         text += (f'$var$ = {v:.{pot}f}'
-                                 f'$^{{+{vu:.{pot}f}}}$'
-                                 f'$_{{-{vl:.{pot}f}}}$')
+                                #  f'$^{{+{vu:.{pot}f}}}$'
+                                #  f'$_{{-{vl:.{pot}f}}}$')
+                                f'$\\pm${vu:.{pot}f}')
                         if print_source:
                             text += '\n'
                     if print_source:
                         text += f'{self._src_name_orig}'
-                    plt.figtext(.05, .05, text, ha='left', va='bottom',
-                                fontsize=legend_size)
+                    plt.figtext(.05/figsize[0], .05/figsize[1], text,
+                                ha='left', va='bottom', fontsize=legend_size)
 
                 if fig_borders == []:
                     if yscale == 'log' and np.log10(pymax / pymin) * 2 <= ticknumber_y:
@@ -2866,12 +2867,12 @@ class HiMaXBi:
 
             # big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
             big_ax.set_ylabel(r'Count rate (cts/s)', alpha=0.0)
-            axs[0][0].set_ylabel('CR$_{%s-%s}$ (cts/s)'
-                                 % ({self._energy_bins_hr[1][0]},
-                                    self._energy_bins_hr[1][1]))
-            axs[0][1].set_ylabel('CR$_{%s-%s}$ (cts/s)'
-                                 % ({self._energy_bins_hr[2][0]},
-                                    self._energy_bins_hr[2][1]))
+            axs[0][0].set_ylabel('rate$_{%s-%s}$ (s$^{-1}$)'
+                                 % (num2text(self._energy_bins_hr[1][0]),
+                                    num2text(self._energy_bins_hr[1][1])))
+            axs[0][1].set_ylabel('rate$_{%s-%s}$ (s$^{-1}$)'
+                                 % (num2text(self._energy_bins_hr[2][0]),
+                                    num2text(self._energy_bins_hr[2][1])))
             axs[0][2].set_ylabel(r'HR')
 
             if print_name:
@@ -3688,18 +3689,20 @@ class HiMaXBi:
                               fit_statistic='cstat', colors=[], markers=[],
                               title='', TM_list=[0], return_array=False,
                               abund='wilm', tbins=[[]],
-                              tbin_f='epoch', E_range=[0.2, 8.0],
+                              tbin_f='epoch', E_range=[0.2, 5.0],
                               quantiles=[], folder_suffix='', resume=False,
                               prompting=False, plot_bkg=True,
                               src_markers=[], bkg_markers=[],
                               src_linestyles=[], bkg_linestyle='--',
                               set_hatch=False, fig_borders = [],
                               spec_files = [], label_style='serif',
-                              label_size=20, E_ranges_L = [[0.2, 8.0],
+                              label_size=20, E_ranges_L = [[0.2, 5.0],
                                                            [0.2, 10.0],
                                                            [0.2, 12.0],
-                                                           [2.0, 10.0]],
-                              grid = False):
+                                                           [2.0, 10.0],
+                                                           [2.0, 12.0],
+                                                           [0.2, 2.3]],
+                              grid = False, print_source = True):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -4263,6 +4266,10 @@ class HiMaXBi:
             min = np.min(mins)
             max = np.max(maxs)
             rescale_F = [min, max]
+        if print_source:
+            text = f'{self._src_name_orig}'
+            plt.figtext(.05/figsize[0], .05/figsize[1], text,
+                        ha='left', va='bottom', fontsize=legend_size)
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
@@ -4360,18 +4367,20 @@ class HiMaXBi:
                                    fit_statistic='cstat', colors=[], markers=[],
                                    title='', TM_list=[0], return_array=False,
                                    abund='wilm', tbins=[[]],
-                                   tbin_f='epoch', E_range=[0.2, 8.0],
+                                   tbin_f='epoch', E_range=[0.2, 5.0],
                                    quantiles=[], folder_suffix='', resume=False,
                                    prompting=False, plot_bkg=True,
                                    src_markers=[], bkg_markers=[],
                                    src_linestyles=[], bkg_linestyle='--',
                                    set_hatch=False, fig_borders = [],
                                    spec_files = [], label_style='serif',
-                                   label_size=20, E_ranges_L = [[0.2, 8.0],
+                                   label_size=20, E_ranges_L = [[0.2, 5.0],
                                                                 [0.2, 10.0],
                                                                 [0.2, 12.0],
-                                                                [2.0, 10.0]],
-                                   grid = False):
+                                                                [2.0, 10.0],
+                                                                [2.0, 12.0],
+                                                                [0.2, 2.3]],
+                                   grid = False, print_source = True):
         '''Model spectrum specifically for CXOU J053600.0-673507
         '''
         tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
@@ -4498,6 +4507,10 @@ class HiMaXBi:
             min = np.min(mins)
             max = np.max(maxs)
             rescale_F = [min, max]
+        if print_source:
+            text = f'{self._src_name_orig}'
+            plt.figtext(.05/figsize[0], .05/figsize[1], text,
+                        ha='left', va='bottom', fontsize=legend_size)
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
