@@ -2372,15 +2372,15 @@ class HiMaXBi:
                                        nrows, d, tilt, diag_color, big_ax,
                                        yscale)
 
-                if print_source or print_mav:
+                if (print_source or print_mav) and mode.find('mincounts') >= 0:
                     text = ''
-                    if print_source:
-                        text += f'{self._src_name_orig}'
-                        if print_mav:
-                            text += '\n'
                     if print_mav:
                         text += f'MAV = {self._mav:.2f}'
-                    plt.text(.99, .99, text, ha='right', va='top',
+                        if print_source:
+                            text += '\n'
+                    if print_source:
+                        text += f'{self._src_name_orig}'
+                    plt.figtext(.05, .05, text, ha='left', va='bottom',
                              transform=axs[-1].transAxes, fontsize=legend_size)
 
                 if fig_borders == []:
@@ -2857,10 +2857,10 @@ class HiMaXBi:
 
             # big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
             big_ax.set_ylabel(r'Count rate (cts/s)', alpha=0.0)
-            axs[0][0].set_ylabel('CR_{%s-%s} (cts/s)'
+            axs[0][0].set_ylabel('CR$_{%s-%s}$ (cts/s)'
                                  % ({self._energy_bins_hr[1][0]},
                                     self._energy_bins_hr[1][1]))
-            axs[0][1].set_ylabel('CR_{%s-%s} (cts/s)'
+            axs[0][1].set_ylabel('CR$_{%s-%s}$ (cts/s)'
                                  % ({self._energy_bins_hr[2][0]},
                                     self._energy_bins_hr[2][1]))
             axs[0][2].set_ylabel(r'HR')
