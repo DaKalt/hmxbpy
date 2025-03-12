@@ -2923,8 +2923,7 @@ class HiMaXBi:
             if fig_borders == []:
                 if (yscale == 'log' and 
                     (np.log10(pymax[0] / pymin[0]) * 2 <= ticknumber_y
-                     or np.log10(pymax[1] / pymin[1]) * 2 <= ticknumber_y
-                     or np.log10(pymax[2] / pymin[2]) * 2 <= ticknumber_y)):
+                     or np.log10(pymax[1] / pymin[1]) * 2 <= ticknumber_y):
                     fig_borders = [0.97, 0.10, 0.18, 0.98]
                 else:
                     fig_borders = [0.97, 0.10, 0.12, 0.98]
