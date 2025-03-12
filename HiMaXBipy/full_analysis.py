@@ -33,7 +33,7 @@ except ModuleNotFoundError:
 from xspec import __path__ as xspec_path
 
 from HiMaXBipy.io.package_data import get_path_of_data_dir, get_stan_dir,\
-    get_json_dir, num2text
+    get_json_dir, num2text, round_err
 from HiMaXBipy.io.logging import setup_logfile, setup_logger, set_loglevel
 from HiMaXBipy.lc_plotting.lc_plotting import plot_lc_UL, plot_lc_mincounts,\
     get_boundaries, get_boundaries_broken, format_axis, plot_lc_UL_broken_new,\
@@ -119,6 +119,8 @@ class HiMaXBi:
     _mav = 0
     _mav_sig = 0
     _var = 0
+    _var_err_upper = 0
+    _var_err_lower = 0
 
     def __init__(self, src_name, working_dir, data_dir, fix_path=True):
         '''
@@ -2375,13 +2377,20 @@ class HiMaXBi:
                 if (print_source or print_mav) and mode.find('mincounts') >= 0:
                     text = ''
                     if print_mav:
-                        text += f'MAV = {self._mav:.2f}'
+                        var = self._var
+                        var_err_upper = self._var_err_upper
+                        var_err_lower = self._var_err_lower
+                        v, vu, vl, pot = round_err(var, var_err_upper,
+                                                   var_err_lower)
+                        text += (f'$var$ = {v:.{pot}f}'
+                                 f'$^\u007b+{vu:.{pot}f}\u007d$'
+                                 f'$_\u007b-{vl:.{pot}f}\u007d$')
                         if print_source:
                             text += '\n'
                     if print_source:
                         text += f'{self._src_name_orig}'
                     plt.figtext(.05, .05, text, ha='left', va='bottom',
-                             transform=axs[-1].transAxes, fontsize=legend_size)
+                                fontsize=legend_size)
 
                 if fig_borders == []:
                     if yscale == 'log' and np.log10(pymax / pymin) * 2 <= ticknumber_y:

@@ -6,15 +6,23 @@
 """
 import pkg_resources
 from math import log10, floor
+import numpy as np
 import os
 import shutil
-
 
 def round_to_1(x):
     if x == 0:
         return x
     else:
         return round(x, -int(floor(log10(abs(x)))))
+
+def round_err(x, err_upper, err_lower):
+    err = np.min([err_upper, err_lower], axis=0)
+    if err / 10 ** int(floor(log10(abs(err)))) < 3:
+        pot = int(floor(log10(abs(err)))) - 1
+    else:
+        pot = int(floor(log10(abs(err))))
+    return round(x, -pot), round(err_upper, -pot), round(err_lower, -pot), -pot
 
 def num2text(x):
     if x == int(x):

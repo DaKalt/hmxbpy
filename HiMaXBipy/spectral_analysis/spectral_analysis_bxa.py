@@ -1295,11 +1295,13 @@ def setup_axis(Emin, Emax, figsize, grid = False):
         ax.set_xticklabels(xminorlabels, minor=True)
 
     ax_res.set_yticks([0], minor=False)
-    ax_res.grid(which='major', axis='both', zorder=-1,
-                color='#111111', linewidth=0.4)
     ax_res.set_yticks([-4, -2, 2, 4], minor=True)
     ax_res.set_yticklabels(['-4', '-2', '2', '4'], minor=True)
     ax_res.set_xticklabels(xlabels, minor=False)
+
+    if not grid:
+        ax_res.hlines([0], xmin=Emin-0.1, xmax=Emax+0.1, color='#111111',
+                      linewidth=0.4, zorder=-1)
 
     ax_spec.set_xticklabels(['']*len(xticks), minor = False)
     ax_spec.set_xticklabels(['']*len(xminorticks), minor=True)

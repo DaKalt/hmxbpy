@@ -855,6 +855,7 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     sc_bg_rate_upper = np.percentile(fit.stan_variables()['sc_bg_rate'],
                                      quantiles[2], axis=0)
     t = xtime.copy()
+    rate = fit.stan_variables()['sc_rate']
 
     amp_dev_min = np.percentile(fit.stan_variables()['amp_dev_min'],
                                 quantiles[1])
@@ -906,13 +907,25 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     ampl_max = yrate[i_max] - yrate[i_min]
     if yrate[i_min] > 0:
         variability = yrate[i_max] / yrate[i_min]
+        var_err = np.sqrt((yrate_e[i_max]/yrate[i_min])**2 +
+                          (yrate[i_max]*yrate_e[i_min]/yrate[i_min]**2)**2)
+        var_chains = rate[:,i_max] / rate[:,i_min]
     else:
         variability = -1
     ampl_sig = ampl_max / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
     ampl_sig2 = ampl_max2 / np.sqrt(yrate_e[i_max] ** 2 + yrate_e[i_min] ** 2)
 
+    var_chains_med = np.percentile(var_chains, quantiles[1])
+    var_chains_lower = np.percentile(var_chains, quantiles[0])
+    var_chains_upper = np.percentile(var_chains, quantiles[2])
+
     log.info(f'AMPL_MAX mincounts {mincounts}: {ampl_max}\n')
     log.info(f'Variability V mincounts {mincounts} = {variability}\n')
+    log.info(f'Verr mincounts {mincounts} = {var_err}\n')
+    log.info(f'Var chains mincounts {mincounts} = '
+             f'{var_chains_med}+'
+             f'{var_chains_upper-var_chains_med}-'
+             f'{var_chains_med-var_chains_lower}\n')
     log.info(f'AMPL_SIG mincounts {mincounts}: {ampl_sig}\n')
     log.info(f'AMPL_MAX conservative mincounts {mincounts}: {ampl_max2}\n')
     log.info(f'AMPL_SIG2 mincounts {mincounts}: {ampl_sig2}\n')
@@ -921,6 +934,8 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
         obj._mav = ampl_max
         obj._mav_sig = ampl_sig
         obj._var = variability
+        obj._var_err_upper = var_err
+        obj._var_err_lower = var_err
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
