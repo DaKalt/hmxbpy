@@ -2382,6 +2382,7 @@ class HiMaXBi:
                         var_err_lower = self._var_err_lower
                         v, vu, vl, pot = round_err(var, var_err_upper,
                                                    var_err_lower)
+                        pot = max(pot, 0)
                         text += (f'$var$ = {v:.{pot}f}'
                                 #  f'$^{{+{vu:.{pot}f}}}$'
                                 #  f'$_{{-{vl:.{pot}f}}}$')
