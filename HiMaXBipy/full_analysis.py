@@ -3702,7 +3702,8 @@ class HiMaXBi:
                                                            [2.0, 10.0],
                                                            [2.0, 12.0],
                                                            [0.2, 2.3]],
-                              grid = False, print_source = True):
+                              grid = False, print_source = True,
+                              legend_size = 14):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -4380,7 +4381,8 @@ class HiMaXBi:
                                                                 [2.0, 10.0],
                                                                 [2.0, 12.0],
                                                                 [0.2, 2.3]],
-                                   grid = False, print_source = True):
+                                   grid = False, print_source = True,
+                                   legend_size = 14):
         '''Model spectrum specifically for CXOU J053600.0-673507
         '''
         tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
