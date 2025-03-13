@@ -2867,10 +2867,10 @@ class HiMaXBi:
 
             # big_ax.set_ylabel(r'Count rate (cts/s)')  # , fontsize=12)
             big_ax.set_ylabel(r'Count rate (cts/s)', alpha=0.0)
-            axs[0][0].set_ylabel('rate$_{%s-%s}$ (s$^{-1}$)'
+            axs[0][0].set_ylabel('rate$_{\\tiny{%s-%s}}$ (s$^{-1}$)'
                                  % (num2text(self._energy_bins_hr[1][0]),
                                     num2text(self._energy_bins_hr[1][1])))
-            axs[0][1].set_ylabel('rate$_{%s-%s}$ (s$^{-1}$)'
+            axs[0][1].set_ylabel('rate$_{\\tiny{%s-%s}}$ (s$^{-1}$)'
                                  % (num2text(self._energy_bins_hr[2][0]),
                                     num2text(self._energy_bins_hr[2][1])))
             axs[0][2].set_ylabel(r'HR')
