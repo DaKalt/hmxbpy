@@ -4270,8 +4270,10 @@ class HiMaXBi:
             rescale_F = [min, max]
         if print_source:
             text = f'{self._src_name_orig}'
-            plt.figtext(.05/figsize[0], .05/figsize[1], text,
-                        ha='left', va='bottom', fontsize=legend_size)
+            fig.text(.05/figsize[0], .05/figsize[1], text,
+                     ha='left', va='bottom', fontsize=legend_size)
+            fig_src.text(.05/figsize[0], .05/figsize[1], text,
+                         ha='left', va='bottom', fontsize=legend_size)
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
@@ -4512,8 +4514,10 @@ class HiMaXBi:
             rescale_F = [min, max]
         if print_source:
             text = f'{self._src_name_orig}'
-            plt.figtext(.05/figsize[0], .05/figsize[1], text,
-                        ha='left', va='bottom', fontsize=legend_size)
+            fig.text(.05/figsize[0], .05/figsize[1], text,
+                     ha='left', va='bottom', fontsize=legend_size)
+            fig_src.text(.05/figsize[0], .05/figsize[1], text,
+                         ha='left', va='bottom', fontsize=legend_size)
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
