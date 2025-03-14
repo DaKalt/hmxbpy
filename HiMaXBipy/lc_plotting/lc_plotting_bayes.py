@@ -933,9 +933,9 @@ def plot_lc_mincounts_broken_bayes(hdulist, axs, log, mjdref, xflag,
     if not obj is None:
         obj._mav = ampl_max
         obj._mav_sig = ampl_sig
-        obj._var = variability
-        obj._var_err_upper = var_err
-        obj._var_err_lower = var_err
+        obj._var = var_chains_med
+        obj._var_err_upper = var_chains_upper
+        obj._var_err_lower = var_chains_lower
 
     if istart != nrow:
         raise Exception('Something went wrong in last bin.')
