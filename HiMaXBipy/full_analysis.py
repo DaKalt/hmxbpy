@@ -2386,8 +2386,8 @@ class HiMaXBi:
                         text = (f'$var$ = {v:.{pot}f}'
                                 #  f'$^{{+{vu:.{pot}f}}}$'
                                 #  f'$_{{-{vl:.{pot}f}}}$')
-                                f'$^{vu:.{pot}f}$'
-                                f'$_{vl:.{pot}f}$')
+                                f'$^{{+{vu:.{pot}f}}}$'
+                                f'$_{{-{vl:.{pot}f}}}$')
                         plt.figtext(1-.05/figsize[0], .05/figsize[1], text,
                                     ha='right', va='bottom',
                                     fontsize=legend_size)
