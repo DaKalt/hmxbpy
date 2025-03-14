@@ -2383,17 +2383,18 @@ class HiMaXBi:
                         v, vu, vl, pot = round_err(var, var_err_upper,
                                                    var_err_lower)
                         pot = max(pot, 0)
-                        text += (f'$var$ = {v:.{pot}f}'
+                        text = (f'$var$ = {v:.{pot}f}'
                                 #  f'$^{{+{vu:.{pot}f}}}$'
                                 #  f'$_{{-{vl:.{pot}f}}}$')
-                                f'$^{{+\\tiny{vu:.{pot}f}}}$'
-                                f'$_{{-\\tiny{vl:.{pot}f}}}$')
-                        if print_source:
-                            text += '\n'
+                                f'$^{vu:.{pot}f}$'
+                                f'$_{vl:.{pot}f}$')
+                        plt.figtext(1-.05/figsize[0], .05/figsize[1], text,
+                                    ha='right', va='bottom',
+                                    fontsize=legend_size)
                     if print_source:
-                        text += f'{self._src_name_orig}'
-                    plt.figtext(.05/figsize[0], .05/figsize[1], text,
-                                ha='left', va='bottom', fontsize=legend_size)
+                        text = f'{self._src_name_orig}'
+                        plt.figtext(.05/figsize[0], .05/figsize[1], text,
+                                    ha='left', va='bottom', fontsize=legend_size)
 
                 if fig_borders == []:
                     if yscale == 'log' and np.log10(pymax / pymin) * 2 <= ticknumber_y:
