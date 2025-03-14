@@ -2386,7 +2386,8 @@ class HiMaXBi:
                         text += (f'$var$ = {v:.{pot}f}'
                                 #  f'$^{{+{vu:.{pot}f}}}$'
                                 #  f'$_{{-{vl:.{pot}f}}}$')
-                                f'$\\pm${vu:.{pot}f}')
+                                f'$^{{+\\tiny{vu:.{pot}f}}}$'
+                                f'$_{{-\\tiny{vl:.{pot}f}}}$')
                         if print_source:
                             text += '\n'
                     if print_source:
