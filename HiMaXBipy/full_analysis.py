@@ -3901,7 +3901,8 @@ class HiMaXBi:
                     and model != 'apl_bb' and model != 'apl_bb_simple'
                     and model != 'adiskbb' and model != 'adiskbb_simple'
                     and model != 'apl_pl_bb_simple' and model != 'apl_bh'
-                    and model != 'apl_bh_simple'):
+                    and model != 'apl_bh_simple' and model != 'apl_bh_wide'
+                    and model != 'apl_bh_wide_simple'):
                 try:
                     if model.find('.py') > -1:
                         model = model[:model.find('.py')]
@@ -4184,6 +4185,14 @@ class HiMaXBi:
                         ['Power-law', 'index', [1], 'lin']]
         elif model == 'apl_bh_simple':
             fit_model = apl_bh_simple
+            tex_info = [['Power-law', 'index', [0], 'lin']]
+        if model == 'apl_bh_wide':
+            fit_model = apl_bh_wide
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
+                            'log'],
+                        ['Power-law', 'index', [1], 'lin']]
+        elif model == 'apl_bh_wide_simple':
+            fit_model = apl_bh_wide_simple
             tex_info = [['Power-law', 'index', [0], 'lin']]
 
         if colors == []:
@@ -4617,6 +4626,30 @@ class HiMaXBi:
 
         if return_array:
             return output, abs_F, unabs_L
+        
+    def _plot_spectra_bayesian_ext(self, log_prefix='spectrum',
+                                   log_suffix='.log', Z=-1, distance=-1,
+                                   model='apl', NH=-1., rebin=True,
+                                   rebin_params=[5, 20], rescale=False,
+                                   rescale_F=[], rescale_chi=[-5., 5.],
+                                   fit_statistic='cstat', colors=[], markers=[],
+                                   title='', return_array=False,
+                                   abund='wilm', E_range=[0.2, 5.0],
+                                   quantiles=[], folder_suffix='', resume=False,
+                                   prompting=False, plot_bkg=True,
+                                   src_markers=[], bkg_markers=[],
+                                   src_linestyles=[], bkg_linestyle='--',
+                                   set_hatch=False, fig_borders = [],
+                                   spec_files = [], label_style='serif',
+                                   label_size=20, E_ranges_L = [[0.2, 5.0],
+                                                               [0.2, 10.0],
+                                                               [0.2, 12.0],
+                                                               [2.0, 10.0],
+                                                               [2.0, 12.0],
+                                                               [0.2, 2.3]],
+                                   grid = False, print_source = True,
+                                   legend_size = 14):
+        return
 
     def _prep_spec_srclist(self, tbin_f, tbins, mode, snr=False):
         event_files = []
