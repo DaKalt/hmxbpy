@@ -2905,9 +2905,9 @@ class HiMaXBi:
                     if i_en != 2:
                         ax.set_yscale(yscale)  # set yscale to log if wanted
                     for i in range(len(vlines)):
-                        ax.vlines(vlines[i][0] - time_rel, pymin, pymax,
-                                  colors=vlines[i][1], linestyle='dotted',
-                                  zorder=vlines[i][2])
+                        ax.vlines(vlines[i][0] - time_rel, pymin[i_en],
+                                  pymax[i_en], colors=vlines[i][1],
+                                  linestyle='dotted', zorder=vlines[i][2])
                     if show_eRASS:
                         if time_axis == 'mjd':
                             ax.vlines(self._ero_starttimes - time_rel,
