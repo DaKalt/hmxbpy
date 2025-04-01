@@ -698,7 +698,7 @@ def apl_pcf(Model, AllModels, bxa, galnh, Z, n):
     nHs_modelled = [1]
     return transformations, nHs_frozen, nHs_modelled, 'apl_pcf'
 
-def adiskbb_simple_bh(Model, AllModels, bxa, galnh, Z, n):
+def adiskbb_bh_simple(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
     transformations = []
     srcmod = Model('tbabs*(diskbb)', modName='srcmod', sourceNum=1)
@@ -722,7 +722,7 @@ def adiskbb_simple_bh(Model, AllModels, bxa, galnh, Z, n):
     nH = srcmod.TBabs.nH
     nHs_frozen = [nH]
     nHs_modelled = []
-    return transformations, nHs_frozen, nHs_modelled, 'adiskbb_simple_bh'
+    return transformations, nHs_frozen, nHs_modelled, 'adiskbb_bh_simple'
 
 def adiskbb_bh(Model, AllModels, bxa, galnh, Z, n):
     # frozen parameters
