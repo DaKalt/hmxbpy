@@ -1219,13 +1219,13 @@ def write_tex_epochs(tex_file, abs_F, unabs_L, E_ranges, merged_file, epochs):
         for i in range(len(abs_F)):
             line = ''
             for irange in range(len(E_ranges)):
-                lower = abs_F[i][irange][1] * (factors[irange][0] - factors[irange][1])
-                median = abs_F[i][irange][1] * factors[irange][0]
-                upper = abs_F[i][irange][1] * (factors[irange][0] + factors[irange][1])
+                lower = abs_F[i][irange][1] * (factors[0][0] - factors[0][1])
+                median = abs_F[i][irange][1] * factors[0][0]
+                upper = abs_F[i][irange][1] * (factors[0][0] + factors[0][1])
                 line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
-                lower = unabs_L[i][irange][1] * (factors[irange][0] - factors[irange][1])
-                median = unabs_L[i][irange][1] * factors[irange][0]
-                upper = unabs_L[i][irange][1] * (factors[irange][0] + factors[irange][1])
+                lower = unabs_L[i][irange][1] * (factors[0][0] - factors[0][1])
+                median = unabs_L[i][irange][1] * factors[0][0]
+                upper = unabs_L[i][irange][1] * (factors[0][0] + factors[0][1])
                 line += f'{median}$^{{+{upper-median}}}_{{-{median-lower}}}$ & '
             line = line[:-3] + '\\\\ \n'
             tex_file.write(line)

@@ -3902,7 +3902,7 @@ class HiMaXBi:
                     and model != 'adiskbb' and model != 'adiskbb_simple'
                     and model != 'apl_pl_bb_simple' and model != 'apl_bh'
                     and model != 'apl_bh_simple' and model != 'apl_bh_wide'
-                    and model != 'apl_bh_wide_simple'):
+                    and model != 'apl_bh_wide_simple' and model != 'apl_pcf'):
                 try:
                     if model.find('.py') > -1:
                         model = model[:model.find('.py')]
@@ -4123,6 +4123,9 @@ class HiMaXBi:
         E_ranges_L = E_ranges_L.tolist()
         if not E_range in E_ranges_L:
             E_ranges_L.insert(0,E_range)
+        else:
+            E_ranges_L.pop(E_ranges_L.index(E_range))
+            E_ranges_L.insert(0,E_range)
 
         tex_info = []
         if model == 'apl':
@@ -4178,7 +4181,7 @@ class HiMaXBi:
                         ['Power-law', 'index hard', [1], 'lin'],
                         ['Teff', 'keV', [2], 'lin']]
             fit_model = apl_pl_bb_simple
-        if model == 'apl_bh':
+        elif model == 'apl_bh':
             fit_model = apl_bh
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                             'log'],
@@ -4186,7 +4189,7 @@ class HiMaXBi:
         elif model == 'apl_bh_simple':
             fit_model = apl_bh_simple
             tex_info = [['Power-law', 'index', [0], 'lin']]
-        if model == 'apl_bh_wide':
+        elif model == 'apl_bh_wide':
             fit_model = apl_bh_wide
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
                             'log'],
@@ -4194,6 +4197,12 @@ class HiMaXBi:
         elif model == 'apl_bh_wide_simple':
             fit_model = apl_bh_wide_simple
             tex_info = [['Power-law', 'index', [0], 'lin']]
+        elif model == 'apl_pcf':
+            fit_model = apl
+            tex_info = [['Covering', 'Fraction', [0], 'lin'],
+                        ['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [1],
+                            'log'],
+                        ['Power-law', 'index', [2], 'lin']]
 
         if colors == []:
             colors = color_palette
