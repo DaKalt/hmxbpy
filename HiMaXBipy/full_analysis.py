@@ -3903,7 +3903,7 @@ class HiMaXBi:
                     and model != 'apl_pl_bb_simple' and model != 'apl_bh'
                     and model != 'apl_bh_simple' and model != 'apl_bh_wide'
                     and model != 'apl_bh_wide_simple' and model != 'apl_pcf'
-                    and model !- 'adiskbb_bh'
+                    and model != 'adiskbb_bh'
                     and model != 'adiskbb_bh_simple'):
                 try:
                     if model.find('.py') > -1:
