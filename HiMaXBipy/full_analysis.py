@@ -3902,7 +3902,9 @@ class HiMaXBi:
                     and model != 'adiskbb' and model != 'adiskbb_simple'
                     and model != 'apl_pl_bb_simple' and model != 'apl_bh'
                     and model != 'apl_bh_simple' and model != 'apl_bh_wide'
-                    and model != 'apl_bh_wide_simple' and model != 'apl_pcf'):
+                    and model != 'apl_bh_wide_simple' and model != 'apl_pcf'
+                    and model !- 'adiskbb_bh'
+                    and model != 'adiskbb_bh_simple'):
                 try:
                     if model.find('.py') > -1:
                         model = model[:model.find('.py')]
@@ -4203,6 +4205,14 @@ class HiMaXBi:
                         ['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [1],
                             'log'],
                         ['Power-law', 'index', [2], 'lin']]
+        elif model == 'adiskbb_bh':
+            tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
+                         'log'],
+                        ['Tin', 'keV', [1], 'lin']]
+            fit_model = adiskbb_bh
+        elif model == 'adiskbb_bh_simple':
+            tex_info = [['Tin', 'keV', [0], 'lin']]
+            fit_model = adiskbb_bh_simple
 
         if colors == []:
             colors = color_palette
