@@ -706,7 +706,7 @@ def adiskbb_bh_simple(Model, AllModels, bxa, galnh, Z, n):
 
     # fit parameters
     Tin = srcmod.diskbb.Tin
-    Tin.values = [0.615, 0.005, 0.001, 0.35, 10, 10]
+    Tin.values = [0.1677, 0.005, 0.001, 0.12743, 10, 10]
     p_Tin = modded_create_uniform_prior_for(srcmod, Tin)
     p_Tin['name'] = '$T_{in}$'
     transformations.append(p_Tin)
@@ -752,7 +752,7 @@ def adiskbb_bh(Model, AllModels, bxa, galnh, Z, n):
     p_loc_nh = modded_create_jeffreys_prior_for(srcmod, loc_nh)
     transformations.append(p_loc_nh)
     Tin = srcmod.diskbb.Tin
-    Tin.values = [0.615, 0.005, 0.001, 0.35, 10, 10]
+    Tin.values = [0.1677, 0.005, 0.001, 0.12743, 10, 10]
     p_Tin = modded_create_uniform_prior_for(srcmod, Tin)
     p_Tin['name'] = '$T_{in}$'
     transformations.append(p_Tin)
