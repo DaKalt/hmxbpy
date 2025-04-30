@@ -4129,7 +4129,7 @@ class HiMaXBi:
             E_ranges_L.pop(E_ranges_L.index(E_range))
             E_ranges_L.insert(0,E_range)
 
-        tex_info = []
+        # tex_info = []
         if model == 'apl':
             fit_model = apl
             tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
