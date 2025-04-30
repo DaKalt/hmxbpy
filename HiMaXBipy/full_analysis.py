@@ -3922,6 +3922,8 @@ class HiMaXBi:
                 except AttributeError:
                     raise Exception(f'The model function inside {model} must '
                                     'be called \'custom_model\'.')
+            else:
+                tex_info = []
         if type(log_prefix) != str:
             raise Exception('log_prefix must be a string.')
         if type(log_suffix) != str:
