@@ -3705,7 +3705,7 @@ class HiMaXBi:
                                                            [2.0, 12.0],
                                                            [0.2, 2.3]],
                               grid = False, print_source = True,
-                              legend_size = 14):
+                              legend_size = 14, figsize = [8, 7.5]):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3883,6 +3883,8 @@ class HiMaXBi:
             Sets fontsize. The default is 12.
         grid : bool, optional
             If True grid is shown in plots. The default is False.
+        fig_size : float array-like (2,), optional
+            Sets figure size. The default is [8, 7.5].
         '''
         fit_model = None
         self._logger.info('Running plot_spectra.')
@@ -4227,7 +4229,7 @@ class HiMaXBi:
         # top, bottom, left, right
         if len(fig_borders) == 0:
             fig_borders = [0.98, 0.10, 0.12, 0.98]
-        figsize = [8, 7.5]
+        
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
             self._extract_lc()
