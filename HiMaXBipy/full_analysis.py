@@ -4427,7 +4427,7 @@ class HiMaXBi:
                                                                 [2.0, 12.0],
                                                                 [0.2, 2.3]],
                                    grid = False, print_source = True,
-                                   legend_size = 14):
+                                   legend_size = 14, figsize = [8, 7.5]):
         '''Model spectrum specifically for CXOU J053600.0-673507
         '''
         tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
@@ -4469,7 +4469,7 @@ class HiMaXBi:
         # top, bottom, left, right
         if len(fig_borders) == 0:
             fig_borders = [0.98, 0.10, 0.12, 0.98]
-        figsize = [8, 7.5]
+        
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
             self._extract_lc()
