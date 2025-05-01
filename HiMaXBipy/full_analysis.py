@@ -423,7 +423,7 @@ class HiMaXBi:
         self._logger.info('Creating DL.NH')
         sh_file = f'{self._working_dir_full}/working/get_nh.sh'
         process = subprocess.Popen(
-            [sh_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            [sh_file, self._RA, self._Dec], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
         NH = ''
         string = '(cm**-2) '
