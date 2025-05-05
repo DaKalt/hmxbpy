@@ -4404,10 +4404,13 @@ class HiMaXBi:
                         param_text += f'^{{+{err_up:.{pot}f}}}'
                         param_text += f'_{{-{err_low:.{pot}f}}}$'
                     param_text += '\n'
+            param_text = param_text[:-1]
             ax_spec.text(.05/figsize[0], .05/figsize[1], param_text,
-                         ha='left', va='bottom', fontsize=legend_size)
+                         ha='left', va='bottom', fontsize=legend_size,
+                         transform=ax_spec.transAxes)
             ax_spec_src.text(.05/figsize[0], .05/figsize[1], param_text,
-                             ha='left', va='bottom', fontsize=legend_size)
+                             ha='left', va='bottom', fontsize=legend_size,
+                         transform=ax_spec_src.transAxes)
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
@@ -4519,7 +4522,8 @@ class HiMaXBi:
                                                                 [2.0, 12.0],
                                                                 [0.2, 2.3]],
                                    grid = False, print_source = True,
-                                   legend_size = 14, figsize = [8, 7.5]):
+                                   legend_size = 14, figsize = [8, 7.5],
+                                   print_params=False):
         '''Model spectrum specifically for CXOU J053600.0-673507
         '''
         tex_info = [['N$_{{\\rm H, varab}}$', '$\\times 10^{{22}}$', [0],
@@ -4652,6 +4656,92 @@ class HiMaXBi:
                      ha='left', va='bottom', fontsize=legend_size)
             fig_src.text(.05/figsize[0], .05/figsize[1], text,
                          ha='left', va='bottom', fontsize=legend_size)
+        if print_params:
+            param_text = ''
+            for line in tex_info:
+                i_param = line[2][0]
+                data = analyser.results['weighted_'
+                                        'samples']['points'].T[i_param]
+                weights = np.array(analyser.results['weighted_'
+                                                    'samples']['weights'])
+                cumsumweights = np.cumsum(weights)
+
+                mask = cumsumweights > 1e-4
+
+                lower = corner.quantile(data[mask], quantiles[0]/100.,
+                                        weights[mask])[0]
+                median = corner.quantile(data[mask], quantiles[1]/100.,
+                                        weights[mask])[0]
+                upper = corner.quantile(data[mask], quantiles[2]/100.,
+                                        weights[mask])[0]
+                if line[3] == 'log':
+                    lower = 10 ** lower
+                    median = 10 ** median
+                    upper = 10 ** upper 
+                
+                if line[0].startswith('T'):
+                    factor = 1000.
+                    lower *= factor
+                    median *= factor
+                    upper *= factor
+                    val, err_up, err_low, pot = round_err(median, upper-median,
+                                                          median-lower)
+                    param_text += f'$T_{{{line[0][1:]}}} = '
+                    param_text += f'({np.abs(val):.{pot}f}'
+                    if err_up == err_low:
+                        param_text += f'\\pm {err_up:.{pot}f})$'
+                    else:
+                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}})$'
+                    param_text += ' eV\n'
+                elif line[0].startswith('N'):
+                    factor = 1e22
+                    lower *= factor
+                    median *= factor
+                    upper *= factor
+                    pot_val = int(floor(log10(abs(median))))
+                    lower /= 10**pot_val
+                    median /= 10**pot_val
+                    upper /= 10**pot_val
+                    val, err_up, err_low, pot = round_err(median, upper-median,
+                                                          median-lower)
+                    param_text += f'$N_{{H}} = ('
+                    param_text += f'({np.abs(val):.{pot}f}'
+                    if err_up == err_low:
+                        param_text += f'\\pm {err_up:.{pot}f})$'
+                    else:
+                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}})$'
+                    param_text += f'$\\times10^{{{pot_val}}}$ cm$^{{-2}}$\n'
+                elif line[0].startswith('Power'):
+                    param_text += '$\\Gamma = '
+                    val, err_up, err_low, pot = round_err(median, upper-median,
+                                                          median-lower)
+                    param_text += f'{np.abs(val):.{pot}f}'
+                    if err_up == err_low:
+                        param_text += f'\\pm {err_up:.{pot}f})$'
+                    else:
+                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}}$'
+                    param_text += '\n'
+                elif line[0].startswith('Covering'):
+                    param_text += f'$pcf = '
+                    val, err_up, err_low, pot = round_err(median, upper-median,
+                                                          median-lower)
+                    param_text += f'{np.abs(val):.{pot}f}'
+                    if err_up == err_low:
+                        param_text += f'\\pm {err_up:.{pot}f})$'
+                    else:
+                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}}$'
+                    param_text += '\n'
+            param_text = param_text[:-1]
+            ax_spec.text(.05/figsize[0], .05/figsize[1], param_text,
+                         ha='left', va='bottom', fontsize=legend_size,
+                         transform=ax_spec.transAxes)
+            ax_spec_src.text(.05/figsize[0], .05/figsize[1], param_text,
+                             ha='left', va='bottom', fontsize=legend_size,
+                         transform=ax_spec_src.transAxes)
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
