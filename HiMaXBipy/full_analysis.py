@@ -4374,7 +4374,7 @@ class HiMaXBi:
                     upper /= 10**pot_val
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    param_text += f'$N_{{H}} = ($'
+                    param_text += f'$N_{{H}} = ('
                     param_text += f'({np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
@@ -4383,7 +4383,7 @@ class HiMaXBi:
                         param_text += f'_{{-{err_low:.{pot}f}}})$'
                     param_text += f'$\\times10^{{{pot_val}}}$ cm$^{{-2}}$\n'
                 elif line[0].startswith('Power'):
-                    param_text += '$\\Gamma = $'
+                    param_text += '$\\Gamma = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     param_text += f'{np.abs(val):.{pot}f}'
@@ -4394,7 +4394,7 @@ class HiMaXBi:
                         param_text += f'_{{-{err_low:.{pot}f}}}$'
                     param_text += '\n'
                 elif line[0].startswith('Covering'):
-                    param_text += f'$pcf = $'
+                    param_text += f'$pcf = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     param_text += f'{np.abs(val):.{pot}f}'
