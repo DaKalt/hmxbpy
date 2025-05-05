@@ -5,6 +5,7 @@ Created on Tue Aug 30 04:23:18 2022
 
 @author: David Kaltenbrunner
 """
+from webbrowser import BackgroundBrowser
 import corner
 import fileinput
 import getpass
@@ -4407,10 +4408,10 @@ class HiMaXBi:
             param_text = param_text[:-1]
             ax_spec.text(.05/figsize[0], .05/figsize[1], param_text,
                          ha='left', va='bottom', fontsize=legend_size,
-                         transform=ax_spec.transAxes)
+                         transform=ax_spec.transAxes, backgroundcolor='w')
             ax_spec_src.text(.05/figsize[0], .05/figsize[1], param_text,
                              ha='left', va='bottom', fontsize=legend_size,
-                         transform=ax_spec_src.transAxes)
+                         transform=ax_spec_src.transAxes, backgroundcolor='w')
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
@@ -4738,10 +4739,10 @@ class HiMaXBi:
             param_text = param_text[:-1]
             ax_spec.text(.05/figsize[0], .05/figsize[1], param_text,
                          ha='left', va='bottom', fontsize=legend_size,
-                         transform=ax_spec.transAxes)
+                         transform=ax_spec.transAxes, backgroundcolor='w')
             ax_spec_src.text(.05/figsize[0], .05/figsize[1], param_text,
                              ha='left', va='bottom', fontsize=legend_size,
-                         transform=ax_spec_src.transAxes)
+                         transform=ax_spec_src.transAxes, backgroundcolor='w')
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
