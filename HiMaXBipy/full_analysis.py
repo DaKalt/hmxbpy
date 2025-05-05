@@ -5,9 +5,11 @@ Created on Tue Aug 30 04:23:18 2022
 
 @author: David Kaltenbrunner
 """
+import corner
 import fileinput
 import getpass
 from importlib import import_module
+from math import floor, log10
 import os
 import shutil
 import subprocess
@@ -3705,7 +3707,8 @@ class HiMaXBi:
                                                            [2.0, 12.0],
                                                            [0.2, 2.3]],
                               grid = False, print_source = True,
-                              legend_size = 14, figsize = [8, 7.5]):
+                              legend_size = 14, figsize = [8, 7.5],
+                              print_params = False):
         '''Fit and plot spectrum using bxa.
 
         Parameters
@@ -3885,6 +3888,9 @@ class HiMaXBi:
             If True grid is shown in plots. The default is False.
         fig_size : float array-like (2,), optional
             Sets figure size. The default is [8, 7.5].
+        print_params : bool, optional
+            If true, parameters will be written on plot. The default is
+            False.
         '''
         fit_model = None
         self._logger.info('Running plot_spectra.')
@@ -4319,6 +4325,89 @@ class HiMaXBi:
                      ha='left', va='bottom', fontsize=legend_size)
             fig_src.text(.05/figsize[0], .05/figsize[1], text,
                          ha='left', va='bottom', fontsize=legend_size)
+        if print_params:
+            param_text = ''
+            for line in tex_info:
+                i_param = line[2]
+                data = analyser.results['weighted_'
+                                        'samples']['points'].T[i_param]
+                weights = np.array(analyser.results['weighted_'
+                                                    'samples']['weights'])
+                cumsumweights = np.cumsum(weights)
+
+                mask = cumsumweights > 1e-4
+
+                lower = corner.quantile(data[mask], quantiles[0]/100.,
+                                        weights[mask])[0]
+                median = corner.quantile(data[mask], quantiles[1]/100.,
+                                        weights[mask])[0]
+                upper = corner.quantile(data[mask], quantiles[2]/100.,
+                                        weights[mask])[0]
+                if line[3] == 'log':
+                    lower = 10 ** lower
+                    median = 10 ** median
+                    upper = 10 ** upper 
+                
+                if line[0].startswith('T'):
+                    factor = 1000.
+                    lower *= factor
+                    median *= factor
+                    upper *= factor
+                    val, err_up, err_low, pot = round_err(median, upper-median,
+                                                          median-lower)
+                    param_text += f'$T_{{{line[0][1:]}}} = '
+                    param_text += f'({np.abs(val):.{pot}f}'
+                    if err_up == err_low:
+                        param_text += f'\\pm {err_up:.{pot}f})$'
+                    else:
+                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}})$'
+                    param_text += ' eV\n'
+                elif line[0].startswith('N'):
+                    factor = 1e22
+                    lower *= factor
+                    median *= factor
+                    upper *= factor
+                    pot_val = int(floor(log10(abs(median))))
+                    lower /= 10**pot_val
+                    median /= 10**pot_val
+                    upper /= 10**pot_val
+                    val, err_up, err_low, pot = round_err(median, upper-median,
+                                                          median-lower)
+                    param_text += f'$N_{{H}} = ($'
+                    param_text += f'({np.abs(val):.{pot}f}'
+                    if err_up == err_low:
+                        param_text += f'\\pm {err_up:.{pot}f})$'
+                    else:
+                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}})$'
+                    param_text += f'$\\times10^{{{pot_val}}}$ cm$^{{-2}}$\n'
+                elif line[0].startswith('Power'):
+                    param_text += '$\\Gamma = $'
+                    val, err_up, err_low, pot = round_err(median, upper-median,
+                                                          median-lower)
+                    param_text += f'{np.abs(val):.{pot}f}'
+                    if err_up == err_low:
+                        param_text += f'\\pm {err_up:.{pot}f})$'
+                    else:
+                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}}$'
+                    param_text += '\n'
+                elif line[0].startswith('Covering'):
+                    param_text += f'$pcf = $'
+                    val, err_up, err_low, pot = round_err(median, upper-median,
+                                                          median-lower)
+                    param_text += f'{np.abs(val):.{pot}f}'
+                    if err_up == err_low:
+                        param_text += f'\\pm {err_up:.{pot}f})$'
+                    else:
+                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}}$'
+                    param_text += '\n'
+            ax_spec.text(.05/figsize[0], .05/figsize[1], param_text,
+                         ha='left', va='bottom', fontsize=legend_size)
+            ax_spec_src.text(.05/figsize[0], .05/figsize[1], param_text,
+                             ha='left', va='bottom', fontsize=legend_size)
         format_axis_pt2(fig, ax_spec, ax_res, ax_res_invis, fig_borders,
                         rescale_F, rescale_chi, E_range, src_files, ncols,
                         nrows, height_ratios, width_ratios)
