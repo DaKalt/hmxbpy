@@ -4328,7 +4328,7 @@ class HiMaXBi:
         if print_params:
             param_text = ''
             for line in tex_info:
-                i_param = line[2]
+                i_param = line[2][0]
                 data = analyser.results['weighted_'
                                         'samples']['points'].T[i_param]
                 weights = np.array(analyser.results['weighted_'
