@@ -4357,7 +4357,7 @@ class HiMaXBi:
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = np.max([pot,0])
-                    param_text += f'$T_{{{line[0][1:]}}} = '
+                    param_text += f'$T_{{{line[0][1:]}}}$ = '
                     # print(val, err_up, err_low, pot)
                     if val < 0:
                         sign = '$-$'
@@ -4365,10 +4365,10 @@ class HiMaXBi:
                         sign = ''
                     param_text += f'({sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
-                        param_text += f'\\pm {err_up:.{pot}f})$'
+                        param_text += f'$\\pm$ {err_up:.{pot}f})'
                     else:
-                        param_text += f'^{{+{err_up:.{pot}f}}}'
-                        param_text += f'_{{-{err_low:.{pot}f}}})$'
+                        param_text += f'$^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}}$)'
                     param_text += ' eV\n'
                 elif line[0].startswith('N'):
                     factor = 1e22
@@ -4382,24 +4382,24 @@ class HiMaXBi:
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = np.max([pot,0])
-                    param_text += f'$N_{{H}} = '
+                    param_text += f'$N_{{H}}$ = '
                     if val < 0:
                         sign = '$-$'
                     else:
                         sign = ''
                     param_text += f'({sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
-                        param_text += f'\\pm {err_up:.{pot}f})$'
+                        param_text += f'$\\pm$ {err_up:.{pot}f})'
                     else:
-                        param_text += f'^{{+{err_up:.{pot}f}}}'
-                        param_text += f'_{{-{err_low:.{pot}f}}})$'
+                        param_text += f'$^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}}$)'
                     param_text += f'$\\times10^{{{pot_val}}}$ cm$^{{-2}}$\n'
                 elif line[0].startswith('Power'):
                     if line[1].find('hard') >= 0:
-                        addition_g = '$_{{hard}}$'
+                        addition_g = '_{hard}'
                     else:
                         addition_g = ''
-                    param_text += f'$\\Gamma{addition_g} = '
+                    param_text += f'$\\Gamma{addition_g}$ = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = np.max([pot,0])
@@ -4409,13 +4409,13 @@ class HiMaXBi:
                         sign = ''
                     param_text += f'{sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
-                        param_text += f'\\pm {err_up:.{pot}f})$'
+                        param_text += f'$\\pm$ {err_up:.{pot}f}'
                     else:
-                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'$^{{+{err_up:.{pot}f}}}'
                         param_text += f'_{{-{err_low:.{pot}f}}}$'
                     param_text += '\n'
                 elif line[0].startswith('Covering'):
-                    param_text += f'$pcf = '
+                    param_text += f'$pcf$ = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = np.max([pot,0])
@@ -4425,9 +4425,9 @@ class HiMaXBi:
                         sign = ''
                     param_text += f'{sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
-                        param_text += f'\\pm {err_up:.{pot}f})$'
+                        param_text += f'$\\pm$ {err_up:.{pot}f}'
                     else:
-                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'$^{{+{err_up:.{pot}f}}}'
                         param_text += f'_{{-{err_low:.{pot}f}}}$'
                     param_text += '\n'
             param_text = param_text[:-1]
@@ -4723,13 +4723,13 @@ class HiMaXBi:
                         sign = '$-$'
                     else:
                         sign = ''
-                    param_text += f'$T_{{{line[0][1:]}}} = '
+                    param_text += f'$T_{{{line[0][1:]}}}$ = '
                     param_text += f'({sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
-                        param_text += f'\\pm {err_up:.{pot}f})$'
+                        param_text += f'$\\pm$ {err_up:.{pot}f})'
                     else:
-                        param_text += f'^{{+{err_up:.{pot}f}}}'
-                        param_text += f'_{{-{err_low:.{pot}f}}})$'
+                        param_text += f'$^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}}$)'
                     param_text += ' eV\n'
                 elif line[0].startswith('N$'):
                     factor = 1e22
@@ -4743,24 +4743,24 @@ class HiMaXBi:
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = np.max([pot,0])
-                    param_text += f'$N_{{H}} = '
+                    param_text += f'$N_{{H}}$ = '
                     if val < 0:
                         sign = '$-$'
                     else:
                         sign = ''
                     param_text += f'({sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
-                        param_text += f'\\pm {err_up:.{pot}f})$'
+                        param_text += f'$\\pm$ {err_up:.{pot}f})'
                     else:
-                        param_text += f'^{{+{err_up:.{pot}f}}}'
-                        param_text += f'_{{-{err_low:.{pot}f}}})$'
+                        param_text += f'$^{{+{err_up:.{pot}f}}}'
+                        param_text += f'_{{-{err_low:.{pot}f}}}$)'
                     param_text += f'$\\times10^{{{pot_val}}}$ cm$^{{-2}}$\n'
                 elif line[0].startswith('Power'):
                     if line[1].find('hard') >= 0:
-                        addition_g = '$_{{hard}}$'
+                        addition_g = '_{hard}'
                     else:
                         addition_g = ''
-                    param_text += f'$\\Gamma{addition_g} = '
+                    param_text += f'$\\Gamma{addition_g}$ = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = np.max([pot,0])
@@ -4770,13 +4770,13 @@ class HiMaXBi:
                         sign = ''
                     param_text += f'{sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
-                        param_text += f'\\pm {err_up:.{pot}f})$'
+                        param_text += f'$\\pm$ {err_up:.{pot}f}'
                     else:
-                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'$^{{+{err_up:.{pot}f}}}'
                         param_text += f'_{{-{err_low:.{pot}f}}}$'
                     param_text += '\n'
                 elif line[0].startswith('Covering'):
-                    param_text += f'$pcf = '
+                    param_text += f'$pcf$ = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = np.max([pot,0])
@@ -4786,9 +4786,9 @@ class HiMaXBi:
                         sign = ''
                     param_text += f'{sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
-                        param_text += f'\\pm {err_up:.{pot}f})$'
+                        param_text += f'$\\pm$ {err_up:.{pot}f}'
                     else:
-                        param_text += f'^{{+{err_up:.{pot}f}}}'
+                        param_text += f'$^{{+{err_up:.{pot}f}}}'
                         param_text += f'_{{-{err_low:.{pot}f}}}$'
                     param_text += '\n'
             param_text = param_text[:-1]
