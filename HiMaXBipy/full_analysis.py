@@ -4317,9 +4317,9 @@ class HiMaXBi:
                 data_err = np.array(output['bkg_fluxes'][key][1])
                 maxs.append(1.1 * np.max(data + data_err))
                 mins.append(np.min(data[data>0]) / 2.)
-            min = np.min(mins)
-            max = np.max(maxs)
-            rescale_F = [min, max]
+            minF = np.min(mins)
+            maxF = np.max(maxs)
+            rescale_F = [minF, maxF]
         if print_source:
             text = f'{self._src_name_orig}'
             fig.text(.05/figsize[0], .05/figsize[1], text,
@@ -4679,9 +4679,9 @@ class HiMaXBi:
                 data_err = np.array(output['bkg_fluxes'][key][1])
                 maxs.append(1.1 * np.max(data + data_err))
                 mins.append(np.min(data[data>0]) / 2.)
-            min = np.min(mins)
-            max = np.max(maxs)
-            rescale_F = [min, max]
+            minF = np.min(mins)
+            maxF = np.max(maxs)
+            rescale_F = [minF, maxF]
         if print_source:
             text = f'{self._src_name_orig}'
             fig.text(.05/figsize[0], .05/figsize[1], text,
