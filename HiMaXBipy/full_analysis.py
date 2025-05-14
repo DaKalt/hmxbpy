@@ -4356,6 +4356,7 @@ class HiMaXBi:
                     upper *= factor
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
+                    pot = max(pot, 0)
                     param_text += f'$T_{{{line[0][1:]}}} = '
                     print(val, err_up, err_low, pot)
                     param_text += f'({np.abs(val):.{pot}f}'
@@ -4376,6 +4377,7 @@ class HiMaXBi:
                     upper /= 10**pot_val
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
+                    pot = max(pot, 0)
                     param_text += f'$N_{{H}} = '
                     param_text += f'({np.abs(val):.{pot}f}'
                     if err_up == err_low:
@@ -4388,6 +4390,7 @@ class HiMaXBi:
                     param_text += '$\\Gamma = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
+                    pot = max(pot, 0)
                     param_text += f'{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
@@ -4399,6 +4402,7 @@ class HiMaXBi:
                     param_text += f'$pcf = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
+                    pot = max(pot, 0)
                     param_text += f'{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
@@ -4694,6 +4698,7 @@ class HiMaXBi:
                     upper *= factor
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
+                    pot = max(pot, 0)
                     param_text += f'$T_{{{line[0][1:]}}} = '
                     param_text += f'({np.abs(val):.{pot}f}'
                     if err_up == err_low:
@@ -4713,6 +4718,7 @@ class HiMaXBi:
                     upper /= 10**pot_val
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
+                    pot = max(pot, 0)
                     param_text += f'$N_{{H}} = '
                     param_text += f'({np.abs(val):.{pot}f}'
                     if err_up == err_low:
@@ -4725,6 +4731,7 @@ class HiMaXBi:
                     param_text += '$\\Gamma = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
+                    pot = max(pot, 0)
                     param_text += f'{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
@@ -4736,6 +4743,7 @@ class HiMaXBi:
                     param_text += f'$pcf = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
+                    pot = max(pot, 0)
                     param_text += f'{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
