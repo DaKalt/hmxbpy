@@ -2385,7 +2385,7 @@ class HiMaXBi:
                         var_err_lower = self._var_err_lower
                         v, vu, vl, pot = round_err(var, var_err_upper,
                                                    var_err_lower)
-                        pot = max(pot, 0)
+                        pot = np.max([pot,0])
                         text = (f'$var$ = {v:.{pot}f}'
                                 #  f'$^{{+{vu:.{pot}f}}}$'
                                 #  f'$_{{-{vl:.{pot}f}}}$')
@@ -4356,7 +4356,7 @@ class HiMaXBi:
                     upper *= factor
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    pot = max(pot, 0)
+                    pot = np.max([pot,0])
                     param_text += f'$T_{{{line[0][1:]}}} = '
                     # print(val, err_up, err_low, pot)
                     if val < 0:
@@ -4381,7 +4381,7 @@ class HiMaXBi:
                     upper /= 10**pot_val
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    pot = max(pot, 0)
+                    pot = np.max([pot,0])
                     param_text += f'$N_{{H}} = '
                     if val < 0:
                         sign = '$-$'
@@ -4402,7 +4402,7 @@ class HiMaXBi:
                     param_text += f'$\\Gamma{addition_g} = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    pot = max(pot, 0)
+                    pot = np.max([pot,0])
                     if val < 0:
                         sign = '$-$'
                     else:
@@ -4418,7 +4418,7 @@ class HiMaXBi:
                     param_text += f'$pcf = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    pot = max(pot, 0)
+                    pot = np.max([pot,0])
                     if val < 0:
                         sign = '$-$'
                     else:
@@ -4718,7 +4718,7 @@ class HiMaXBi:
                     upper *= factor
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    pot = max(pot, 0)
+                    pot = np.max([pot,0])
                     if val < 0:
                         sign = '$-$'
                     else:
@@ -4742,7 +4742,7 @@ class HiMaXBi:
                     upper /= 10**pot_val
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    pot = max(pot, 0)
+                    pot = np.max([pot,0])
                     param_text += f'$N_{{H}} = '
                     if val < 0:
                         sign = '$-$'
@@ -4759,7 +4759,7 @@ class HiMaXBi:
                     param_text += '$\\Gamma = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    pot = max(pot, 0)
+                    pot = np.max([pot,0])
                     if val < 0:
                         sign = '$-$'
                     else:
@@ -4775,7 +4775,7 @@ class HiMaXBi:
                     param_text += f'$pcf = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
-                    pot = max(pot, 0)
+                    pot = np.max([pot,0])
                     if val < 0:
                         sign = '$-$'
                     else:
