@@ -4358,8 +4358,12 @@ class HiMaXBi:
                                                           median-lower)
                     pot = max(pot, 0)
                     param_text += f'$T_{{{line[0][1:]}}} = '
-                    print(val, err_up, err_low, pot)
-                    param_text += f'({np.abs(val):.{pot}f}'
+                    # print(val, err_up, err_low, pot)
+                    if val < 0:
+                        sign = '$-$'
+                    else:
+                        sign = ''
+                    param_text += f'({sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
                     else:
@@ -4379,7 +4383,11 @@ class HiMaXBi:
                                                           median-lower)
                     pot = max(pot, 0)
                     param_text += f'$N_{{H}} = '
-                    param_text += f'({np.abs(val):.{pot}f}'
+                    if val < 0:
+                        sign = '$-$'
+                    else:
+                        sign = ''
+                    param_text += f'({sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
                     else:
@@ -4387,11 +4395,19 @@ class HiMaXBi:
                         param_text += f'_{{-{err_low:.{pot}f}}})$'
                     param_text += f'$\\times10^{{{pot_val}}}$ cm$^{{-2}}$\n'
                 elif line[0].startswith('Power'):
-                    param_text += '$\\Gamma = '
+                    if line[1].find('hard') >= 0:
+                        addition_g = '$_{hard}$'
+                    else:
+                        addition_g = ''
+                    param_text += f'$\\Gamma{addition_g} = '
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = max(pot, 0)
-                    param_text += f'{np.abs(val):.{pot}f}'
+                    if val < 0:
+                        sign = '$-$'
+                    else:
+                        sign = ''
+                    param_text += f'{sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
                     else:
@@ -4403,7 +4419,11 @@ class HiMaXBi:
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = max(pot, 0)
-                    param_text += f'{np.abs(val):.{pot}f}'
+                    if val < 0:
+                        sign = '$-$'
+                    else:
+                        sign = ''
+                    param_text += f'{sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
                     else:
@@ -4699,8 +4719,12 @@ class HiMaXBi:
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = max(pot, 0)
+                    if val < 0:
+                        sign = '$-$'
+                    else:
+                        sign = ''
                     param_text += f'$T_{{{line[0][1:]}}} = '
-                    param_text += f'({np.abs(val):.{pot}f}'
+                    param_text += f'({sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
                     else:
@@ -4720,7 +4744,11 @@ class HiMaXBi:
                                                           median-lower)
                     pot = max(pot, 0)
                     param_text += f'$N_{{H}} = '
-                    param_text += f'({np.abs(val):.{pot}f}'
+                    if val < 0:
+                        sign = '$-$'
+                    else:
+                        sign = ''
+                    param_text += f'({sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
                     else:
@@ -4732,7 +4760,11 @@ class HiMaXBi:
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = max(pot, 0)
-                    param_text += f'{np.abs(val):.{pot}f}'
+                    if val < 0:
+                        sign = '$-$'
+                    else:
+                        sign = ''
+                    param_text += f'{sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
                     else:
@@ -4744,7 +4776,11 @@ class HiMaXBi:
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     pot = max(pot, 0)
-                    param_text += f'{np.abs(val):.{pot}f}'
+                    if val < 0:
+                        sign = '$-$'
+                    else:
+                        sign = ''
+                    param_text += f'{sign}{np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
                     else:
