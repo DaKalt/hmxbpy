@@ -4357,6 +4357,7 @@ class HiMaXBi:
                     val, err_up, err_low, pot = round_err(median, upper-median,
                                                           median-lower)
                     param_text += f'$T_{{{line[0][1:]}}} = '
+                    print(val, err_up, err_low, pot)
                     param_text += f'({np.abs(val):.{pot}f}'
                     if err_up == err_low:
                         param_text += f'\\pm {err_up:.{pot}f})$'
@@ -4697,7 +4698,7 @@ class HiMaXBi:
                         param_text += f'^{{+{err_up:.{pot}f}}}'
                         param_text += f'_{{-{err_low:.{pot}f}}})$'
                     param_text += ' eV\n'
-                elif line[0].startswith('N'):
+                elif line[0].startswith('N$'):
                     factor = 1e22
                     lower *= factor
                     median *= factor
