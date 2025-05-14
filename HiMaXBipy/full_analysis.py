@@ -3887,7 +3887,7 @@ class HiMaXBi:
             Sets fontsize. The default is 12.
         grid : bool, optional
             If True grid is shown in plots. The default is False.
-        fig_size : float array-like (2,), optional
+        figsize : float array-like (2,), optional
             Sets figure size. The default is [8, 7.5].
         print_params : bool, optional
             If true, parameters will be written on plot. The default is
@@ -4565,10 +4565,14 @@ class HiMaXBi:
 
         old_environ = os.environ.copy()  # maybe make the below an option
 
+
         # these stay hardcoded but need to be adjusted
         # top, bottom, left, right
         if len(fig_borders) == 0:
-            fig_borders = [0.98, 0.10, 0.12, 0.98]
+            if figsize == [8, 7.5]:
+                fig_borders = [0.98, 0.10, 0.12, 0.98]
+            else:
+                fig_borders = [0.98, 0.15, 0.18, 0.98]
         
         logname = 'bxa_fit.log'
         if not self._LC_extracted and not self._debugging:
