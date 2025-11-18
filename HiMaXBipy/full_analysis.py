@@ -105,7 +105,7 @@ class HiMaXBi:
     _energy_bins_hr = [[0.2, 8.0], [0.2, 2.0], [2.0, 5.0]]
     _grouping = 1
     _ownership = 'x'
-    _distance = 50. #TODO: change to 49.59? from Pietrzynski+2019, Julia uses this
+    _distance = 49.59 # following Pietrzynski+2019
     _Z = 0.49
     _debugging = False
     _NH = 6e20
